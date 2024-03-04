@@ -1,6 +1,3 @@
-# Logs
-logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -41,6 +38,7 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+build/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
@@ -128,3 +126,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+src/assets/images/.DS_Store
+src/assets/images/creah/.DS_Store
+.firebase/hosting.YnVpbGQ.cache
+.firebaserc
+firebase.json
+src/.DS_Store

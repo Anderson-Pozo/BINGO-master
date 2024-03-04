@@ -1,0 +1,41 @@
+export const titles = {
+  require: 'Todos los campos marcados con * son obligatorios.!',
+  successCreate: 'Usuario creado correctamente!.',
+  successUpdate: 'Usuario actualizado correctamente!.',
+  successDelete: 'Usuario inactivado correctamente!.',
+  titleDeleteModal: 'Seguro que desea eliminar al usuario: ',
+  titleCreate: 'Crear Usuario',
+  titleUpdate: 'Editar Usuario',
+  titleDelete: 'Inactivar Usuario',
+  labelCreate: 'Usuario creado',
+  labelUpdate: 'Usuario actualizado',
+  labelDelete: 'Usuario inactivado',
+  generalError: 'Ups algo salio mal: ',
+  generalAction: 'Acciones',
+  menuCreate: 'Agregar Usuario',
+  tableCell1: 'Nombre',
+  tableCell2: 'Email',
+  tableCell3: 'Perfil',
+  tableCell4: 'Estado',
+  tableCellActions: 'Acciones',
+  maxRecords: 'Registros máximos',
+  noRecordsFound: 'No existen usuarios aún!',
+  buttonCreate: 'Crear',
+  buttonUpdate: 'Actualizar',
+  buttonDelete: 'Inactivar',
+  buttonCancel: 'Cancelar',
+  loading: 'Cargando...'
+};
+
+export const inputLabels = {
+  search: 'searchField',
+  name: 'name',
+  labelName: 'Nombre',
+  email: 'email',
+  labelEmail: 'E-mail',
+  profile: 'profile',
+  labelProfile: 'Perfil',
+  state: 'State',
+  labelState: 'Estado',
+  placeHolderSearch: 'Buscar por Nombre o Correo electrónico'
+};
