@@ -11,14 +11,9 @@ import {
   TablePagination,
   TableRow,
   Button,
-  Menu,
   MenuItem,
-  AppBar,
   Box,
-  Toolbar,
-  IconButton,
   Typography,
-  Container,
   Modal,
   Grid,
   InputLabel,
@@ -27,11 +22,10 @@ import {
   ButtonGroup,
   Select
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconApps, IconPlus, IconDeviceFloppy, IconTrash, IconEdit, IconCircleX, IconPencil, IconUsers } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil } from '@tabler/icons';
 
 //Firebase Events
 import { createDocument, deleteDocument, updateDocument } from 'config/firebaseEvents';
@@ -48,16 +42,12 @@ import { uiStyles } from './AdminUsers.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { searchingData } from 'utils/search';
 import { useGetAdminUsers } from 'hooks/useGetAdminUsers';
 
 export default function Users() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
   const theme = useTheme();
-  const [anchorElNav, setAnchorElNav] = useState(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -71,7 +61,6 @@ export default function Users() {
   const [createAt, setCreateAt] = useState(null);
   const [updateAt, setUpdateAt] = useState(null);
 
-  const [search, setSearch] = useState('');
   const [openLoader, setOpenLoader] = useState(false);
 
   //Hook
@@ -91,21 +80,6 @@ export default function Users() {
     setOpenDelete(false);
   };
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleUsrck = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -117,34 +91,6 @@ export default function Users() {
 
   const reloadData = () => {
     window.location.reload();
-  };
-
-  const handleCreateUser = () => {
-    if (!name || !email) {
-      toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
-    } else {
-      const idUsr = generateId(10);
-      setOpenLoader(true);
-      const object = {
-        avatar: null,
-        createAt: fullDate(),
-        description: null,
-        email: email,
-        id: idUsr,
-        name: name,
-        phone: null,
-        profile: genConst.CONST_PRO_DEF,
-        state: genConst.CONST_STA_ACT,
-        updateAt: null
-      };
-      setTimeout(() => {
-        setOpenLoader(false);
-        setOpenCreate(false);
-        reloadData();
-        console.log(object);
-        toast.success(titles.successCreate, { position: toast.POSITION.TOP_RIGHT });
-      }, 2000);
-    }
   };
 
   const handleEditUser = () => {
@@ -203,104 +149,6 @@ export default function Users() {
   return (
     <div>
       <ToastContainer />
-      <AppBar position="static" style={uiStyles.appbar}>
-        <Container maxWidth="xl" style={uiStyles.container}>
-          <Toolbar disableGutters>
-            <IconUsers />
-            <Box sx={uiStyles.box}>
-              <IconButton
-                size="medium"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleOpenNavMenu}
-                color="inherit"
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left'
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left'
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{
-                  display: { xs: 'block', md: 'none' }
-                }}
-              >
-                <MenuItem
-                  key="id-1"
-                  onClick={() => {
-                    setTitle(titles.titleCreate);
-                    cleanData();
-                    setIsEdit(false);
-                    handleOpenCreate();
-                  }}
-                >
-                  <IconPlus style={{ marginRight: 4 }} />
-                  <Typography textAlign="center">{titles.menuCreate}</Typography>
-                </MenuItem>
-              </Menu>
-            </Box>
-            <Box sx={uiStyles.boxMenuActions}>
-              <Button
-                variant="primary"
-                startIcon={<IconApps />}
-                aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleUsrck}
-              >
-                {titles.generalAction}
-              </Button>
-              <Menu
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'basic-button'
-                }}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setTitle(titles.titleCreate);
-                    cleanData();
-                    setIsEdit(false);
-                    handleOpenCreate();
-                  }}
-                >
-                  <IconPlus style={{ marginRight: 10 }} />
-                  {titles.menuCreate}
-                </MenuItem>
-              </Menu>
-            </Box>
-
-            <Box sx={{ flexGrow: 0 }}>
-              {usersList.length > 0 ? (
-                <OutlinedInput
-                  id={inputLabels.search}
-                  type="text"
-                  name={inputLabels.search}
-                  onChange={(ev) => setSearch(ev.target.value)}
-                  placeholder={inputLabels.placeHolderSearch}
-                  style={{ width: 300 }}
-                />
-              ) : (
-                <></>
-              )}
-            </Box>
-          </Toolbar>
-        </Container>
-      </AppBar>
       {usersList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 500 }}>
@@ -325,59 +173,56 @@ export default function Users() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {usersList
-                  .filter(searchingData(search))
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((r) => (
-                    <TableRow hover key={r.id}>
-                      <TableCell align="left">
-                        <ButtonGroup>
-                          <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                          <span style={{ margin: 6 }}>{r.fullName}</span>
-                        </ButtonGroup>
-                      </TableCell>
-                      <TableCell align="left">{r.email}</TableCell>
-                      <TableCell align="left">
-                        {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
-                      </TableCell>
-                      <TableCell align="left">
-                        {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
-                      </TableCell>
-                      <TableCell align="center">
-                        <ButtonGroup variant="contained">
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                            onClick={() => {
-                              setId(r.id);
-                              setTitle(titles.titleUpdate);
-                              setName(r.name);
-                              setEMail(r.email);
-                              setProfile(r.profile);
-                              setState(r.state);
-                              setCreateAt(r.createAt);
-                              setUpdateAt(r.updateAt);
-                              handleOpenCreate();
-                              setIsEdit(true);
-                            }}
-                          >
-                            <IconEdit />
-                          </Button>
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                            onClick={() => {
-                              setTitle(titles.titleDelete);
-                              setId(r.id);
-                              setName(r.name);
-                              setEMail(r.email);
-                              handleOpenDelete();
-                            }}
-                          >
-                            <IconTrash />
-                          </Button>
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                {usersList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
+                  <TableRow hover key={r.id}>
+                    <TableCell align="left">
+                      <ButtonGroup>
+                        <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
+                        <span style={{ margin: 6 }}>{r.fullName}</span>
+                      </ButtonGroup>
+                    </TableCell>
+                    <TableCell align="left">{r.email}</TableCell>
+                    <TableCell align="left">
+                      {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
+                    </TableCell>
+                    <TableCell align="left">
+                      {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
+                    </TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                          onClick={() => {
+                            setId(r.id);
+                            setTitle(titles.titleUpdate);
+                            setName(r.name);
+                            setEMail(r.email);
+                            setProfile(r.profile);
+                            setState(r.state);
+                            setCreateAt(r.createAt);
+                            setUpdateAt(r.updateAt);
+                            handleOpenCreate();
+                            setIsEdit(true);
+                          }}
+                        >
+                          <IconEdit color="#FFF" />
+                        </Button>
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                          onClick={() => {
+                            setTitle(titles.titleDelete);
+                            setId(r.id);
+                            setName(r.name);
+                            setEMail(r.email);
+                            handleOpenDelete();
+                          }}
+                        >
+                          <IconTrash color="#FFF" />
+                        </Button>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -485,27 +330,15 @@ export default function Users() {
                 <Grid item lg={12} md={12} sm={12} xs={12}>
                   <center>
                     <ButtonGroup>
-                      {!isEdit ? (
-                        <Button
-                          variant="contained"
-                          startIcon={<IconDeviceFloppy />}
-                          size="large"
-                          style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CREATE_COLOR }}
-                          onClick={handleCreateUser}
-                        >
-                          {titles.buttonCreate}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="contained"
-                          startIcon={<IconPencil />}
-                          size="large"
-                          style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                          onClick={handleEditUser}
-                        >
-                          {titles.buttonUpdate}
-                        </Button>
-                      )}
+                      <Button
+                        variant="contained"
+                        startIcon={<IconPencil />}
+                        size="large"
+                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                        onClick={handleEditUser}
+                      >
+                        {titles.buttonUpdate}
+                      </Button>
                       <Button
                         variant="contained"
                         startIcon={<IconCircleX />}

@@ -9,7 +9,7 @@ import AuthLogin from '../auth-forms/AuthLogin';
 import Logo from 'components/Logo-md';
 import AuthFooter from 'components/cards/AuthFooter';
 //Assets
-import bg01 from 'assets/images/06.webp';
+import bg01 from 'assets/images/bg/bg1.jpg';
 
 const Signin = () => {
   const theme = useTheme();

@@ -4,13 +4,12 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBmgYAlIyJcHqT3v9Z_1u0w1CCXvMIXVhc',
-  authDomain: 'khuska-54cf3.firebaseapp.com',
-  projectId: 'khuska-54cf3',
-  storageBucket: 'khuska-54cf3.appspot.com',
-  messagingSenderId: '1080274008049',
-  appId: '1:1080274008049:web:df588dafbc5153c2267650',
-  measurementId: 'G-W62GCQBCN0'
+  apiKey: 'AIzaSyARlrExQahem3yN_tP6DpT3O6FkYs6fCL8',
+  authDomain: 'bingo-master-bd041.firebaseapp.com',
+  projectId: 'bingo-master-bd041',
+  storageBucket: 'bingo-master-bd041.appspot.com',
+  messagingSenderId: '955240353348',
+  appId: '1:955240353348:web:c7c2bfb712b47f70743611'
 };
 
 const app = initializeApp(firebaseConfig);

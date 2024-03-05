@@ -22,8 +22,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Box } from '@mui/system';
 import Hero from './Hero';
-import logo from 'assets/images/khuska/logo.png';
-import { IconSearch } from '@tabler/icons';
+import logo from 'assets/images/LogoBingo.png';
 import defaultAvatar from 'assets/images/profile/profile-picture-6.jpg';
 import { useAuth } from 'hooks/useAuth';
 import { isSessionActive } from 'config/firebaseEvents';
@@ -60,27 +59,6 @@ const Header = (props) => {
       </Typography>
       <Divider />
       <List>
-        <Scroll to="header" smooth={true}>
-          <ListItem key={1} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={'Inicio'} />
-            </ListItemButton>
-          </ListItem>
-        </Scroll>
-        <Scroll to="about" smooth={true}>
-          <ListItem key={2} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={'Somos'} />
-            </ListItemButton>
-          </ListItem>
-        </Scroll>
-        <Scroll to="contacts" smooth={true}>
-          <ListItem key={4} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={'Contáctanos'} />
-            </ListItemButton>
-          </ListItem>
-        </Scroll>
         <Scroll to="contacts" smooth={true}>
           <ListItem key={5} disablePadding>
             <ListItemButton sx={{ textAlign: 'center' }}>
@@ -91,7 +69,7 @@ const Header = (props) => {
         <Box style={{ marginTop: 10 }}>
           <center>
             <Button variant="contained" startIcon={<PersonIcon />} onClick={handleGoTo}>
-              Login
+              Iniciar Sesión
             </Button>
           </center>
         </Box>
@@ -111,22 +89,6 @@ const Header = (props) => {
               <img src={logo} alt="logobrand" width={160} />
             </Link>
           </div>
-          <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-            <Scroll to="header" smooth={true}>
-              <Button sx={{ color: '#fff', marginLeft: 0, fontSize: 15 }}>Inicio</Button>
-            </Scroll>
-            <Scroll to="about" smooth={true}>
-              <Button sx={{ color: '#fff', marginLeft: 3, fontSize: 15 }}>Somos</Button>
-            </Scroll>
-            <Scroll to="contacts" smooth={true}>
-              <Button sx={{ color: '#fff', marginLeft: 3, marginRight: 3, fontSize: 15 }}>Contáctanos</Button>
-            </Scroll>
-          </Box>
-          <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' }, marginRight: 3, cursor: 'pointer' }}>
-            <Typography component={Link} to="/net/search" sx={{ textDecoration: 'none' }}>
-              <IconSearch color="#FFF" size={20} />
-            </Typography>
-          </Box>
           {isLoggin ? (
             <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }} onClick={handleGoTo}>
               <List>
@@ -140,8 +102,8 @@ const Header = (props) => {
             </Box>
           ) : (
             <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-              <Button variant="contained" startIcon={<PersonIcon />} onClick={handleGoTo} style={{ width: 120, fontSize: 15 }}>
-                Login
+              <Button variant="contained" startIcon={<PersonIcon />} onClick={handleGoTo} style={{ width: 180, fontSize: 15 }}>
+                Iniciar Sesión
               </Button>
             </Box>
           )}

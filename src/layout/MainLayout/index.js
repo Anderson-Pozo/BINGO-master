@@ -10,7 +10,6 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 // project imports
 import Header from './Header';
 import Sidebar from './Sidebar';
-import Social from '../Social';
 import { drawerWidth } from 'store/constant';
 import { SET_MENU } from 'store/actions';
 
@@ -107,7 +106,6 @@ const MainLayout = () => {
       <Main theme={theme} open={leftDrawerOpened}>
         <Outlet />
       </Main>
-      <Social />
     </Box>
   );
 };

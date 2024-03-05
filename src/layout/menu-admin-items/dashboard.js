@@ -1,10 +1,34 @@
 // assets
-import { IconDashboard, IconUsers, IconFriends, IconBell, IconShare, IconBuilding, IconNetwork, IconMoneybag } from '@tabler/icons';
+import {
+  IconDashboard,
+  IconUsers,
+  IconFriends,
+  IconBell,
+  IconShare,
+  IconBuilding,
+  IconNetwork,
+  IconMoneybag,
+  IconGoGame,
+  IconCardboards,
+  IconNotebook,
+  IconDeviceGamepad
+} from '@tabler/icons';
 
 // constant
-const icons = { IconDashboard, IconUsers, IconFriends, IconBell, IconShare, IconBuilding, IconNetwork, IconMoneybag };
-
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
+const icons = {
+  IconCardboards,
+  IconDashboard,
+  IconUsers,
+  IconFriends,
+  IconBell,
+  IconShare,
+  IconBuilding,
+  IconNetwork,
+  IconMoneybag,
+  IconGoGame,
+  IconNotebook,
+  IconDeviceGamepad
+};
 
 const dashboard = {
   id: 'dashboard',
@@ -36,18 +60,36 @@ const dashboard = {
       breadcrumbs: false
     },
     {
-      id: 'benefits',
-      title: 'Beneficios',
+      id: 'new-game',
+      title: 'Crear Partida',
       type: 'item',
-      url: '/main/benefits',
-      icon: icons.IconMoneybag
+      url: '/main/new-game',
+      icon: icons.IconDeviceGamepad,
+      breadcrumbs: false
     },
     {
-      id: 'business',
-      title: 'Negocios',
+      id: 'game',
+      title: 'Juego',
       type: 'item',
-      url: '/main/business',
-      icon: icons.IconBuilding
+      url: '/main/game',
+      icon: icons.IconGoGame,
+      breadcrumbs: false
+    },
+    {
+      id: 'cards',
+      title: 'Generador de Cartas',
+      type: 'item',
+      url: '/main/cards',
+      icon: icons.IconCardboards,
+      breadcrumbs: false
+    },
+    {
+      id: 'inscriptions',
+      title: 'Inscripciones',
+      type: 'item',
+      url: '/main/inscriptions',
+      icon: icons.IconNotebook,
+      breadcrumbs: false
     }
   ]
 };

@@ -6,6 +6,8 @@ import {
   collAdminUsers,
   collBusiness,
   collCourses,
+  collGameInscription,
+  collGames,
   collGenNoti,
   collIncomes,
   collKhuskaBenefit,
@@ -243,6 +245,25 @@ export const getAdminUsersData = async () => {
 export const getUsersList = async () => {
   const list = [];
   const q = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
+//Obtenemos la lista de Partidas
+export const getGamesList = async () => {
+  const list = [];
+  const querySnapshot = await getDocuments(collGames);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
+//Obtenemos la lista de Usuarios por Partida
+export const getGameUsers = async (id) => {
+  const list = [];
+  const q = query(collection(db, collGameInscription), where('idGame', '==', id));
   const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     list.push(doc.data());

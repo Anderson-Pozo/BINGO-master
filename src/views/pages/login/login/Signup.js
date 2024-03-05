@@ -12,7 +12,7 @@ import AuthRegister from '../auth-forms/AuthRegister';
 import AuthFooter from 'components/cards/AuthFooter';
 
 // assets
-import bg01 from 'assets/images/05.webp';
+import bg01 from 'assets/images/bg/bg2.jpg';
 
 const Signup = () => {
   const theme = useTheme();

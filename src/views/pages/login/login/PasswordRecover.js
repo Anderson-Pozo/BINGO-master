@@ -12,7 +12,7 @@ import Logo from 'components/Logo-md';
 import AuthFooter from 'components/cards/AuthFooter';
 
 //Assets
-import bg01 from 'assets/images/03.webp';
+import bg01 from 'assets/images/bg/bg3.jpg';
 
 const PasswordRecover = () => {
   const theme = useTheme();

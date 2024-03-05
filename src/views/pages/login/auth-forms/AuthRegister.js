@@ -27,7 +27,7 @@ import { Formik } from 'formik';
 // Firebase
 import { authentication, db } from 'config/firebase';
 import { createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { collection, setDoc, doc, getDocs, where, query } from 'firebase/firestore';
+import { setDoc, doc } from 'firebase/firestore';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -44,34 +44,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 //Utils
 import { fullDate, generateDate } from 'utils/validations';
 import { genConst } from 'store/constant';
-import {
-  collUsers,
-  collSubscription,
-  collUserLog,
-  collUserAddress,
-  collUserPhone,
-  collUserBillData,
-  collUserPaymentMethod,
-  collInbox,
-  collNotifications
-} from 'store/collections';
+import { collUsers, collSubscription, collUserLog, collNotifications } from 'store/collections';
 import { createDocument } from 'config/firebaseEvents';
-import { generateOwnReferalNumber } from 'utils/idGenerator';
-import { isEmpty } from 'lodash';
-
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 800,
-  height: 600,
-  bgcolor: 'background.paper',
-  border: 'none',
-  borderRadius: 6,
-  boxShadow: 24,
-  p: 4
-};
 
 const AuthRegister = ({ ...others }) => {
   let navigate = useNavigate();
@@ -82,9 +56,7 @@ const AuthRegister = ({ ...others }) => {
   const [strength, setStrength] = useState(0);
   const [level, setLevel] = useState();
 
-  const [open, setOpen] = React.useState(false);
   const [openLoader, setOpenLoader] = React.useState(false);
-  const handleClose = () => setOpen(false);
 
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -127,55 +99,6 @@ const AuthRegister = ({ ...others }) => {
       message: 'Registro de nuevo usuario.'
     };
     createDocument(collUserLog, uid, userLog);
-    //Address
-    const userAddress = {
-      idUser: uid,
-      principal: '',
-      secondary: '',
-      number: '',
-      city: '',
-      province: '',
-      reference: ''
-    };
-    createDocument(collUserAddress, uid, userAddress);
-    //Phone
-    const userPhone = {
-      idUser: uid,
-      phone: ''
-    };
-    createDocument(collUserPhone, uid, userPhone);
-    //BillData
-    const userBillData = {
-      idUser: uid,
-      name: '',
-      ci: '',
-      address: '',
-      email: '',
-      city: '',
-      phone: '',
-      postal: ''
-    };
-    createDocument(collUserBillData, uid, userBillData);
-    //Payment Data
-    const userPaymentData = {
-      idUser: uid,
-      name: '',
-      number: '',
-      numberMask: null,
-      date: '',
-      cvc: '',
-      cvcmd5: null
-    };
-    createDocument(collUserPaymentMethod, uid, userPaymentData);
-    //Inbox
-    const inbox = {
-      to: email,
-      from: 'Khuska Admin',
-      date: generateDate(),
-      message: 'Bienvenido a Khuska',
-      subject: 'Bienvenida'
-    };
-    createDocument(collInbox, uid, inbox);
     //Notifications
     const notifications = {
       to: email,
@@ -209,196 +132,57 @@ const AuthRegister = ({ ...others }) => {
         })}
         onSubmit={async (values, { resetForm }) => {
           setOpenLoader(true);
-          if (isEmpty(values.emailRef)) {
-            createUserWithEmailAndPassword(authentication, values.email, values.password)
-              .then((userCredential) => {
-                const user = userCredential.user;
-                updateProfile(authentication.currentUser, {
-                  displayName: values.firstName + ' ' + values.lastName
-                });
-                let refCode = generateOwnReferalNumber(6);
-                setDoc(doc(db, collUsers, user.uid), {
-                  id: user.uid,
-                  fullName: values.firstName + ' ' + values.lastName,
-                  name: values.firstName,
-                  lastName: values.lastName,
-                  email: values.email,
-                  description: '',
-                  gender: '',
-                  birthday: '',
-                  avatar: null,
-                  state: genConst.CONST_STATE_IN,
-                  subState: genConst.CONST_STATE_IN,
-                  profile: genConst.CONST_PRO_DEF,
-                  createAt: fullDate(),
-                  registerDate: fullDate(),
-                  date: fullDate(),
-                  city: null,
-                  ci: null,
-                  refer: null,
-                  ownReferal: refCode,
-                  url: null
-                });
-                createUserAditionalData(user.uid, values.email);
-                resetForm({ values: '' });
-                toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });
-                setTimeout(() => {
-                  setOpenLoader(false);
-                  navigate('/app/dashboard');
-                }, 2000);
-              })
-              .catch((error) => {
-                if (error.code === 'auth/user-not-found') {
-                  toast.error('Upsss! Usuario no encontrado. Por favor regístrate.', { position: toast.POSITION.TOP_RIGHT });
-                } else if (error.code === 'auth/wrong-password') {
-                  toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
-                } else if (error.code === 'auth/user-disabled') {
-                  toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
-                } else if (error.code === 'auth/internal-error') {
-                  toast.error('Error interno, por favor comuniquese con el administrador del sistema!.', {
-                    position: toast.POSITION.TOP_RIGHT
-                  });
-                } else if (error.code === 'auth/network-request-failed') {
-                  toast.error('Error en la red, por favor intente más tarde!.', { position: toast.POSITION.TOP_RIGHT });
-                } else {
-                  console.log(error);
-                }
+          createUserWithEmailAndPassword(authentication, values.email, values.password)
+            .then((userCredential) => {
+              const user = userCredential.user;
+              updateProfile(authentication.currentUser, {
+                displayName: values.firstName + ' ' + values.lastName
               });
-          } else {
-            if (isNaN(values.emailRef)) {
-              const q = query(collection(db, collUsers), where('email', '==', values.emailRef));
-              const querySnapshot = await getDocs(q);
-              let referCode = null;
-              if (querySnapshot.size > 0) {
-                querySnapshot.forEach((doc) => {
-                  referCode = doc.data().ownReferal;
-                  toast.success('Persona referida encontrada! ' + doc.data().ownReferal, { position: toast.POSITION.TOP_RIGHT });
+              setDoc(doc(db, collUsers, user.uid), {
+                id: user.uid,
+                fullName: values.firstName + ' ' + values.lastName,
+                name: values.firstName,
+                lastName: values.lastName,
+                email: values.email,
+                description: '',
+                gender: '',
+                birthday: '',
+                avatar: null,
+                state: genConst.CONST_STATE_IN,
+                subState: genConst.CONST_STATE_IN,
+                profile: genConst.CONST_PRO_DEF,
+                createAt: fullDate(),
+                registerDate: fullDate(),
+                date: fullDate(),
+                city: null,
+                ci: null,
+                url: null
+              });
+              createUserAditionalData(user.uid, values.email);
+              resetForm({ values: '' });
+              toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });
+              setTimeout(() => {
+                setOpenLoader(false);
+                navigate('/app/dashboard');
+              }, 2000);
+            })
+            .catch((error) => {
+              if (error.code === 'auth/user-not-found') {
+                toast.error('Upsss! Usuario no encontrado. Por favor regístrate.', { position: toast.POSITION.TOP_RIGHT });
+              } else if (error.code === 'auth/wrong-password') {
+                toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
+              } else if (error.code === 'auth/user-disabled') {
+                toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
+              } else if (error.code === 'auth/internal-error') {
+                toast.error('Error interno, por favor comuniquese con el administrador del sistema!.', {
+                  position: toast.POSITION.TOP_RIGHT
                 });
-                createUserWithEmailAndPassword(authentication, values.email, values.password)
-                  .then((userCredential) => {
-                    const user = userCredential.user;
-                    updateProfile(authentication.currentUser, {
-                      displayName: values.firstName + ' ' + values.lastName
-                    });
-                    let refCode = generateOwnReferalNumber(6);
-                    setDoc(doc(db, collUsers, user.uid), {
-                      id: user.uid,
-                      fullName: values.firstName + ' ' + values.lastName,
-                      name: values.firstName,
-                      lastName: values.lastName,
-                      email: values.email,
-                      description: '',
-                      gender: '',
-                      birthday: '',
-                      avatar: null,
-                      state: genConst.CONST_STATE_IN,
-                      profile: genConst.CONST_PRO_DEF,
-                      createAt: fullDate(),
-                      registerDate: fullDate(),
-                      date: fullDate(),
-                      city: null,
-                      ci: null,
-                      refer: referCode,
-                      ownReferal: refCode,
-                      url: null
-                    });
-                    createUserAditionalData(user.uid, values.email);
-                    resetForm({ values: '' });
-                    toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });
-                    setTimeout(() => {
-                      setOpenLoader(false);
-                      navigate('/app/dashboard');
-                    }, 4000);
-                  })
-                  .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                      toast.error('Upsss! Usuario no encontrado. Por favor regístrate.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/wrong-password') {
-                      toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/user-disabled') {
-                      toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/internal-error') {
-                      toast.error('Error interno, por favor comuniquese con el administrador del sistema!.', {
-                        position: toast.POSITION.TOP_RIGHT
-                      });
-                    } else if (error.code === 'auth/network-request-failed') {
-                      toast.error('Error en la red, por favor intente más tarde!.', { position: toast.POSITION.TOP_RIGHT });
-                    } else {
-                      console.log(error);
-                    }
-                  });
+              } else if (error.code === 'auth/network-request-failed') {
+                toast.error('Error en la red, por favor intente más tarde!.', { position: toast.POSITION.TOP_RIGHT });
               } else {
-                toast.info('Persona referida no encontrada!', { position: toast.POSITION.TOP_RIGHT });
-                setOpen(false);
+                console.log(error);
               }
-            } else {
-              const q = query(collection(db, collUsers), where('ownReferal', '==', values.emailRef));
-              const querySnapshot = await getDocs(q);
-              let referCode = null;
-              if (querySnapshot.size > 0) {
-                querySnapshot.forEach((doc) => {
-                  referCode = doc.data().ownReferal;
-                  toast.success('Persona referida encontrada! ' + doc.data().ownReferal, { position: toast.POSITION.TOP_RIGHT });
-                });
-                createUserWithEmailAndPassword(authentication, values.email, values.password)
-                  .then((userCredential) => {
-                    const user = userCredential.user;
-                    updateProfile(authentication.currentUser, {
-                      displayName: values.firstName + ' ' + values.lastName
-                    });
-                    let refCode = generateOwnReferalNumber(6);
-                    setDoc(doc(db, collUsers, user.uid), {
-                      id: user.uid,
-                      fullName: values.firstName + ' ' + values.lastName,
-                      name: values.firstName,
-                      lastName: values.lastName,
-                      email: values.email,
-                      description: '',
-                      gender: '',
-                      birthday: '',
-                      avatar: null,
-                      state: genConst.CONST_STATE_IN,
-                      profile: genConst.CONST_PRO_DEF,
-                      createAt: fullDate(),
-                      registerDate: fullDate(),
-                      date: fullDate(),
-                      city: null,
-                      ci: null,
-                      refer: referCode,
-                      ownReferal: refCode,
-                      url: null
-                    });
-                    createUserAditionalData(user.uid, values.email);
-                    resetForm({ values: '' });
-                    toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });
-                    setTimeout(() => {
-                      setOpenLoader(false);
-                      navigate('/app/dashboard');
-                    }, 4000);
-                  })
-                  .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                      toast.error('Upsss! Usuario no encontrado. Por favor regístrate.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/wrong-password') {
-                      toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/user-disabled') {
-                      toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
-                    } else if (error.code === 'auth/internal-error') {
-                      toast.error('Error interno, por favor comuniquese con el administrador del sistema!.', {
-                        position: toast.POSITION.TOP_RIGHT
-                      });
-                    } else if (error.code === 'auth/network-request-failed') {
-                      toast.error('Error en la red, por favor intente más tarde!.', { position: toast.POSITION.TOP_RIGHT });
-                    } else {
-                      console.log(error);
-                    }
-                  });
-              } else {
-                toast.info('Persona referida no encontrada!', { position: toast.POSITION.TOP_RIGHT });
-                setOpen(false);
-              }
-            }
-          }
+            });
         }}
       >
         {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -517,23 +301,6 @@ const AuthRegister = ({ ...others }) => {
                 <FormHelperText error>{errors.submit}</FormHelperText>
               </Box>
             )}
-            <FormControl fullWidth error={Boolean(touched.emailRef && errors.emailRef)} sx={{ ...theme.typography.customInput }}>
-              <InputLabel htmlFor="outlined-adornment-email-register">Correo o Código de Referidor (Opcional)</InputLabel>
-              <OutlinedInput
-                id="outlined-adornment-email-register"
-                type="email"
-                value={values.emailRef}
-                name="emailRef"
-                onBlur={handleBlur}
-                onChange={handleChange}
-                inputProps={{}}
-              />
-              {touched.emailRef && errors.emailRef && (
-                <FormHelperText error id="standard-weight-helper-text--register">
-                  {errors.emailRef}
-                </FormHelperText>
-              )}
-            </FormControl>
 
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
@@ -551,62 +318,6 @@ const AuthRegister = ({ ...others }) => {
             <CircularProgress color="info" size={100} />
           </Box>
         </center>
-      </Modal>
-
-      <Modal open={open} onClose={handleClose} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h4" component="h4">
-            Términos y Condiciones de Uso de Sitio Web
-          </Typography>
-          <Typography id="modal-modal-subtitle" sx={{ mt: 2 }} variant="h5" component="h5">
-            Términos y condiciones de uso de sitio web
-          </Typography>
-          <Typography id="modal-modal-obj1" sx={{ mt: 2 }} variant="h5" component="h5">
-            1. ACEPTACIÓN
-          </Typography>
-          <Typography id="modal-modal-description-obj1" sx={{ mt: 2 }} align="justify">
-            En el presente documento (en adelante, el “Contrato”) se establecen los términos y condiciones de Robert Half Internacional
-            Empresa de Servicios Transitorios Limitada, con domicilio en Avenida Isidora Goyenechea 2800 Piso 15. Torre Titanium 7550-647
-            Las Condes, que serán de aplicación al acceso y uso por parte del Usuario de esta página web (el “Sitio Web”). Les rogamos lean
-            atentamente el presente Contrato. Al acceder, consultar o utilizar el Sitio Web, los Usuarios (“Vd.”, “usted”, “Usuario”, o
-            “usuario”) aceptan cumplir los términos y condiciones establecidos en este Contrato. En caso de que usted no acepte quedar
-            vinculado por los presentes términos y condiciones, no podrá acceder a, ni utilizar, el Sitio Web. Robert Half Internacional
-            Empresa de Servicios Transitorios Limitada y sus respectivas empresas afiliadas (en conjunto, “RH”) se reservan el derecho de
-            actualizar el presente Contrato siempre que lo consideren oportuno. En consecuencia, recomendamos al Usuario revisar
-            periódicamente las modificaciones efectuadas al Contrato. El presente Sitio Web está dirigido exclusivamente a personas
-            residentes en Chile. Los Usuarios residentes o domiciliados en otro país que deseen acceder y utilizar el Sitio Web, lo harán
-            bajo su propio riesgo y responsabilidad, por lo que deberán asegurarse de que dichos accesos y/o usos cumplen con la legislación
-            aplicable en su país.
-          </Typography>
-          <Typography id="modal-modal-obj2" sx={{ mt: 2 }} variant="h5" component="h5">
-            2. REQUISITOS RELATIVOS AL USUARIO
-          </Typography>
-          <Typography id="modal-modal-description-obj2" sx={{ mt: 2 }} align="justify">
-            El Sitio Web y los servicios relacionados con el mismo se ofrecen a los Usuarios que tengan capacidad legal para otorgar
-            contratos legalmente vinculantes según la legislación aplicable. Los menores no están autorizados para utilizar el Sitio Web. Si
-            usted es menor de edad, por favor, no utilice esta web.
-          </Typography>
-          <Typography id="modal-modal-obj3" sx={{ mt: 2 }} variant="h5" component="h5">
-            3. LICENCIA
-          </Typography>
-          <Typography id="modal-modal-description-obj3" sx={{ mt: 2 }} align="justify">
-            En este acto, RH otorga al Usuario una licencia limitada, no exclusiva, intransferible, no susceptible de cesión y revocable;
-            para consultar y descargar, de forma temporal, una copia del contenido ofrecido en el Sitio Web, únicamente para uso personal
-            del Usuario o dentro de su empresa, y nunca con fines comerciales. Todo el material mostrado u ofrecido en el Sitio Web, entre
-            otros ejemplos, el material gráfico, los documentos, textos, imágenes, sonido, video, audio, las ilustraciones, el software y el
-            código HTML (en conjunto, el “Contenido”), es de exclusiva propiedad de RH o de las empresas que facilitan dicho material. El
-            Contenido está protegido por las leyes de copyright chilenas, estadounidenses e internacionales, así como por las demás leyes,
-            reglamentos y normas aplicables a los derechos de propiedad intelectual. Salvo disposición expresa en contrario en el presente
-            contrato, y/o salvo que por imperativo legal ello esté expresamente permitido por leyes derogatorias de las actualmente
-            vigentes, el Usuario no podrá (i) utilizar, copiar, modificar, mostrar, eliminar, distribuir, descargar, almacenar, reproducir,
-            transmitir, publicar, vender, revender, adaptar, invertir el proceso de creación o crear productos derivados a partir de, el
-            Contenido. Tampoco podrá (ii) utilizar el Contenido en otras páginas Web o en cualquier medio de comunicación como, por ejemplo,
-            en un entorno de red, sin la previa autorización por escrito en este sentido de RH. Todas las marcas comerciales, las marcas de
-            servicio y los logos (en adelante, las “Marcas”) mostrados en el Sitio Web son propiedad exclusiva de RH y de sus respectivos
-            propietarios. El Usuario no podrá utilizar las Marcas en modo alguno sin la previa autorización por escrito para ello de RH y
-            los respectivos propietarios.
-          </Typography>
-        </Box>
       </Modal>
     </>
   );
