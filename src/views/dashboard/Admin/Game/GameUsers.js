@@ -19,13 +19,9 @@ import {
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPlus, IconUser, IconArrowLeft, IconUserPlus } from '@tabler/icons';
-import Tabs, { tabsClasses } from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import TabPanel from '@mui/lab/TabPanel';
-import { TabContext } from '@mui/lab';
+import { IconTrash, IconCircleX, IconPlus, IconArrowLeft, IconUserPlus } from '@tabler/icons';
 //Firebase Events
-import { createDocument, deleteDocument, getGameUsers, getUsersList } from 'config/firebaseEvents';
+import { createDocument, deleteDocument, getGameNameById, getGameUsers, getUsersList } from 'config/firebaseEvents';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -51,21 +47,20 @@ export default function GameUsers() {
 
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
+  const [gameName, setGameName] = useState(null);
   const [gameList, setGameList] = useState([]);
   const [userList, setUserList] = useState([]);
 
   const [openLoader, setOpenLoader] = useState(false);
 
-  const [value, setValue] = useState('1');
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
-
   //Hook
   useEffect(() => {
     getGameUsers(idGame).then((data) => {
       setGameList(data);
+    });
+    getGameNameById(idGame).then((data) => {
+      setGameName(data[0].name);
+      console.log(data);
     });
     getUsersList().then((data) => {
       setUserList(data);
@@ -133,132 +128,90 @@ export default function GameUsers() {
   return (
     <Box sx={uiStyles.box}>
       <ToastContainer />
-      <TabContext value={value}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={value}
-            variant="scrollable"
-            scrollButtons
-            onChange={handleChange}
-            aria-label="Tabs notifications"
-            sx={{
-              [`& .${tabsClasses.scrollButtons}`]: {
-                '&.Mui-disabled': { opacity: 0.3 }
-              }
-            }}
-          >
-            <Tab label="Usuarios" value="1" />
-            <Tab label="Inscripciones" value="2" />
-          </Tabs>
-        </Box>
-        <TabPanel value="1">
-          <>
-            <Button
-              style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8, marginRight: 10 }}
-              onClick={() => {
-                navigate('/main/new-game');
-              }}
-              startIcon={<IconArrowLeft color="#FFF" />}
-            >
-              <span style={{ paddingLeft: 0, color: '#FFF' }}>Volver</span>
-            </Button>
-            <Button
-              style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8 }}
-              onClick={() => {
-                handleOpenCreate();
-              }}
-              startIcon={<IconPlus color="#FFF" />}
-            >
-              <span style={{ paddingLeft: 4, color: '#FFF' }}>Inscribir Usuario</span>
-            </Button>
-            {gameList.length > 0 ? (
-              <Paper style={{ marginTop: 10 }}>
-                <TableContainer sx={{ maxHeight: '100%' }}>
-                  <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
-                          ID Inscripción
-                        </TableCell>
-                        <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
-                          Nombre
-                        </TableCell>
-                        <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                          Partida
-                        </TableCell>
-                        <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
-                          {titles.tableCellActions}
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                        <TableRow hover key={r.id}>
-                          <TableCell align="left">{r.ide}</TableCell>
-                          <TableCell align="left">{r.name}</TableCell>
-                          <TableCell align="left">{r.idGame}</TableCell>
-                          <TableCell align="center">
-                            <ButtonGroup variant="contained">
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                }}
-                              >
-                                <IconUser color="#FFF" />
-                              </Button>
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                  setName(r.name);
-                                  handleOpenCreate();
-                                }}
-                              >
-                                <IconEdit color="#FFF" />
-                              </Button>
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                  setName(r.name);
-                                  handleOpenDelete();
-                                }}
-                              >
-                                <IconTrash color="#FFF" />
-                              </Button>
-                            </ButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <TablePagination
-                  rowsPerPageOptions={[10, 25, 50, 100]}
-                  labelRowsPerPage={titles.maxRecords}
-                  component="div"
-                  count={gameList.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </Paper>
-            ) : (
-              <Grid container style={{ marginTop: 20 }}>
-                <Grid item xs={12}>
-                  <Grid item lg={12} md={12} sm={12} xs={12}>
-                    <MessageDark message={titles.loading} submessage="" />
-                  </Grid>
-                </Grid>
-              </Grid>
-            )}
-          </>
-        </TabPanel>
-        <TabPanel value="2"></TabPanel>
-        <TabPanel value="3"></TabPanel>
-      </TabContext>
+      <Button
+        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8, marginRight: 10 }}
+        onClick={() => {
+          navigate('/main/new-game');
+        }}
+        startIcon={<IconArrowLeft color="#FFF" />}
+      >
+        <span style={{ paddingLeft: 0, color: '#FFF' }}>Volver</span>
+      </Button>
+      <Button
+        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8 }}
+        onClick={() => {
+          handleOpenCreate();
+        }}
+        startIcon={<IconPlus color="#FFF" />}
+      >
+        <span style={{ paddingLeft: 4, color: '#FFF' }}>Inscribir Usuario</span>
+      </Button>
+      <h3>{gameName}</h3>
+      {gameList.length > 0 ? (
+        <Paper style={{ marginTop: 10 }}>
+          <TableContainer sx={{ maxHeight: '100%' }}>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
+                    ID Inscripción
+                  </TableCell>
+                  <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
+                    Nombre
+                  </TableCell>
+                  <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    Partida
+                  </TableCell>
+                  <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
+                    {titles.tableCellActions}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
+                  <TableRow hover key={r.id}>
+                    <TableCell align="left">{r.ide}</TableCell>
+                    <TableCell align="left">{r.name}</TableCell>
+                    <TableCell align="left">{r.idGame}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                          onClick={() => {
+                            setId(r.ide);
+                            setName(r.name);
+                            handleOpenDelete();
+                          }}
+                        >
+                          <IconTrash color="#FFF" />
+                        </Button>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage={titles.maxRecords}
+            component="div"
+            count={gameList.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      ) : (
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <MessageDark message={titles.loading} submessage="" />
+            </Grid>
+          </Grid>
+        </Grid>
+      )}
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
@@ -349,10 +302,10 @@ export default function GameUsers() {
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
           <Typography id="modal-modal-title" variant="h3" component="h2">
-            Eliminar Partida
+            Eliminar Usuario de Partida
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
-            {titles.titleDeleteModal} <strong>{name}</strong>
+            {'Seguro que desea eliminar el usuario: '} <strong>{name}</strong>
           </Typography>
           <Grid container style={{ marginTop: 20 }}>
             <Grid item xs={12}>

@@ -270,6 +270,16 @@ export const getGameUsers = async (id) => {
   });
   return list;
 };
+//Obtenemos la lista de Usuarios por Partida
+export const getGameNameById = async (id) => {
+  let list = [];
+  const q = query(collection(db, collGames), where('ide', '==', id));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
 //Obtenemos datos de Usuario por codigo
 export const getUsersDataByCode = async (code) => {
   const list = [];

@@ -43,6 +43,7 @@ const Notifications = Loadable(lazy(() => import('views/dashboard/Admin/Notifica
 const Game = Loadable(lazy(() => import('views/dashboard/Admin/Game/Game')));
 const NewGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/NewGame')));
 const GameUsers = Loadable(lazy(() => import('views/dashboard/Admin/Game/GameUsers')));
+const CardGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardGame')));
 //DEFAULT SECTION ====================================================
 // default Login
 const AuthSignin = Loadable(lazy(() => import('views/pages/login/login/Signin')));
@@ -102,6 +103,7 @@ const App = () => {
               <Route element={<Game />} path="game" exact />
               <Route element={<NewGame />} path="new-game" exact />
               <Route element={<GameUsers />} path="game-users" exact />
+              <Route element={<CardGame />} path="card-game" exact />
               <Route element={<Share />} path="share" exact />
               <Route element={<Benefits />} path="benefits" exact />
               <Route element={<Settings />} path="settings" exact />

@@ -79,7 +79,7 @@ const dashboard = {
       id: 'cards',
       title: 'Generador de Cartas',
       type: 'item',
-      url: '/main/cards',
+      url: '/main/card-game',
       icon: icons.IconCardboards,
       breadcrumbs: false
     },

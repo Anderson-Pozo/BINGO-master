@@ -1,5 +1,6 @@
 export const uiStyles = {
   box: { width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 },
+  boxCard: { width: '44%', height: '60%', backgroundColor: '#F4F4F4', borderRadius: 4, padding: 2 },
   styleLoader: {
     position: 'absolute',
     top: '50%',

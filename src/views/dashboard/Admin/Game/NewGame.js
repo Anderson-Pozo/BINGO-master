@@ -23,12 +23,8 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
 import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus, IconUser } from '@tabler/icons';
-import Tabs, { tabsClasses } from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import TabPanel from '@mui/lab/TabPanel';
-import { TabContext } from '@mui/lab';
 //Firebase Events
-import { createDocument, deleteDocument, getGamesList } from 'config/firebaseEvents';
+import { createDocument, deleteDocument, getGamesList, updateDocument } from 'config/firebaseEvents';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -49,6 +45,7 @@ export default function NewGame() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
   const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
   const [id, setId] = useState(null);
@@ -57,12 +54,6 @@ export default function NewGame() {
   const [gameList, setGameList] = useState([]);
 
   const [openLoader, setOpenLoader] = useState(false);
-
-  const [value, setValue] = useState('1');
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
 
   //Hook
   useEffect(() => {
@@ -76,6 +67,13 @@ export default function NewGame() {
   };
   const handleCloseCreate = () => {
     setOpenCreate(false);
+  };
+
+  const handleOpenEdit = () => {
+    setOpenEdit(true);
+  };
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
   };
 
   const handleOpenDelete = () => {
@@ -121,6 +119,27 @@ export default function NewGame() {
     }
   };
 
+  const handleEditGame = () => {
+    if (!name) {
+      toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
+    } else {
+      const object = {
+        name: name,
+        startDate: startDate,
+        updateAt: fullDate()
+      };
+      setOpenLoader(true);
+      updateDocument(collGames, id, object);
+      console.log(object);
+      setTimeout(() => {
+        setOpenLoader(false);
+        setOpenEdit(false);
+        cleanData();
+        toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
+      }, 2000);
+    }
+  };
+
   const handleDeleteUser = () => {
     setOpenLoader(true);
     deleteDocument(collGames, id);
@@ -141,132 +160,109 @@ export default function NewGame() {
   return (
     <Box sx={uiStyles.box}>
       <ToastContainer />
-      <TabContext value={value}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={value}
-            variant="scrollable"
-            scrollButtons
-            onChange={handleChange}
-            aria-label="Tabs notifications"
-            sx={{
-              [`& .${tabsClasses.scrollButtons}`]: {
-                '&.Mui-disabled': { opacity: 0.3 }
-              }
-            }}
-          >
-            <Tab label="Partidas" value="1" />
-            <Tab label="Inscripciones" value="2" />
-          </Tabs>
-        </Box>
-        <TabPanel value="1">
-          <>
-            <Button
-              style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8 }}
-              onClick={() => {
-                handleOpenCreate();
-              }}
-              startIcon={<IconPlus color="#FFF" />}
-            >
-              <span style={{ paddingLeft: 10, color: '#FFF' }}>Crear nueva Partida</span>
-            </Button>
-            {gameList.length > 0 ? (
-              <Paper style={{ marginTop: 10 }}>
-                <TableContainer sx={{ maxHeight: '100%' }}>
-                  <Table stickyHeader aria-label="sticky table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
-                          ID
-                        </TableCell>
-                        <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
-                          Nombre
-                        </TableCell>
-                        <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                          Fecha
-                        </TableCell>
-                        <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
-                          {titles.tableCellActions}
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                        <TableRow hover key={r.id}>
-                          <TableCell align="left">{r.ide}</TableCell>
-                          <TableCell align="left">{r.name}</TableCell>
-                          <TableCell align="left">{r.startDate}</TableCell>
-                          <TableCell align="center">
-                            <ButtonGroup variant="contained">
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                  navigate({
-                                    pathname: '/main/game-users',
-                                    search: `?id=${r.ide}`
-                                  });
-                                }}
-                              >
-                                <IconUser color="#FFF" />
-                              </Button>
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                  setName(r.name);
-                                  handleOpenCreate();
-                                }}
-                              >
-                                <IconEdit color="#FFF" />
-                              </Button>
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                                onClick={() => {
-                                  setId(r.ide);
-                                  setName(r.name);
-                                  handleOpenDelete();
-                                }}
-                              >
-                                <IconTrash color="#FFF" />
-                              </Button>
-                            </ButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                <TablePagination
-                  rowsPerPageOptions={[10, 25, 50, 100]}
-                  labelRowsPerPage={titles.maxRecords}
-                  component="div"
-                  count={gameList.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </Paper>
-            ) : (
-              <Grid container style={{ marginTop: 20 }}>
-                <Grid item xs={12}>
-                  <Grid item lg={12} md={12} sm={12} xs={12}>
-                    <MessageDark message={titles.loading} submessage="" />
-                  </Grid>
-                </Grid>
-              </Grid>
-            )}
-          </>
-        </TabPanel>
-        <TabPanel value="2"></TabPanel>
-        <TabPanel value="3"></TabPanel>
-      </TabContext>
+      <Button
+        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8 }}
+        onClick={() => {
+          handleOpenCreate();
+        }}
+        startIcon={<IconPlus color="#FFF" />}
+      >
+        <span style={{ paddingLeft: 10, color: '#FFF' }}>Crear nueva Partida</span>
+      </Button>
+      {gameList.length > 0 ? (
+        <Paper style={{ marginTop: 10 }}>
+          <TableContainer sx={{ maxHeight: '100%' }}>
+            <Table stickyHeader aria-label="sticky table">
+              <TableHead>
+                <TableRow>
+                  <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
+                    ID
+                  </TableCell>
+                  <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
+                    Nombre
+                  </TableCell>
+                  <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    Fecha
+                  </TableCell>
+                  <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
+                    {titles.tableCellActions}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
+                  <TableRow hover key={r.id}>
+                    <TableCell align="left">{r.ide}</TableCell>
+                    <TableCell align="left">{r.name}</TableCell>
+                    <TableCell align="left">{r.startDate}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
+                          onClick={() => {
+                            setId(r.ide);
+                            navigate({
+                              pathname: '/main/game-users',
+                              search: `?id=${r.ide}`
+                            });
+                          }}
+                        >
+                          <IconUser color="#FFF" />
+                        </Button>
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                          onClick={() => {
+                            setId(r.ide);
+                            setName(r.name);
+                            setStartDate(r.startDate);
+                            handleOpenEdit();
+                          }}
+                        >
+                          <IconEdit color="#FFF" />
+                        </Button>
+                        <Button
+                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                          onClick={() => {
+                            setId(r.ide);
+                            setName(r.name);
+                            setStartDate(r.startDate);
+                            handleOpenDelete();
+                          }}
+                        >
+                          <IconTrash color="#FFF" />
+                        </Button>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            labelRowsPerPage={titles.maxRecords}
+            component="div"
+            count={gameList.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      ) : (
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <MessageDark message={titles.loading} submessage="" />
+            </Grid>
+          </Grid>
+        </Grid>
+      )}
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
           <Typography id="modal-modal-title" variant="h3" component="h2">
-            Crear nueva partida {fullDate()}
+            Crear nueva partida
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
@@ -287,11 +283,13 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <h4>Fecha:</h4>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
                     <input
                       type="date"
                       id="startDate"
                       name="startDate"
+                      value={startDate || ''}
                       onChange={(ev) => setStartDate(ev.target.value)}
                       style={uiStyles.dateInput}
                     />
@@ -304,7 +302,7 @@ export default function NewGame() {
                         variant="contained"
                         startIcon={<IconDeviceFloppy />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
                         onClick={handleCreateGame}
                       >
                         {titles.buttonCreate}
@@ -313,8 +311,74 @@ export default function NewGame() {
                         variant="contained"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseCreate}
+                      >
+                        {titles.buttonCancel}
+                      </Button>
+                    </ButtonGroup>
+                  </center>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+
+      <Modal open={openEdit} onClose={handleCloseEdit} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
+        <Box sx={uiStyles.modalStyles}>
+          <Typography id="modal-modal-title" variant="h3" component="h2">
+            Editar partida
+          </Typography>
+          <Grid container style={{ marginTop: 10 }}>
+            <Grid item xs={12}>
+              <Grid container spacing={1}>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <InputLabel htmlFor="name">
+                      <span>*</span> {inputLabels.labelName}
+                    </InputLabel>
+                    <OutlinedInput
+                      id={inputLabels.name}
+                      type="text"
+                      name={inputLabels.name}
+                      value={name || ''}
+                      inputProps={{}}
+                      onChange={(ev) => setName(ev.target.value)}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <h4>Fecha:</h4>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={startDate || ''}
+                      onChange={(ev) => setStartDate(ev.target.value)}
+                      style={uiStyles.dateInput}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <ButtonGroup>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconDeviceFloppy />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+                        onClick={handleEditGame}
+                      >
+                        {titles.buttonUpdate}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconCircleX />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                        onClick={handleCloseEdit}
                       >
                         {titles.buttonCancel}
                       </Button>
@@ -333,7 +397,7 @@ export default function NewGame() {
             Eliminar Partida
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
-            {titles.titleDeleteModal} <strong>{name}</strong>
+            {titles.titleDeleteModal} <strong>{name}</strong> {' programada para el: ' + startDate}
           </Typography>
           <Grid container style={{ marginTop: 20 }}>
             <Grid item xs={12}>

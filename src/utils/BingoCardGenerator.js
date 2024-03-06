@@ -1,82 +1,79 @@
 export function BingoCard() {
   var matrix = [];
+  var b = [];
+  var i = [];
+  var n = [];
+  var g = [];
+  var o = [];
 
-  generateBingoCard = () => {
-    var b = [];
-    var i = [];
-    var n = [];
-    var g = [];
-    var o = [];
+  for (var a = 0; a < 5; a++) {
+    b[a] = Math.floor(Math.random() * (15 - 1) + 1);
+  }
 
-    for (var a = 0; a < 5; a++) {
-      b[a] = Math.floor(Math.random() * (15 - 1) + 1);
-    }
-
-    for (var outer = 0; outer < b.length; outer++) {
-      for (var inner = 0; inner < b.length; inner++) {
-        if (inner != outer && b[outer] == b[inner]) {
-          b[outer] = Math.floor(Math.random() * (15 - 1) + 1);
-        }
+  for (var outer = 0; outer < b.length; outer++) {
+    for (var inner = 0; inner < b.length; inner++) {
+      if (inner != outer && b[outer] == b[inner]) {
+        b[outer] = Math.floor(Math.random() * (15 - 1) + 1);
       }
     }
-    matrix.push(b);
+  }
+  matrix.push(b);
 
-    for (var a1 = 0; a1 < 5; a1++) {
-      i[a1] = Math.floor(Math.random() * (30 - 16) + 16);
-    }
+  for (var a1 = 0; a1 < 5; a1++) {
+    i[a1] = Math.floor(Math.random() * (30 - 16) + 16);
+  }
 
-    for (var outer1 = 0; outer1 < i.length; outer1++) {
-      for (var inner1 = 0; inner1 < i.length; inner1++) {
-        if (inner1 != outer1 && i[outer1] == i[inner1]) {
-          i[outer1] = Math.floor(Math.random() * (30 - 16) + 16);
-        }
+  for (var outer1 = 0; outer1 < i.length; outer1++) {
+    for (var inner1 = 0; inner1 < i.length; inner1++) {
+      if (inner1 != outer1 && i[outer1] == i[inner1]) {
+        i[outer1] = Math.floor(Math.random() * (30 - 16) + 16);
       }
     }
-    matrix.push(i);
+  }
+  matrix.push(i);
 
-    for (var a2 = 0; a2 < 5; a2++) {
-      n[a2] = Math.floor(Math.random() * (45 - 31) + 31);
-    }
+  for (var a2 = 0; a2 < 5; a2++) {
+    n[a2] = Math.floor(Math.random() * (45 - 31) + 31);
+  }
 
-    for (var outer2 = 0; outer2 < n.length; outer2++) {
-      for (var inner2 = 0; inner2 < n.length; inner2++) {
-        if (inner2 != outer2 && n[outer2] == n[inner2]) {
-          n[outer2] = Math.floor(Math.random() * (45 - 31) + 31);
-        }
+  for (var outer2 = 0; outer2 < n.length; outer2++) {
+    for (var inner2 = 0; inner2 < n.length; inner2++) {
+      if (inner2 != outer2 && n[outer2] == n[inner2]) {
+        n[outer2] = Math.floor(Math.random() * (45 - 31) + 31);
       }
     }
-    matrix.push(n);
+  }
+  matrix.push(n);
 
-    for (var a3 = 0; a3 < 5; a3++) {
-      g[a3] = Math.floor(Math.random() * (60 - 46) + 46);
-    }
+  for (var a3 = 0; a3 < 5; a3++) {
+    g[a3] = Math.floor(Math.random() * (60 - 46) + 46);
+  }
 
-    for (var outer3 = 0; outer3 < g.length; outer3++) {
-      for (var inner3 = 0; inner3 < g.length; inner3++) {
-        if (inner3 != outer3 && g[outer3] == g[inner3]) {
-          g[outer3] = Math.floor(Math.random() * (60 - 46) + 46);
-        }
+  for (var outer3 = 0; outer3 < g.length; outer3++) {
+    for (var inner3 = 0; inner3 < g.length; inner3++) {
+      if (inner3 != outer3 && g[outer3] == g[inner3]) {
+        g[outer3] = Math.floor(Math.random() * (60 - 46) + 46);
       }
     }
-    matrix.push(g);
+  }
+  matrix.push(g);
 
-    for (var a4 = 0; a4 < 5; a4++) {
-      o[a4] = Math.floor(Math.random() * (75 - 61) + 61);
-    }
+  for (var a4 = 0; a4 < 5; a4++) {
+    o[a4] = Math.floor(Math.random() * (75 - 61) + 61);
+  }
 
-    for (var outer4 = 0; outer4 < o.length; outer4++) {
-      for (var inner4 = 0; inner4 < o.length; inner4++) {
-        if (inner4 != outer4 && o[outer4] == o[inner4]) {
-          o[outer4] = Math.floor(Math.random() * (75 - 61) + 61);
-        }
+  for (var outer4 = 0; outer4 < o.length; outer4++) {
+    for (var inner4 = 0; inner4 < o.length; inner4++) {
+      if (inner4 != outer4 && o[outer4] == o[inner4]) {
+        o[outer4] = Math.floor(Math.random() * (75 - 61) + 61);
       }
     }
-    matrix.push(o);
+  }
+  matrix.push(o);
 
-    return matrix;
-  };
+  return matrix;
 
-  drawCard = () => {
+  /*drawCard = () => {
     return `<div>
         <table>
             <tr>
@@ -123,5 +120,5 @@ export function BingoCard() {
             </tr>
         </table>
     </div>`;
-  };
+  };*/
 }
