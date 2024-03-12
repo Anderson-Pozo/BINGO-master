@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Button, ButtonGroup, Grid } from '@mui/material';
 import { uiStyles } from './Game.styles';
 
@@ -9,6 +9,8 @@ export default function CardGame() {
   const [gNumbers, setGNumbers] = useState([]);
   const [oNumbers, setONumbers] = useState([]);
   const [showCard, setShowCard] = useState(false);
+
+  useEffect(() => {}, []);
 
   function generateBsection() {
     let matrix = [];
