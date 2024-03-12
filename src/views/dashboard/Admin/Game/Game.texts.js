@@ -3,7 +3,11 @@ export const titles = {
   successCreate: 'Partida creada correctamente!.',
   successUpdate: 'Partida actualizada correctamente!.',
   successDelete: 'Partida eliminada correctamente!.',
+  successCardCreate: 'Cartilla creada correctamente!.',
+  successCardUpdate: 'Cartilla actualizada correctamente!.',
+  successCardDelete: 'Cartilla eliminada correctamente!.',
   titleDeleteModal: 'Seguro que desea eliminar la partida: ',
+  rowsPerPage: 'Registros máximos',
   titleCreate: 'Crear Partida',
   titleUpdate: 'Editar Partida',
   titleDelete: 'Inactivar Partida',
@@ -20,11 +24,13 @@ export const titles = {
   tableCellActions: 'Acciones',
   maxRecords: 'Registros máximos',
   noRecordsFound: 'No existen partidas aún!',
+  noCardsFound: 'No existen cartillas aún!',
   buttonCreate: 'Crear',
   buttonUpdate: 'Actualizar',
   buttonDelete: 'Eliminar',
   buttonCancel: 'Cancelar',
-  loading: 'Cargando...'
+  loading: 'Cargando...',
+  searchPlace: 'Buscar por número de cartilla'
 };
 
 export const inputLabels = {

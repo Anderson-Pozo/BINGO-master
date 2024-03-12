@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
@@ -12,8 +12,11 @@ import {
   TableRow,
   Button,
   MenuItem,
+  AppBar,
   Box,
+  Toolbar,
   Typography,
+  Container,
   Modal,
   Grid,
   InputLabel,
@@ -25,9 +28,9 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPencil } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil, IconUsers, IconReload } from '@tabler/icons';
 //Firebase Events
-import { createDocument, deleteDocument, updateDocument } from 'config/firebaseEvents';
+import { createDocument, getUsersList, updateDocument } from 'config/firebaseEvents';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -38,7 +41,7 @@ import { uiStyles } from './Users.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { useGetUsers } from 'hooks/useGetUsers';
+import { searchingData } from 'utils/search';
 
 export default function Users() {
   const [page, setPage] = useState(0);
@@ -53,14 +56,21 @@ export default function Users() {
   const [name, setName] = useState(null);
   const [lastName, setLastName] = useState(null);
   const [email, setEMail] = useState(null);
+  const [phone, setPhone] = useState(null);
   const [profile, setProfile] = useState(null);
   const [state, setState] = useState(null);
   const [createAt, setCreateAt] = useState(null);
   const [updateAt, setUpdateAt] = useState(null);
-  const [openLoader, setOpenLoader] = useState(false);
 
-  //Hook
-  const usersList = useGetUsers();
+  const [search, setSearch] = useState('');
+  const [openLoader, setOpenLoader] = useState(false);
+  const [usersList, setUsersList] = useState([]);
+
+  useEffect(() => {
+    getUsersList().then((data) => {
+      setUsersList(data);
+    });
+  }, []);
 
   const handleOpenCreate = () => {
     setOpenCreate(true);
@@ -86,19 +96,20 @@ export default function Users() {
   };
 
   const reloadData = () => {
-    window.location.reload();
+    getUsersList().then((data) => {
+      setUsersList(data);
+    });
   };
 
   const handleEditUser = () => {
-    if (!name || !email || !profile || !state) {
+    if (!name || !lastName || !phone || !profile || !state) {
       toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
     } else {
       const object = {
-        email: email,
         name: name,
         lastName: lastName,
-        fullName: name + ' ' + lastName,
         state: state,
+        phone: phone,
         profile: profile,
         updateAt: fullDate()
       };
@@ -109,6 +120,7 @@ export default function Users() {
         setOpenCreate(false);
         reloadData();
         toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
+        cleanData();
       }, 2000);
     }
   };
@@ -121,14 +133,17 @@ export default function Users() {
       createAt: createAt,
       deleteAt: fullDate(),
       email: email,
+      phone: phone,
       id: usrHistId,
-      name: name,
-      lastName: lastName,
-      fullName: name + ' ' + lastName,
+      name: name + ' ' + lastName,
       state: genConst.CONST_STA_INACT,
       updateAt: updateAt
     };
-    deleteDocument(collUsers, id);
+    const object = {
+      state: genConst.CONST_STA_INACT,
+      deleteAt: fullDate()
+    };
+    updateDocument(collUsers, id, object);
     createDocument(collHistUsr, usrHistId, objectHist);
     setTimeout(() => {
       setOpenLoader(false);
@@ -142,6 +157,7 @@ export default function Users() {
   const cleanData = () => {
     setName('');
     setLastName('');
+    setPhone('');
     setEMail('');
     setProfile('');
     setState('');
@@ -150,17 +166,38 @@ export default function Users() {
   return (
     <div>
       <ToastContainer />
+      <AppBar position="static" style={uiStyles.appbar}>
+        <Container maxWidth="xl" style={uiStyles.container}>
+          <Toolbar disableGutters>
+            <IconUsers color="#FFF" style={{ marginLeft: 0, marginRight: 20 }} />
+            <IconReload color="#FFF" style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }} onClick={reloadData} />
+          </Toolbar>
+        </Container>
+      </AppBar>
+      <Box sx={{ mt: 1 }}>
+        <OutlinedInput
+          id={inputLabels.search}
+          type="text"
+          name={inputLabels.search}
+          onChange={(ev) => setSearch(ev.target.value)}
+          placeholder={inputLabels.placeHolderSearch}
+          style={{ width: '100%' }}
+        />
+      </Box>
       {usersList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
-          <TableContainer sx={{ maxHeight: 500 }}>
+          <TableContainer sx={{ maxHeight: '100%' }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
+                  <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell1}
                   </TableCell>
                   <TableCell key="id-email" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell2}
+                  </TableCell>
+                  <TableCell key="id-phone" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    {titles.tableCellP}
                   </TableCell>
                   <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell3}
@@ -174,61 +211,63 @@ export default function Users() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {usersList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                  <TableRow hover key={r.id}>
-                    <TableCell align="left">
-                      <ButtonGroup>
-                        <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                        <span style={{ margin: 6 }}>{r.fullName}</span>
-                      </ButtonGroup>
-                    </TableCell>
-                    <TableCell align="left">{r.email}</TableCell>
-                    <TableCell align="left">
-                      {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
-                    </TableCell>
-                    <TableCell align="left">
-                      {r.state === genConst.CONST_STA_ACT ? (
-                        <h4 style={{ color: '#36b836' }}>{genConst.CONST_STA_ACT_TXT}</h4>
-                      ) : (
-                        <h4 style={{ color: '#d84315' }}>{genConst.CONST_STA_INACT_TXT}</h4>
-                      )}
-                    </TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained">
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                          onClick={() => {
-                            setId(r.id);
-                            setTitle(titles.titleUpdate);
-                            setName(r.name);
-                            setLastName(r.lastName);
-                            setEMail(r.email);
-                            setProfile(r.profile);
-                            setState(r.state);
-                            setCreateAt(r.createAt);
-                            setUpdateAt(r.updateAt);
-                            handleOpenCreate();
-                            setIsEdit(true);
-                          }}
-                        >
-                          <IconEdit />
-                        </Button>
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                          onClick={() => {
-                            setTitle(titles.titleDelete);
-                            setId(r.id);
-                            setName(r.name);
-                            setEMail(r.email);
-                            handleOpenDelete();
-                          }}
-                        >
-                          <IconTrash />
-                        </Button>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {usersList
+                  .filter(searchingData(search))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((r) => (
+                    <TableRow hover key={r.id}>
+                      <TableCell align="left">
+                        <ButtonGroup>
+                          <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
+                          <span style={{ margin: 6 }}>{r.name + ' ' + r.lastName}</span>
+                        </ButtonGroup>
+                      </TableCell>
+                      <TableCell align="left">{r.email}</TableCell>
+                      <TableCell align="left">{r.phone}</TableCell>
+                      <TableCell align="left">
+                        {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
+                      </TableCell>
+                      <TableCell align="left">
+                        {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
+                      </TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="contained">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                            onClick={() => {
+                              setId(r.id);
+                              setTitle(titles.titleUpdate);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              setPhone(r.phone);
+                              setProfile(r.profile);
+                              setState(r.state);
+                              setCreateAt(r.createAt);
+                              setUpdateAt(r.updateAt);
+                              handleOpenCreate();
+                              setIsEdit(true);
+                            }}
+                          >
+                            <IconEdit color="#FFF" />
+                          </Button>
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                            onClick={() => {
+                              setTitle(titles.titleDelete);
+                              setId(r.id);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              handleOpenDelete();
+                            }}
+                          >
+                            <IconTrash color="#FFF" />
+                          </Button>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -282,19 +321,19 @@ export default function Users() {
                       <span>*</span> {inputLabels.labelLastName}
                     </InputLabel>
                     <OutlinedInput
-                      id={inputLabels.lastName}
+                      id={inputLabels.labelLastName}
                       type="text"
-                      name={inputLabels.lastName}
+                      name={inputLabels.labelLastName}
                       value={lastName || ''}
                       inputProps={{}}
                       onChange={(ev) => setLastName(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
-                <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
                     <InputLabel htmlFor="email">
-                      <span>*</span> {inputLabels.labelEmail}
+                      <span></span> {inputLabels.labelEmail}
                     </InputLabel>
                     <OutlinedInput
                       id={inputLabels.email}
@@ -303,6 +342,21 @@ export default function Users() {
                       value={email || ''}
                       inputProps={{}}
                       onChange={(ev) => setEMail(ev.target.value)}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <InputLabel htmlFor="phone">
+                      <span></span> {inputLabels.phone}
+                    </InputLabel>
+                    <OutlinedInput
+                      id={inputLabels.phone}
+                      type="number"
+                      name={inputLabels.phone}
+                      value={phone || ''}
+                      inputProps={{}}
+                      onChange={(ev) => setPhone(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
@@ -337,21 +391,14 @@ export default function Users() {
                   </FormControl>
                 </Grid>
                 {isEdit ? (
-                  <>
-                    <Grid item lg={6} md={6} sm={6} xs={6} style={{ marginBottom: 30 }}>
-                      <FormControl fullWidth>
-                        <InputLabel>
-                          <strong style={{ fontSize: 16 }}>Usuario</strong>
-                        </InputLabel>
-                      </FormControl>
-                      <FormControl fullWidth>
-                        <InputLabel>
-                          <strong>Usuario desde: </strong>
-                          {createAt}
-                        </InputLabel>
-                      </FormControl>
-                    </Grid>
-                  </>
+                  <Grid item lg={6} md={6} sm={6} xs={6} style={{ marginBottom: 30 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>
+                        <strong>Usuario desde: </strong>
+                        {createAt}
+                      </InputLabel>
+                    </FormControl>
+                  </Grid>
                 ) : (
                   <></>
                 )}
@@ -362,7 +409,7 @@ export default function Users() {
                         variant="contained"
                         startIcon={<IconPencil />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
                         onClick={handleEditUser}
                       >
                         {titles.buttonUpdate}
@@ -371,7 +418,7 @@ export default function Users() {
                         variant="contained"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseCreate}
                       >
                         {titles.buttonCancel}
@@ -393,30 +440,32 @@ export default function Users() {
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
             {titles.titleDeleteModal} <strong>{name}</strong>
           </Typography>
-          <Grid container style={{ marginTop: 10 }}>
+          <Grid container style={{ marginTop: 20 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
-                <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <ButtonGroup>
-                    <Button
-                      variant="contained"
-                      startIcon={<IconTrash />}
-                      size="large"
-                      style={{ margin: 5, backgroundColor: genConst.CONST_DELETE_COLOR }}
-                      onClick={handleDeleteUser}
-                    >
-                      {titles.buttonDelete}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<IconCircleX />}
-                      size="large"
-                      style={{ margin: 5, backgroundColor: genConst.CONST_CANCEL_COLOR }}
-                      onClick={handleCloseDelete}
-                    >
-                      {titles.buttonCancel}
-                    </Button>
-                  </ButtonGroup>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <ButtonGroup>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconTrash size={20} />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
+                        onClick={handleDeleteUser}
+                      >
+                        {titles.buttonDelete}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconCircleX size={20} />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                        onClick={handleCloseDelete}
+                      >
+                        {titles.buttonCancel}
+                      </Button>
+                    </ButtonGroup>
+                  </center>
                 </Grid>
               </Grid>
             </Grid>

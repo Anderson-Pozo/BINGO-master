@@ -18,6 +18,7 @@ export const titles = {
   tableCell1: 'Nombre',
   tableCell2: 'Email',
   tableCellC: 'Código',
+  tableCellP: 'Teléfono',
   tableCell3: 'Perfil',
   tableCell4: 'Estado',
   tableCellActions: 'Acciones',
@@ -43,11 +44,12 @@ export const inputLabels = {
   labelName: 'Nombre',
   lastName: 'lastName',
   labelLastName: 'Apellido',
+  phone: 'Teléfono',
   email: 'email',
   labelEmail: 'E-mail',
   profile: 'profile',
   labelProfile: 'Perfil',
   state: 'State',
   labelState: 'Estado',
-  placeHolderSearch: 'Buscar por Nombre, Apellido, Código o Correo electrónico'
+  placeHolderSearch: 'Buscar por Nombre, Apellido o Correo electrónico'
 };

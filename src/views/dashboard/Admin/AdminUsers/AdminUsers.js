@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
   Avatar,
@@ -12,8 +12,11 @@ import {
   TableRow,
   Button,
   MenuItem,
+  AppBar,
   Box,
+  Toolbar,
   Typography,
+  Container,
   Modal,
   Grid,
   InputLabel,
@@ -25,10 +28,10 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPencil } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil, IconUsers, IconReload } from '@tabler/icons';
 
 //Firebase Events
-import { createDocument, deleteDocument, updateDocument } from 'config/firebaseEvents';
+import { createDocument, getAdminUsersData, updateDocument } from 'config/firebaseEvents';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -42,7 +45,7 @@ import { uiStyles } from './AdminUsers.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { useGetAdminUsers } from 'hooks/useGetAdminUsers';
+import { searchingData } from 'utils/search';
 
 export default function Users() {
   const [page, setPage] = useState(0);
@@ -55,16 +58,22 @@ export default function Users() {
 
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
+  const [lastName, setLastName] = useState(null);
   const [email, setEMail] = useState(null);
   const [profile, setProfile] = useState(null);
   const [state, setState] = useState(null);
   const [createAt, setCreateAt] = useState(null);
   const [updateAt, setUpdateAt] = useState(null);
 
+  const [search, setSearch] = useState('');
   const [openLoader, setOpenLoader] = useState(false);
+  const [usersList, setUsersList] = useState([]);
 
-  //Hook
-  const usersList = useGetAdminUsers();
+  useEffect(() => {
+    getAdminUsersData().then((data) => {
+      setUsersList(data);
+    });
+  }, []);
 
   const handleOpenCreate = () => {
     setOpenCreate(true);
@@ -90,7 +99,9 @@ export default function Users() {
   };
 
   const reloadData = () => {
-    window.location.reload();
+    getAdminUsersData().then((data) => {
+      setUsersList(data);
+    });
   };
 
   const handleEditUser = () => {
@@ -128,7 +139,11 @@ export default function Users() {
       state: genConst.CONST_STA_INACT,
       updateAt: updateAt
     };
-    deleteDocument(collUsers, id);
+    const object = {
+      state: genConst.CONST_STA_INACT,
+      deleteAt: fullDate()
+    };
+    updateDocument(collUsers, id, object);
     createDocument(collHistUsr, usrHistId, objectHist);
     setTimeout(() => {
       setOpenLoader(false);
@@ -141,6 +156,7 @@ export default function Users() {
 
   const cleanData = () => {
     setName('');
+    setLastName('');
     setEMail('');
     setProfile('');
     setState('');
@@ -149,13 +165,31 @@ export default function Users() {
   return (
     <div>
       <ToastContainer />
+      <AppBar position="static" style={uiStyles.appbar}>
+        <Container maxWidth="xl" style={uiStyles.container}>
+          <Toolbar disableGutters>
+            <IconUsers color="#FFF" style={{ marginLeft: 0, marginRight: 20 }} />
+            <IconReload color="#FFF" style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }} onClick={reloadData} />
+          </Toolbar>
+        </Container>
+      </AppBar>
+      <Box sx={{ mt: 1 }}>
+        <OutlinedInput
+          id={inputLabels.search}
+          type="text"
+          name={inputLabels.search}
+          onChange={(ev) => setSearch(ev.target.value)}
+          placeholder={inputLabels.placeHolderSearch}
+          style={{ width: '100%' }}
+        />
+      </Box>
       {usersList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 500 }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
+                  <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell1}
                   </TableCell>
                   <TableCell key="id-email" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
@@ -173,56 +207,61 @@ export default function Users() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {usersList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                  <TableRow hover key={r.id}>
-                    <TableCell align="left">
-                      <ButtonGroup>
-                        <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                        <span style={{ margin: 6 }}>{r.fullName}</span>
-                      </ButtonGroup>
-                    </TableCell>
-                    <TableCell align="left">{r.email}</TableCell>
-                    <TableCell align="left">
-                      {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
-                    </TableCell>
-                    <TableCell align="left">
-                      {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
-                    </TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained">
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                          onClick={() => {
-                            setId(r.id);
-                            setTitle(titles.titleUpdate);
-                            setName(r.name);
-                            setEMail(r.email);
-                            setProfile(r.profile);
-                            setState(r.state);
-                            setCreateAt(r.createAt);
-                            setUpdateAt(r.updateAt);
-                            handleOpenCreate();
-                            setIsEdit(true);
-                          }}
-                        >
-                          <IconEdit color="#FFF" />
-                        </Button>
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                          onClick={() => {
-                            setTitle(titles.titleDelete);
-                            setId(r.id);
-                            setName(r.name);
-                            setEMail(r.email);
-                            handleOpenDelete();
-                          }}
-                        >
-                          <IconTrash color="#FFF" />
-                        </Button>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {usersList
+                  .filter(searchingData(search))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((r) => (
+                    <TableRow hover key={r.id}>
+                      <TableCell align="left">
+                        <ButtonGroup>
+                          <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
+                          <span style={{ margin: 6 }}>{r.name + ' ' + r.lastName}</span>
+                        </ButtonGroup>
+                      </TableCell>
+                      <TableCell align="left">{r.email}</TableCell>
+                      <TableCell align="left">
+                        {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
+                      </TableCell>
+                      <TableCell align="left">
+                        {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
+                      </TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="contained">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                            onClick={() => {
+                              setId(r.id);
+                              setTitle(titles.titleUpdate);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              setProfile(r.profile);
+                              setState(r.state);
+                              setCreateAt(r.createAt);
+                              setUpdateAt(r.updateAt);
+                              handleOpenCreate();
+                              setIsEdit(true);
+                            }}
+                          >
+                            <IconEdit color="#FFF" />
+                          </Button>
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                            onClick={() => {
+                              setTitle(titles.titleDelete);
+                              setId(r.id);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              handleOpenDelete();
+                            }}
+                          >
+                            <IconTrash color="#FFF" />
+                          </Button>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -272,6 +311,21 @@ export default function Users() {
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <InputLabel htmlFor="lastName">
+                      <span>*</span> {inputLabels.labelLastName}
+                    </InputLabel>
+                    <OutlinedInput
+                      id={inputLabels.labelLastName}
+                      type="text"
+                      name={inputLabels.labelLastName}
+                      value={lastName || ''}
+                      inputProps={{}}
+                      onChange={(ev) => setLastName(ev.target.value)}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
                     <InputLabel htmlFor="email">
                       <span>*</span> {inputLabels.labelEmail}
                     </InputLabel>
@@ -296,7 +350,7 @@ export default function Users() {
                       onChange={(ev) => setProfile(ev.target.value)}
                     >
                       <MenuItem value={genConst.CONST_PRO_ADM}>{genConst.CONST_PRO_ADM_TXT}</MenuItem>
-                      <MenuItem value={genConst.CONST_PRO_DEF}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
+                      <MenuItem value={genConst.CONST_PRO_STU}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -332,18 +386,18 @@ export default function Users() {
                     <ButtonGroup>
                       <Button
                         variant="contained"
-                        startIcon={<IconPencil />}
+                        startIcon={<IconPencil color="#FFF" />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
                         onClick={handleEditUser}
                       >
                         {titles.buttonUpdate}
                       </Button>
                       <Button
                         variant="contained"
-                        startIcon={<IconCircleX />}
+                        startIcon={<IconCircleX color="#FFF" />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseCreate}
                       >
                         {titles.buttonCancel}
@@ -359,36 +413,38 @@ export default function Users() {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h2">
             {title}
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
-            {titles.titleDeleteModal} <strong>{name}</strong>
+            {titles.titleDeleteModal} <strong>{name + ' ' + lastName}</strong>
           </Typography>
-          <Grid container style={{ marginTop: 10 }}>
+          <Grid container style={{ marginTop: 30 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
-                <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <ButtonGroup>
-                    <Button
-                      variant="contained"
-                      startIcon={<IconTrash />}
-                      size="large"
-                      style={{ margin: 5, backgroundColor: genConst.CONST_DELETE_COLOR }}
-                      onClick={handleDeleteUser}
-                    >
-                      {titles.buttonDelete}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      startIcon={<IconCircleX />}
-                      size="large"
-                      style={{ margin: 5, backgroundColor: genConst.CONST_CANCEL_COLOR }}
-                      onClick={handleCloseDelete}
-                    >
-                      {titles.buttonCancel}
-                    </Button>
-                  </ButtonGroup>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <ButtonGroup>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconTrash color={'#FFF'} />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
+                        onClick={handleDeleteUser}
+                      >
+                        {titles.buttonDelete}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        startIcon={<IconCircleX color={'#FFF'} />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                        onClick={handleCloseDelete}
+                      >
+                        {titles.buttonCancel}
+                      </Button>
+                    </ButtonGroup>
+                  </center>
                 </Grid>
               </Grid>
             </Grid>

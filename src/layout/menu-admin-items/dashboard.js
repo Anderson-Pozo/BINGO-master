@@ -61,7 +61,7 @@ const dashboard = {
     },
     {
       id: 'new-game',
-      title: 'Crear Partida',
+      title: 'Crear Evento',
       type: 'item',
       url: '/main/new-game',
       icon: icons.IconDeviceGamepad,

@@ -1,6 +1,8 @@
 export const uiStyles = {
   box: { width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 },
+  box2: { flexGrow: 1, display: { xs: 'none', md: 'flex' } },
   boxCard: { width: '44%', height: '60%', backgroundColor: '#F4F4F4', borderRadius: 4, padding: 2 },
+  paper: { width: '100%', overflow: 'hidden', marginTop: 2 },
   styleLoader: {
     position: 'absolute',
     top: '50%',

@@ -44,7 +44,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 //Utils
 import { fullDate, generateDate } from 'utils/validations';
 import { genConst } from 'store/constant';
-import { collUsers, collSubscription, collUserLog, collNotifications } from 'store/collections';
+import { collUsers, collUserLog, collNotifications } from 'store/collections';
 import { createDocument } from 'config/firebaseEvents';
 
 const AuthRegister = ({ ...others }) => {
@@ -81,15 +81,6 @@ const AuthRegister = ({ ...others }) => {
   }, []);
 
   const createUserAditionalData = (uid, email) => {
-    //Subscription
-    const objSubscription = {
-      idUser: uid,
-      startDate: null,
-      endDate: null,
-      cancelDate: null,
-      state: genConst.CONST_STATE_IN
-    };
-    createDocument(collSubscription, uid, objSubscription);
     //Log
     const userLog = {
       idUser: uid,
@@ -119,9 +110,8 @@ const AuthRegister = ({ ...others }) => {
           firstName: '',
           lastName: '',
           email: '',
-          emailRef: '',
           password: '',
-          description: '',
+          phone: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({
@@ -139,23 +129,16 @@ const AuthRegister = ({ ...others }) => {
                 displayName: values.firstName + ' ' + values.lastName
               });
               setDoc(doc(db, collUsers, user.uid), {
-                id: user.uid,
-                fullName: values.firstName + ' ' + values.lastName,
-                name: values.firstName,
-                lastName: values.lastName,
-                email: values.email,
-                description: '',
-                gender: '',
-                birthday: '',
                 avatar: null,
-                state: genConst.CONST_STATE_IN,
-                subState: genConst.CONST_STATE_IN,
-                profile: genConst.CONST_PRO_DEF,
                 createAt: fullDate(),
-                registerDate: fullDate(),
-                date: fullDate(),
-                city: null,
-                ci: null,
+                email: values.email,
+                fullName: values.firstName + ' ' + values.lastName,
+                id: user.uid,
+                lastName: values.lastName,
+                name: values.firstName,
+                phone: null,
+                profile: genConst.CONST_PRO_DEF,
+                state: genConst.CONST_STATE_IN,
                 url: null
               });
               createUserAditionalData(user.uid, values.email);

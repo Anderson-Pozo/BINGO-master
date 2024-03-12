@@ -167,7 +167,7 @@ export default function NewGame() {
         }}
         startIcon={<IconPlus color="#FFF" />}
       >
-        <span style={{ paddingLeft: 10, color: '#FFF' }}>Crear nueva Partida</span>
+        <span style={{ paddingLeft: 10, color: '#FFF' }}>Crear nuevo evento</span>
       </Button>
       {gameList.length > 0 ? (
         <Paper style={{ marginTop: 10 }}>
@@ -262,7 +262,7 @@ export default function NewGame() {
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
           <Typography id="modal-modal-title" variant="h3" component="h2">
-            Crear nueva partida
+            Crear nuevo evento
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
@@ -328,7 +328,7 @@ export default function NewGame() {
       <Modal open={openEdit} onClose={handleCloseEdit} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
           <Typography id="modal-modal-title" variant="h3" component="h2">
-            Editar partida
+            Editar evento
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
@@ -394,7 +394,7 @@ export default function NewGame() {
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
           <Typography id="modal-modal-title" variant="h3" component="h2">
-            Eliminar Partida
+            Eliminar Evento
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
             {titles.titleDeleteModal} <strong>{name}</strong> {' programada para el: ' + startDate}

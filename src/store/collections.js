@@ -21,6 +21,7 @@ export const collBenefits = 'Benefits';
 export const collNetwork = 'Network';
 export const collBoards = 'Boards';
 export const collGames = 'Games';
+export const collCards = 'Cards';
 export const collGameInscription = 'GameInscription';
 
 //New Tables Khuska

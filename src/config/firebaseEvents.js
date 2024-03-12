@@ -5,6 +5,7 @@ import { collection, setDoc, doc, updateDoc, deleteDoc, getDocs, addDoc, where, 
 import {
   collAdminUsers,
   collBusiness,
+  collCards,
   collCourses,
   collGameInscription,
   collGames,
@@ -198,6 +199,17 @@ export async function getUserNotifications(id) {
   });
   return list;
 }
+//CARTILLAS
+export const getGameCards = async () => {
+  const list = [];
+  const querySnapshot = await getDocuments(collCards);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+    list.sort((a, b) => a.order - b.order);
+  });
+  return list;
+};
+
 export const getBenefits = async () => {
   const list = [];
   const querySnapshot = await getDocuments(collKhuskaBenefit);
@@ -412,6 +424,13 @@ export const countUser = async () => {
   const querySnapshot = await getDocs(usersCollection);
   const userCount = querySnapshot.size;
   return userCount;
+};
+//Obtenemos cantidad de Cartillas
+export const countCards = async () => {
+  const data = collection(db, collCards);
+  const querySnapshot = await getDocs(data);
+  const count = querySnapshot.size;
+  return count;
 };
 //Obtenemos cantidad de Usuarios Administradores Registrados
 export const countAdminUser = async () => {

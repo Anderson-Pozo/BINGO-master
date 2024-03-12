@@ -149,18 +149,6 @@ const ProfileAvatar = ({ id, name, email }) => {
               </Grid>
               <Grid container justifyContent="center">
                 <Typography component="span" variant="h5" sx={{ fontWeight: 'bold', color: '#FFF', marginTop: 1 }}>
-                  {'Código de Referido:'}
-                </Typography>
-              </Grid>
-              <Grid container justifyContent="center">
-                {userList.map((user, key) => (
-                  <Typography key={key} component="span" variant="h5" sx={{ fontWeight: 400, color: '#FFF', marginTop: 1 }}>
-                    {user.ownReferal}
-                  </Typography>
-                ))}
-              </Grid>
-              <Grid container justifyContent="center">
-                <Typography component="span" variant="h5" sx={{ fontWeight: 'bold', color: '#FFF', marginTop: 1 }}>
                   Usuario desde:
                 </Typography>
               </Grid>
