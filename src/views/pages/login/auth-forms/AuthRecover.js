@@ -73,7 +73,16 @@ const AuthRecover = ({ ...others }) => {
             )}
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
-                <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="secondary">
+                <Button
+                  disableElevation
+                  disabled={isSubmitting}
+                  fullWidth
+                  size="large"
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  style={{ color: '#FFF', height: 50, borderRadius: 12 }}
+                >
                   Recuperar
                 </Button>
               </AnimateButton>

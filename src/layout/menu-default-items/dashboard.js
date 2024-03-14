@@ -1,10 +1,7 @@
 // assets
-import { IconDashboard, IconUsers, IconFriends, IconShare, IconBuilding, IconNetwork, IconMoneybag } from '@tabler/icons';
-
+import { IconDashboard } from '@tabler/icons';
 // constant
-const icons = { IconDashboard, IconUsers, IconFriends, IconShare, IconBuilding, IconNetwork, IconMoneybag };
-
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
+const icons = { IconDashboard };
 
 const dashboard = {
   id: 'dashboard',
@@ -24,28 +21,7 @@ const dashboard = {
       title: 'Negocios',
       type: 'item',
       url: '/app/business',
-      icon: icons.IconBuilding
-    },
-    {
-      id: 'network',
-      title: 'Red de Negocios',
-      type: 'item',
-      url: '/app/network',
-      icon: icons.IconNetwork
-    },
-    {
-      id: 'benefits',
-      title: 'Beneficios',
-      type: 'item',
-      url: '/app/benefits',
-      icon: icons.IconMoneybag
-    },
-    {
-      id: 'share',
-      title: 'Compartir',
-      type: 'item',
-      url: '/app/share',
-      icon: icons.IconShare
+      icon: icons.IconDashboard
     }
   ]
 };

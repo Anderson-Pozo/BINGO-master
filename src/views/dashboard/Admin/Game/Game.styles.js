@@ -21,7 +21,8 @@ export const uiStyles = {
     padding: 10,
     fontSize: 16,
     border: '0.4px solid #c2c2c2',
-    borderRadius: 10
+    borderRadius: 10,
+    fontFamily: 'Montserrat'
   },
   modalStylesDelete: {
     position: 'absolute',
@@ -72,5 +73,73 @@ export const uiStyles = {
     borderRadius: 6,
     boxShadow: 0,
     p: 4
-  }
+  },
+  btnMain: {
+    color: '#FFF',
+    height: 40,
+    width: 160
+  },
+  btnCount: {
+    color: '#179cdc',
+    height: 40,
+    width: 100
+  },
+  ball: {
+    flex: 1,
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    color: '#179cdc',
+    width: 120,
+    height: 120,
+    borderRadius: 70,
+    padding: 10,
+    margin: 10
+  },
+  panelBall: {
+    backgroundColor: '#696969',
+    height: 40
+  },
+  bgPanelBallActual: {
+    backgroundColor: '#179cdc',
+    borderTopLeftRadius: 20
+  },
+  bgPanelBallAnte: {
+    backgroundColor: '#04acec',
+    borderTopRightRadius: 20
+  },
+  panelText: {
+    color: '#FFF',
+    fontWeight: 'bold'
+  },
+  leftCell: {
+    background: '#179cdc',
+    height: 60,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '0.2px solid #EFEFEF'
+  },
+  midCol: {
+    background: '#FFF',
+    height: 60,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  midCell: {
+    background: '#FFF',
+    height: 30,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '0.2px solid #EFEFEF'
+  },
+  cellLetter: {
+    fontSize: 20,
+    color: '#FFF'
+  },
+  cellItem: { color: '#179cdc' },
+  endBtn: { width: 200, height: 60, backgroundColor: '#FFF', color: '#00adef' }
 };

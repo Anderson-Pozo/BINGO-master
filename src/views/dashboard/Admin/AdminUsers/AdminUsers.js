@@ -163,7 +163,7 @@ export default function Users() {
   };
 
   return (
-    <div>
+    <Box sx={uiStyles.box}>
       <ToastContainer />
       <AppBar position="static" style={uiStyles.appbar}>
         <Container maxWidth="xl" style={uiStyles.container}>
@@ -458,6 +458,6 @@ export default function Users() {
           </Box>
         </center>
       </Modal>
-    </div>
+    </Box>
   );
 }

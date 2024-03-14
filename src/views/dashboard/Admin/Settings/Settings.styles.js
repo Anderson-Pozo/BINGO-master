@@ -2,8 +2,9 @@ import { genConst } from 'store/constant';
 
 export const uiStyles = {
   appbar: { borderRadius: 15, height: 60, backgroundColor: genConst.CONST_APPBAR },
-  container: { marginTop: -12 },
+  container: { marginTop: 0 },
   box: { flexGrow: 1, display: { xs: 'flex', md: 'none' } },
+  box1: { width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 },
   box2: { flexGrow: 1, display: { xs: 'none', md: 'flex' } },
   menu: { display: { xs: 'block', md: 'none' } },
   paper: { width: '100%', overflow: 'hidden', marginTop: 2 },

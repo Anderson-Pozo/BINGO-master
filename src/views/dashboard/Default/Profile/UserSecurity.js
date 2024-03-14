@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import ProfileChangeEmail from './ProfileChangeEmail';
 import ProfileChangePassword from './ProfileChangePassword';
 
@@ -23,23 +23,20 @@ const UserSecurity = () => {
   }, []);
 
   return (
-    <div>
-      <h3>Seguridad de Usuario</h3>
-      <p hidden>{id}</p>
-      <p hidden>{email}</p>
+    <Box sx={{ width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 }}>
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
           <Grid container spacing={gridSpacing}>
             <Grid item lg={6} md={6} sm={6} xs={12}>
-              <ProfileChangeEmail email={email} />
+              <ProfileChangeEmail email={email} id={id} />
             </Grid>
             <Grid item lg={6} md={6} sm={6} xs={12}>
-              <ProfileChangePassword email={email} />
+              <ProfileChangePassword email={email} id={id} />
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 };
 

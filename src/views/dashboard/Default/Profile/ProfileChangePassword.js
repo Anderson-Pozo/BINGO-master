@@ -37,21 +37,12 @@ import AnimateButton from 'components/extended/AnimateButton';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-const CardWrapper = styled(MainCard)(({ theme }) => ({
-  backgroundColor: '#BABABA',
+const CardWrapper = styled(MainCard)(() => ({
+  backgroundColor: '#414551',
   color: '#fff',
   overflow: 'hidden',
   position: 'relative',
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  height: 400
 }));
 
 const ProfileChangePassword = ({ email }) => {
@@ -219,7 +210,7 @@ const ProfileChangePassword = ({ email }) => {
                         type="submit"
                         variant="contained"
                         color="secondary"
-                        style={{ borderRadius: 10 }}
+                        style={{ color: '#FFF', height: 50, borderRadius: 12 }}
                       >
                         Actualizar Contraseña
                       </Button>
@@ -236,7 +227,8 @@ const ProfileChangePassword = ({ email }) => {
 };
 
 ProfileChangePassword.propTypes = {
-  email: PropTypes.string
+  email: PropTypes.string,
+  id: PropTypes.string
 };
 
 export default ProfileChangePassword;

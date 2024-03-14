@@ -5,12 +5,10 @@ import { Outlet, useNavigate } from 'react-router-dom';
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
-import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material';
+import { AppBar, Box, CssBaseline, Toolbar } from '@mui/material';
 
 // project imports
 import Header from './Header';
-import Sidebar from './Sidebar';
-import Social from '../Social';
 import { drawerWidth } from 'store/constant';
 import { SET_MENU } from 'store/actions';
 
@@ -56,7 +54,6 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
   let navigate = useNavigate();
   const theme = useTheme();
-  const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
   // Handle left drawer
   const leftDrawerOpened = useSelector((state) => state.customization.opened);
   const dispatch = useDispatch();
@@ -96,18 +93,14 @@ const MainLayout = () => {
         }}
       >
         <Toolbar>
-          <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
+          <Header handleLeftDrawerToggle={handleLeftDrawerToggle} user={user} />
         </Toolbar>
       </AppBar>
-
-      {/* drawer */}
-      <Sidebar drawerOpen={!matchDownMd ? leftDrawerOpened : !leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} user={user} />
 
       {/* main content */}
       <Main theme={theme} open={leftDrawerOpened}>
         <Outlet />
       </Main>
-      <Social />
     </Box>
   );
 };

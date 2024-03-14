@@ -10,6 +10,9 @@ import { createDocument } from 'config/firebaseEvents';
 import { collBoards } from 'store/collections';
 import { fullDate } from 'utils/validations';
 import { uiStyles } from './Game.styles';
+import { bingoValues } from 'store/constant';
+import { bingoBBalls, bingoIBalls, bingoNBalls, bingoGBalls, bingoOBalls } from 'utils/generateBoard';
+import { titles } from './Game.texts';
 
 export default function Game() {
   const [openLoader, setOpenLoader] = useState(false);
@@ -21,21 +24,19 @@ export default function Game() {
   const [prevNumber, setPrevNumber] = useState(0);
   const [prevLetter, setPrevLetter] = useState('');
   const [resultBingo, setResultBingo] = useState('');
-
-  const b = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-  const i = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
-  const n = [31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45];
-  const g = [46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60];
-  const o = [61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75];
+  let b = bingoBBalls();
+  let i = bingoIBalls();
+  let n = bingoNBalls();
+  let g = bingoGBalls();
+  let o = bingoOBalls();
 
   const handleNextBall = () => {
-    randomNumber(1, 75);
+    randomNumber(bingoValues.INIT, bingoValues.LIMIT);
   };
 
   const randomNumber = (min, max) => {
     var num = Math.floor(Math.random() * (max - min + 1)) + min;
     if (bingoNumbers.includes(num)) {
-      //console.log('Repetido: ' + num);
       randomNumber(min, max);
     } else {
       setBingoNumbers((bingoNumbers) => [...bingoNumbers, num]);
@@ -44,24 +45,24 @@ export default function Game() {
       }
       setNumber(num);
       handleSelectBall(num);
-      if (num <= 15) {
-        setLetter('B');
-        setResultBingo(resultBingo + '-' + 'B' + num);
-      } else if (num >= 16 && num <= 30) {
-        setLetter('I');
-        setResultBingo(resultBingo + '-' + 'I' + num);
-      } else if (num >= 31 && num <= 45) {
-        setLetter('N');
-        setResultBingo(resultBingo + '-' + 'N' + num);
-      } else if (num >= 46 && num <= 60) {
-        setLetter('G');
-        setResultBingo(resultBingo + '-' + 'G' + num);
-      } else if (num >= 61 && num <= 75) {
-        setLetter('O');
-        setResultBingo(resultBingo + '-' + 'O' + num);
+      if (num <= bingoValues.B_END) {
+        setLetter(titles.b);
+        setResultBingo(resultBingo + '-' + titles.b + num);
+      } else if (num >= bingoValues.I_START && num <= bingoValues.I_END) {
+        setLetter(titles.i);
+        setResultBingo(resultBingo + '-' + titles.i + num);
+      } else if (num >= bingoValues.N_START && num <= bingoValues.N_END) {
+        setLetter(titles.n);
+        setResultBingo(resultBingo + '-' + titles.n + num);
+      } else if (num >= bingoValues.G_START && num <= bingoValues.G_END) {
+        setLetter(titles.g);
+        setResultBingo(resultBingo + '-' + titles.g + num);
+      } else if (num >= bingoValues.O_START && num <= bingoValues.O_END) {
+        setLetter(titles.o);
+        setResultBingo(resultBingo + '-' + titles.o + num);
       }
       setCont(cont + 1);
-      if (cont == 74) {
+      if (cont == bingoValues.LIMIT - 1) {
         setVisible(false);
       }
     }
@@ -70,10 +71,6 @@ export default function Game() {
   const handlePrev = (n, l) => {
     setPrevNumber(n);
     setPrevLetter(l);
-  };
-
-  const handleSizeCont = () => {
-    console.log('Tamaño:', bingoNumbers.length);
   };
 
   const handleReset = () => {
@@ -95,7 +92,7 @@ export default function Game() {
     };
     setTimeout(() => {
       createDocument(collBoards, ide, object);
-      toast.success('Tablero guardado correctamente!', { position: toast.POSITION.TOP_RIGHT });
+      toast.success(titles.successSave, { position: toast.POSITION.TOP_RIGHT });
       setOpenLoader(false);
       window.location.reload();
     }, 3000);
@@ -106,77 +103,44 @@ export default function Game() {
       <ToastContainer />
       <center>
         <ButtonGroup aria-label="Basic button group">
-          <Button
-            variant="contained"
-            style={{ color: '#FFF', height: 40, width: 160 }}
-            onClick={handleNextBall}
-            disabled={visible ? false : true}
-          >
-            SIGUIENTE
+          <Button variant="contained" style={uiStyles.btnMain} onClick={handleNextBall} disabled={visible ? false : true}>
+            {titles.next}
           </Button>
-          <Button variant="outlined" style={{ color: '#179cdc', height: 40, width: 100 }} onClick={handleSizeCont}>
+          <Button variant="outlined" style={uiStyles.btnCount}>
             <h2>{cont}</h2>
           </Button>
-          <Button variant="contained" style={{ color: '#FFF', height: 40, width: 160 }} onClick={handleReset}>
-            REINICIAR
+          <Button variant="contained" style={uiStyles.btnMain} onClick={handleReset}>
+            {titles.restart}
           </Button>
         </ButtonGroup>
       </center>
       <Grid container style={{ marginTop: 10 }}>
         <Grid item xs={12}>
           <Grid container spacing={1}>
-            <Grid item lg={6} md={6} sm={6} xs={6} sx={{ bgcolor: '#179cdc', borderTopLeftRadius: 20 }}>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.bgPanelBallActual}>
               <center>
-                <div
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: '#FFF',
-                    color: '#179cdc',
-                    width: 120,
-                    height: 120,
-                    borderRadius: 70,
-                    padding: 10,
-                    margin: 10
-                  }}
-                >
+                <div style={uiStyles.ball}>
                   <h1>{letter}</h1>
                   <h1>{number}</h1>
                 </div>
               </center>
             </Grid>
-            <Grid item lg={6} md={6} sm={6} xs={6} sx={{ bgcolor: '#04acec', borderTopRightRadius: 10 }}>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.bgPanelBallAnte}>
               <center>
-                <div
-                  style={{
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    alignItems: 'center',
-                    backgroundColor: '#FFF',
-                    color: '#179cdc',
-                    width: 120,
-                    height: 120,
-                    borderRadius: 70,
-                    padding: 10,
-                    margin: 10
-                  }}
-                >
+                <div style={uiStyles.ball}>
                   <h1>{prevLetter}</h1>
                   <h1>{prevNumber}</h1>
                 </div>
               </center>
             </Grid>
-            <Grid item lg={6} md={6} sm={6} xs={6} sx={{ bgcolor: '#696969', height: 40 }}>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.panelBall}>
               <center>
-                <span style={{ color: '#FFF', fontWeight: 'bold' }}>ACTUAL</span>
+                <span style={uiStyles.panelText}>{titles.actual}</span>
               </center>
             </Grid>
-            <Grid item lg={6} md={6} sm={6} xs={6} sx={{ bgcolor: '#696969', height: 40 }}>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.panelBall}>
               <center>
-                <span style={{ color: '#FFF', fontWeight: 'bold' }}>ANTERIOR</span>
+                <span style={uiStyles.panelText}>{titles.ante}</span>
               </center>
             </Grid>
           </Grid>
@@ -186,363 +150,94 @@ export default function Game() {
       <Grid container>
         <Grid item xs={12}>
           <Grid container spacing={1}>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>B</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.b}</h3>
             </Grid>
-            <Grid
-              item
-              lg={10}
-              md={10}
-              sm={10}
-              xs={10}
-              sx={{
-                background: '#FFF',
-                height: 60,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
+            <Grid item lg={10} md={10} sm={10} xs={10} sx={uiStyles.midCol}>
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {b.map((item) => (
-                    <Grid
-                      id={'btn' + item}
-                      key={item}
-                      item
-                      lg={1}
-                      md={1}
-                      sm={1}
-                      xs={1}
-                      sx={{
-                        background: '#FFF',
-                        height: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '0.2px solid #EFEFEF'
-                      }}
-                    >
-                      <h4 style={{ color: '#179cdc' }}>{item}</h4>
+                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                      <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>B</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.b}</h3>
             </Grid>
 
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopLeftRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>I</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.i}</h3>
             </Grid>
-            <Grid
-              item
-              lg={10}
-              md={10}
-              sm={10}
-              xs={10}
-              sx={{ background: '#FFF', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+            <Grid item lg={10} md={10} sm={10} xs={10} sx={uiStyles.midCol}>
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {i.map((item) => (
-                    <Grid
-                      id={'btn' + item}
-                      key={item}
-                      item
-                      lg={1}
-                      md={1}
-                      sm={1}
-                      xs={1}
-                      sx={{
-                        background: '#FFF',
-                        height: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '0.2px solid #EFEFEF'
-                      }}
-                    >
-                      <h4 style={{ color: '#179cdc' }}>{item}</h4>
+                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                      <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopRightRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>I</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.i}</h3>
             </Grid>
 
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopLeftRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>N</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.n}</h3>
             </Grid>
-            <Grid
-              item
-              lg={10}
-              md={10}
-              sm={10}
-              xs={10}
-              sx={{ background: '#FFF', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+            <Grid item lg={10} md={10} sm={10} xs={10} sx={uiStyles.midCol}>
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {n.map((item) => (
-                    <Grid
-                      id={'btn' + item}
-                      key={item}
-                      item
-                      lg={1}
-                      md={1}
-                      sm={1}
-                      xs={1}
-                      sx={{
-                        background: '#FFF',
-                        height: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '0.2px solid #EFEFEF'
-                      }}
-                    >
-                      <h4 style={{ color: '#179cdc' }}>{item}</h4>
+                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                      <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopRightRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>N</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.n}</h3>
             </Grid>
 
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopLeftRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>G</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.g}</h3>
             </Grid>
-            <Grid
-              item
-              lg={10}
-              md={10}
-              sm={10}
-              xs={10}
-              sx={{ background: '#FFF', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+            <Grid item lg={10} md={10} sm={10} xs={10} sx={uiStyles.midCol}>
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {g.map((item) => (
-                    <Grid
-                      id={'btn' + item}
-                      key={item}
-                      item
-                      lg={1}
-                      md={1}
-                      sm={1}
-                      xs={1}
-                      sx={{
-                        background: '#FFF',
-                        height: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '0.2px solid #EFEFEF'
-                      }}
-                    >
-                      <h4 style={{ color: '#179cdc' }}>{item}</h4>
+                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                      <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderTopRightRadius: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>G</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.g}</h3>
             </Grid>
 
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderBottomLeftRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>O</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.o}</h3>
             </Grid>
-            <Grid
-              item
-              lg={10}
-              md={10}
-              sm={10}
-              xs={10}
-              sx={{ background: '#FFF', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
+            <Grid item lg={10} md={10} sm={10} xs={10} sx={uiStyles.midCol}>
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {o.map((item) => (
-                    <Grid
-                      id={'btn' + item}
-                      key={item}
-                      item
-                      lg={1}
-                      md={1}
-                      sm={1}
-                      xs={1}
-                      sx={{
-                        background: '#FFF',
-                        height: 30,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '0.2px solid #EFEFEF'
-                      }}
-                    >
-                      <h4 style={{ color: '#179cdc' }}>{item}</h4>
+                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                      <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
                 </Grid>
               </Grid>
             </Grid>
-            <Grid
-              item
-              lg={1}
-              md={1}
-              sm={1}
-              xs={1}
-              sx={{
-                background: '#179cdc',
-                height: 60,
-                borderBottomRightRadius: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '0.2px solid #EFEFEF'
-              }}
-            >
-              <h3 style={{ fontSize: 20, color: '#FFF' }}>O</h3>
+            <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
+              <h3 style={uiStyles.cellLetter}>{titles.o}</h3>
             </Grid>
           </Grid>
         </Grid>
@@ -553,31 +248,21 @@ export default function Game() {
           <Grid container spacing={1}>
             <Grid item lg={12} md={12} sm={12} xs={12}>
               <Box sx={{ background: '#FFF', p: 1, borderRadius: 5, pl: 2, pr: 2 }}>
-                <h3>Orden Números Sorteados</h3>
+                <h3>{titles.backTitle}</h3>
                 <h4>{resultBingo}</h4>
               </Box>
             </Grid>
-            {cont == 75 ? (
+            {cont == bingoValues.LIMIT ? (
               <Grid item lg={12} md={12} sm={12} xs={12}>
                 <Box sx={{ background: '#179cdc', p: 2, borderRadius: 5, pl: 3, pr: 3 }}>
                   <center>
-                    <h3 style={{ color: '#FFF' }}>PARTIDA TERMINADA</h3>
+                    <h3 style={{ color: '#FFF' }}>{titles.endBoard}</h3>
                     <ButtonGroup aria-label="Basic button group">
-                      <Button
-                        variant="contained"
-                        style={{ width: 200, height: 60, color: '#FFF' }}
-                        onClick={handleSaveBoard}
-                        startIcon={<IconDeviceFloppy />}
-                      >
-                        Guardar Tablero
+                      <Button variant="outlined" style={uiStyles.endBtn} onClick={handleSaveBoard} startIcon={<IconDeviceFloppy />}>
+                        {titles.saveBoard}
                       </Button>
-                      <Button
-                        variant="contained"
-                        style={{ width: 200, height: 60, color: '#FFF' }}
-                        onClick={handleReset}
-                        startIcon={<IconCirclePlus />}
-                      >
-                        Nueva Partida
+                      <Button variant="outlined" style={uiStyles.endBtn} onClick={handleReset} startIcon={<IconCirclePlus />}>
+                        {titles.newBoard}
                       </Button>
                     </ButtonGroup>
                   </center>

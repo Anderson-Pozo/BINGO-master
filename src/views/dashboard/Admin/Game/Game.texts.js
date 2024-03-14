@@ -29,8 +29,23 @@ export const titles = {
   buttonUpdate: 'Actualizar',
   buttonDelete: 'Eliminar',
   buttonCancel: 'Cancelar',
+  buttonClose: 'Cerrar',
   loading: 'Cargando...',
-  searchPlace: 'Buscar por número de cartilla'
+  searchPlace: 'Buscar por número de cartilla',
+  b: 'B',
+  i: 'I',
+  n: 'N',
+  g: 'G',
+  o: 'O',
+  next: 'SIGUIENTE',
+  restart: 'REINICIAR',
+  actual: 'ACTUAL',
+  ante: 'ANTERIOR',
+  backTitle: 'Orden Números Sorteados',
+  endBoard: 'PARTIDA TERMINADA',
+  saveBoard: 'Guardar Tablero',
+  newBoard: 'Nuevo Tablero',
+  successSave: 'Tablero guardado correctamente!'
 };
 
 export const inputLabels = {

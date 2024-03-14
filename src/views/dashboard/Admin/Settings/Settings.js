@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
   Paper,
@@ -11,12 +11,10 @@ import {
   TablePagination,
   TableRow,
   Button,
-  Menu,
   MenuItem,
   AppBar,
   Box,
   Toolbar,
-  IconButton,
   Typography,
   Container,
   Modal,
@@ -27,11 +25,10 @@ import {
   TextField,
   ButtonGroup
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import CircularProgress from '@mui/material/CircularProgress';
 import { uiStyles } from './Settings.styles';
 
-import { IconApps, IconPlus, IconDeviceFloppy, IconTrash, IconEdit, IconCircleX, IconPencil, IconSettings } from '@tabler/icons';
+import { IconPlus, IconDeviceFloppy, IconTrash, IconEdit, IconCircleX, IconPencil, IconSettings, IconReload } from '@tabler/icons';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -46,12 +43,12 @@ import { titles, inputLabels } from './Settings.texts';
 
 //Utils
 import { fullDate } from 'utils/validations';
-import { createDocument, deleteDocument, updateDocument, createLogRecord, getDocuments } from 'config/firebaseEvents';
+import { createDocument, deleteDocument, updateDocument, createLogRecord, getParamsData } from 'config/firebaseEvents';
 
 //types array
 import { types } from 'store/typesParam';
 import MessageDark from 'components/message/MessageDark';
-import { ctaAccount } from 'store/constant';
+import { ctaAccount, genConst } from 'store/constant';
 
 function searchingData(search) {
   return function (x) {
@@ -60,44 +57,34 @@ function searchingData(search) {
 }
 
 export default function Settings() {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [openCreate, setOpenCreate] = React.useState(false);
-  const [openDelete, setOpenDelete] = React.useState(false);
-  const [isEdit, setIsEdit] = React.useState(false);
-  const [title, setTitle] = React.useState(null);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [title, setTitle] = useState(null);
 
-  const [id, setId] = React.useState(null);
-  const [type, setType] = React.useState(null);
-  const [name, setName] = React.useState(null);
-  const [value, setValue] = React.useState(null);
-  const [createAt, setCreateAt] = React.useState(null);
-  const [updateAt, setUpdateAt] = React.useState(null);
+  const [id, setId] = useState(null);
+  const [type, setType] = useState(null);
+  const [name, setName] = useState(null);
+  const [value, setValue] = useState(null);
+  const [createAt, setCreateAt] = useState(null);
+  const [updateAt, setUpdateAt] = useState(null);
 
-  const [nameAccount, setNameAccount] = React.useState(null);
-  const [ctaNumberAccount, setCtaNumberAccount] = React.useState(null);
-  const [ctaCi, setCtaCi] = React.useState(null);
-  const [ctaBankName, setCtaBankName] = React.useState(null);
+  const [nameAccount, setNameAccount] = useState(null);
+  const [ctaNumberAccount, setCtaNumberAccount] = useState(null);
+  const [ctaCi, setCtaCi] = useState(null);
+  const [ctaBankName, setCtaBankName] = useState(null);
 
-  const [search, setSearch] = React.useState('');
-  const [openLoader, setOpenLoader] = React.useState(false);
-  const [listData, setListData] = React.useState([]);
+  const [search, setSearch] = useState('');
+  const [openLoader, setOpenLoader] = useState(false);
+  const [listData, setListData] = useState([]);
 
-  React.useEffect(() => {
-    async function fetchData() {
-      const list = [];
-      const querySnapshot = await getDocuments(collSettings);
-      querySnapshot.forEach((doc) => {
-        list.push(doc.data());
-        list.sort((a, b) => a.name.localeCompare(b.name));
-      });
-      setListData(list);
-    }
-    fetchData();
+  useEffect(() => {
+    getParamsData().then((data) => {
+      setListData(data);
+    });
   }, []);
 
   const handleOpenCreate = () => {
@@ -114,21 +101,6 @@ export default function Settings() {
     setOpenDelete(false);
   };
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleChangePage = (newPage) => {
     setPage(newPage);
   };
@@ -139,16 +111,9 @@ export default function Settings() {
   };
 
   const reloadData = () => {
-    async function fetchData() {
-      const list = [];
-      const querySnapshot = await getDocuments(collSettings);
-      querySnapshot.forEach((doc) => {
-        list.push(doc.data());
-        list.sort((a, b) => a.name.localeCompare(b.name));
-      });
-      setListData(list);
-    }
-    fetchData();
+    getParamsData().then((data) => {
+      setListData(data);
+    });
   };
 
   const handleCreate = () => {
@@ -177,6 +142,7 @@ export default function Settings() {
         setOpenCreate(false);
         reloadData();
         toast.success(Msg.settcresucc, { position: toast.POSITION.TOP_RIGHT });
+        cleanData();
       }, 2000);
     }
   };
@@ -204,6 +170,7 @@ export default function Settings() {
         setOpenCreate(false);
         reloadData();
         toast.success(Msg.settupdsucc, { position: toast.POSITION.TOP_RIGHT });
+        cleanData();
       }, 2000);
     }
   };
@@ -244,104 +211,38 @@ export default function Settings() {
   };
 
   return (
-    <div>
+    <Box sx={uiStyles.box1}>
       <ToastContainer />
       <AppBar position="static" style={uiStyles.appbar}>
         <Container maxWidth="xl" style={uiStyles.container}>
           <Toolbar disableGutters>
-            <IconSettings />
-            <Box sx={uiStyles.box}>
-              <IconButton
-                size="medium"
-                aria-label="account of current user"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleOpenNavMenu}
-                color="inherit"
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left'
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left'
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={uiStyles.menu}
-              >
-                <MenuItem
-                  key="id-1"
-                  onClick={() => {
-                    setTitle(titles.modalCreate);
-                    cleanData();
-                    setIsEdit(false);
-                    handleOpenCreate();
-                  }}
-                >
-                  <IconPlus style={{ marginRight: 4 }} />
-                  <Typography textAlign="center">{titles.addMenu}</Typography>
-                </MenuItem>
-              </Menu>
-            </Box>
-            <Box sx={uiStyles.box2}>
-              <Button
-                variant="primary"
-                startIcon={<IconApps />}
-                aria-controls={open ? 'basic-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-                onClick={handleClick}
-              >
-                {titles.actions}
-              </Button>
-              <Menu
-                id="basic-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={handleClose}
-                MenuListProps={{
-                  'aria-labelledby': 'basic-button'
-                }}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setTitle(titles.modalCreate);
-                    cleanData();
-                    setIsEdit(false);
-                    handleOpenCreate();
-                  }}
-                >
-                  <IconPlus style={{ marginRight: 10 }} />
-                  {titles.addMenu}
-                </MenuItem>
-              </Menu>
-            </Box>
-
-            <Box sx={{ flexGrow: 0 }}>
-              {listData.length > 0 ? (
-                <OutlinedInput
-                  id="searchField"
-                  type="text"
-                  name="searchField"
-                  onChange={(ev) => setSearch(ev.target.value)}
-                  placeholder={inputLabels.search}
-                  style={{ width: 300 }}
-                />
-              ) : (
-                <></>
-              )}
-            </Box>
+            <IconSettings color="#FFF" style={{ marginLeft: 0, marginRight: 20 }} />
+            <IconReload color="#FFF" style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }} onClick={reloadData} />
+            <IconPlus
+              color="#FFF"
+              style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }}
+              onClick={() => {
+                setTitle(titles.modalCreate);
+                handleOpenCreate();
+              }}
+            />
           </Toolbar>
         </Container>
       </AppBar>
+      <Box sx={{ mt: 1 }}>
+        {listData.length > 0 ? (
+          <OutlinedInput
+            id="searchField"
+            type="text"
+            name="searchField"
+            onChange={(ev) => setSearch(ev.target.value)}
+            placeholder={inputLabels.search}
+            style={{ width: '100%' }}
+          />
+        ) : (
+          <></>
+        )}
+      </Box>
       {listData.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 600 }}>
@@ -374,7 +275,7 @@ export default function Settings() {
                       <TableCell align="center">
                         <ButtonGroup variant="contained">
                           <Button
-                            style={uiStyles.editButton}
+                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
                             onClick={() => {
                               setId(r.id);
                               setTitle(titles.modalEdit);
@@ -390,7 +291,7 @@ export default function Settings() {
                             <IconEdit />
                           </Button>
                           <Button
-                            style={uiStyles.deleteButton}
+                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
                             onClick={() => {
                               setId(r.id);
                               setType(r.type);
@@ -549,7 +450,7 @@ export default function Settings() {
                           variant="contained"
                           startIcon={<IconDeviceFloppy />}
                           size="large"
-                          style={{ margin: 5 }}
+                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
                           onClick={handleCreate}
                         >
                           {titles.buttonCreate}
@@ -564,7 +465,7 @@ export default function Settings() {
                         color="error"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5 }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseCreate}
                       >
                         {titles.buttonCancel}
@@ -625,6 +526,6 @@ export default function Settings() {
           </Box>
         </center>
       </Modal>
-    </div>
+    </Box>
   );
 }

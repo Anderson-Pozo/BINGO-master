@@ -30,8 +30,6 @@ const UserProfile = Loadable(lazy(() => import('views/dashboard/Admin/Profile/Us
 const UserSecurity = Loadable(lazy(() => import('views/dashboard/Admin/Profile/UserSecurity')));
 // dashboard Mail
 const Mail = Loadable(lazy(() => import('views/dashboard/Admin/Mail/Mail')));
-// dashboard Benefits
-const Benefits = Loadable(lazy(() => import('views/dashboard/Admin/Benefits/Benefits')));
 // dashboard Users
 const AdminUsers = Loadable(lazy(() => import('views/dashboard/Admin/AdminUsers/AdminUsers')));
 const Users = Loadable(lazy(() => import('views/dashboard/Admin/Users/Users')));
@@ -49,10 +47,6 @@ const CardGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardGame
 const AuthSignin = Loadable(lazy(() => import('views/pages/login/login/Signin')));
 const AuthSignup = Loadable(lazy(() => import('views/pages/login/login/Signup')));
 const AuthRecovery = Loadable(lazy(() => import('views/pages/login/login/PasswordRecover')));
-const JoinSignup = Loadable(lazy(() => import('views/pages/login/login/JoinSignup')));
-const AuthInscription = Loadable(lazy(() => import('views/pages/login/inscription/Inscription')));
-const AuthPayment = Loadable(lazy(() => import('views/pages/login/inscription/Payment')));
-const AuthPaymentMethods = Loadable(lazy(() => import('views/pages/login/inscription/PaymentMethods')));
 // dashboard Default
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 // dashboard Profile
@@ -60,7 +54,6 @@ const UserProfileDefault = Loadable(lazy(() => import('views/dashboard/Default/P
 const UserSecurityDefault = Loadable(lazy(() => import('views/dashboard/Default/Profile/UserSecurity')));
 // dashboard Settings
 const ShareDefault = Loadable(lazy(() => import('views/dashboard/Default/Share/Share')));
-const SubscriptionDefault = Loadable(lazy(() => import('views/dashboard/Default/Subscription/Subscription')));
 const NotificationsDefault = Loadable(lazy(() => import('views/dashboard/Default/Notifications/Notifications')));
 
 const App = () => {
@@ -87,11 +80,7 @@ const App = () => {
           <Route element={<MinimalLayout />} path="/auth" exact>
             <Route element={<AuthSignin />} path="signin" exact />
             <Route element={<AuthSignup />} path="signup" exact />
-            <Route element={<JoinSignup />} path="join" exact />
             <Route element={<AuthRecovery />} path="password-recovery" exact />
-            <Route element={<AuthInscription />} path="inscription" exact />
-            <Route element={<AuthPayment />} path="payment" exact />
-            <Route element={<AuthPaymentMethods />} path="payment-methods" exact />
             <Route element={<NotFound />} path="404" exact />
             <Route path="*" element={<Navigate to="404" />} />
           </Route>
@@ -105,7 +94,6 @@ const App = () => {
               <Route element={<GameUsers />} path="game-users" exact />
               <Route element={<CardGame />} path="card-game" exact />
               <Route element={<Share />} path="share" exact />
-              <Route element={<Benefits />} path="benefits" exact />
               <Route element={<Settings />} path="settings" exact />
               <Route element={<Mail />} path="mail" exact />
               <Route element={<Notifications />} path="notifications" exact />
@@ -118,7 +106,6 @@ const App = () => {
               <Route element={<DashboardDefault />} path="dashboard" exact />
               <Route element={<ShareDefault />} path="share" exact />
               <Route element={<NotificationsDefault />} path="notifications" exact />
-              <Route element={<SubscriptionDefault />} path="subscription" exact />
               <Route element={<UserProfileDefault />} path="user-profile" exact />
               <Route element={<UserSecurityDefault />} path="user-security" exact />
             </Route>

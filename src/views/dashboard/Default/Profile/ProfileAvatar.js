@@ -1,61 +1,29 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-
 // material-ui
 import { styled } from '@mui/material/styles';
 import { Box, Grid, Typography, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-
 // project imports
 import MainCard from 'components/cards/MainCard';
-
 import defaultUser from 'assets/images/profile/profile-picture-6.jpg';
-//import camImage from 'assets/images/camera.png';
-
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 //Firebase
 import { db, storage, authentication } from 'config/firebase';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
+import { titles } from './Profile.texts';
+import { collUsers } from 'store/collections';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
   color: '#fff',
   overflow: 'hidden',
   position: 'relative',
-  '&:after': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -85,
-    right: -95,
-    [theme.breakpoints.down('sm')]: {
-      top: -105,
-      right: -140
-    }
-  },
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -125,
-    right: -15,
-    opacity: 0.5,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  height: 400
 }));
 
 const ProfileAvatar = ({ id, name, email }) => {
@@ -89,12 +57,12 @@ const ProfileAvatar = ({ id, name, email }) => {
           const obj = {
             avatar: avatar
           };
-          const docRef = updateDoc(doc(db, 'Users', id), obj)
+          const docRef = updateDoc(doc(db, collUsers, id), obj)
             .then(() => {
               updateProfile(authentication.currentUser, {
                 photoURL: avatar
               });
-              toast.success('Avatar actualizado correctamente!', {
+              toast.success(titles.successAvatar, {
                 autoClose: 3000,
                 position: toast.POSITION.TOP_RIGHT
               });
@@ -151,18 +119,6 @@ const ProfileAvatar = ({ id, name, email }) => {
                 <Typography component="span" variant="h4" sx={{ fontWeight: 400, color: '#FFF', marginTop: 1 }}>
                   {email}
                 </Typography>
-              </Grid>
-              <Grid container justifyContent="center">
-                <Typography component="span" variant="h4" sx={{ fontWeight: 400, color: '#FFF', marginTop: 1 }}>
-                  {'Código de Referido:'}
-                </Typography>
-              </Grid>
-              <Grid container justifyContent="center">
-                {userList.map((user, key) => (
-                  <Typography key={key} component="span" variant="h4" sx={{ fontWeight: 400, color: '#FFF', marginTop: 1 }}>
-                    {user.ownReferal}
-                  </Typography>
-                ))}
               </Grid>
               <Grid container justifyContent="center">
                 {userList.map((user, key) => (

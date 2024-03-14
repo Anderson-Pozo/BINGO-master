@@ -24,20 +24,11 @@ import { Formik } from 'formik';
 import AnimateButton from 'components/extended/AnimateButton';
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
-  backgroundColor: '#BABABA',
+  backgroundColor: theme.palette.secondary.dark,
   color: '#fff',
   overflow: 'hidden',
   position: 'relative',
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  height: 400
 }));
 
 const ProfileChangeEmail = ({ email }) => {
@@ -168,7 +159,7 @@ const ProfileChangeEmail = ({ email }) => {
                         type="submit"
                         variant="contained"
                         color="secondary"
-                        style={{ borderRadius: 10 }}
+                        style={{ background: '#414551', color: '#FFF', height: 50, borderRadius: 12 }}
                       >
                         Actualizar Correo
                       </Button>
@@ -185,7 +176,8 @@ const ProfileChangeEmail = ({ email }) => {
 };
 
 ProfileChangeEmail.propTypes = {
-  email: PropTypes.string
+  email: PropTypes.string,
+  id: PropTypes.string
 };
 
 export default ProfileChangeEmail;

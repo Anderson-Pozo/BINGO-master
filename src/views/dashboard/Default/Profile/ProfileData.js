@@ -1,103 +1,85 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-
+import React, { useEffect, useState } from 'react';
 // material-ui
+import CircularProgress from '@mui/material/CircularProgress';
 import { styled, useTheme } from '@mui/material/styles';
-import { Box, Grid, Typography, FormControl, Button, InputLabel, OutlinedInput } from '@mui/material';
-
+import { Box, Grid, Typography, FormControl, Button, InputLabel, OutlinedInput, Modal } from '@mui/material';
 // project imports
 import MainCard from 'components/cards/MainCard';
-
 // Firebase
-import { authentication, db } from 'config/firebase';
-import { updateProfile, onAuthStateChanged } from 'firebase/auth';
-import { updateDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
-
+import { authentication } from 'config/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 // project imports
 import AnimateButton from 'components/extended/AnimateButton';
 import { collUsers } from 'store/collections';
+import { fullDate } from 'utils/validations';
+import { getUserData, updateDocument, updateProfileUser } from 'config/firebaseEvents';
+import { uiStyles } from './Profile.styles';
+import { titles } from './Profile.texts';
 
-const CardWrapper = styled(MainCard)(({ theme }) => ({
+const CardWrapper = styled(MainCard)(() => ({
   backgroundColor: '#414551',
   color: '#fff',
   overflow: 'hidden',
   position: 'relative',
-  '&:after': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -85,
-    right: -95,
-    [theme.breakpoints.down('sm')]: {
-      top: -105,
-      right: -140
-    }
-  },
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -125,
-    right: -15,
-    opacity: 0.5,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  height: 400
 }));
 
 const ProfileData = () => {
   const theme = useTheme();
-  const [id, setId] = React.useState(null);
-  const [name, setName] = React.useState(null);
-  const [lastName, setLastName] = React.useState(null);
-  const [email, setEmail] = React.useState(null);
-  const [description, setDescription] = React.useState(null);
+  const [id, setId] = useState(null);
+  const [name, setName] = useState(null);
+  const [lastName, setLastName] = useState(null);
+  const [phone, setPhone] = useState(null);
+  const [openLoader, setOpenLoader] = useState(false);
 
   useEffect(() => {
     onAuthStateChanged(authentication, async (user) => {
       if (user) {
         setId(user.uid);
-        setEmail(user.email);
-        const q = query(collection(db, collUsers), where('id', '==', user.uid));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-          setName(doc.data().name);
-          setLastName(doc.data().lastName);
-          setDescription(doc.data().description);
+        getUserData(user.uid).then((data) => {
+          setName(data[0].name);
+          setLastName(data[0].lastName);
+          setPhone(data[0].phone);
         });
       }
     });
   }, []);
 
+  const reloadData = () => {
+    onAuthStateChanged(authentication, async (user) => {
+      if (user) {
+        setId(user.uid);
+        setEmail(user.email);
+        getUserData(user.uid).then((data) => {
+          setName(data[0].name);
+          setLastName(data[0].lastName);
+          setPhone(data[0].phone);
+        });
+      }
+    });
+  };
+
   const updateProfileData = () => {
-    if (!name) {
-      toast.info('Nombre es requerido!', { position: toast.POSITION.TOP_RIGHT });
+    if (!name || !lastName) {
+      toast.info(titles.mandatory, { position: toast.POSITION.TOP_RIGHT });
     } else {
-      updateProfile(authentication.currentUser, {
-        displayName: name + ' ' + lastName
-      });
-      updateDoc(doc(db, collUsers, id), {
+      setOpenLoader(true);
+      const object = {
         name: name,
         lastName: lastName,
         fullName: name + ' ' + lastName,
-        description: description,
-        updateAt: Date.now()
-      });
-      toast.success('Perfil actualizado correctamente!', { position: toast.POSITION.TOP_RIGHT });
+        phone: phone,
+        updateAt: fullDate()
+      };
+      updateProfileUser(name, lastName);
+      updateDocument(collUsers, id, object);
       setTimeout(() => {
-        window.location.reload();
+        setOpenLoader(false);
+        reloadData();
+        toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
       }, 2000);
     }
   };
@@ -112,20 +94,20 @@ const ProfileData = () => {
               <Grid container justifyContent="space-between">
                 <Grid item>
                   <Typography component="span" variant="h3" sx={{ fontWeight: 600, color: '#FFF' }}>
-                    Datos de Usuario
+                    {titles.title}
                   </Typography>
                 </Grid>
               </Grid>
             </Grid>
             <Grid item>
               <Grid container alignItems="center">
-                Editar Perfil <span hidden>{email}</span>
+                {titles.subTitle}
               </Grid>
             </Grid>
             <Grid container>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2, paddingRight: 1 }}>
-                  <InputLabel htmlFor="outlined-adornment-name-register">Nombre</InputLabel>
+                  <InputLabel htmlFor="outlined-adornment-name-register">{titles.name}</InputLabel>
                   <OutlinedInput
                     id="outlined-adornment-name-register"
                     type="text"
@@ -135,9 +117,9 @@ const ProfileData = () => {
                   />
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2, paddingRight: 1 }}>
-                  <InputLabel htmlFor="outlined-adornment-name-register">Apellido</InputLabel>
+                  <InputLabel htmlFor="outlined-adornment-name-register">{titles.lastName}</InputLabel>
                   <OutlinedInput
                     id="outlined-adornment-name-register"
                     type="text"
@@ -151,35 +133,43 @@ const ProfileData = () => {
             <Grid container>
               <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2 }}>
-                  <InputLabel htmlFor="outlined-adornment-description-register">Descripción</InputLabel>
+                  <InputLabel htmlFor="outlined-adornment-phone-register">{titles.phone}</InputLabel>
                   <OutlinedInput
-                    id="outlined-adornment-description-register"
-                    type="description"
-                    value={description || ''}
-                    name="description"
-                    onChange={(ev) => setDescription(ev.target.value)}
-                    inputProps={{}}
-                    maxRows={5}
+                    id="outlined-adornment-phone-register"
+                    type="number"
+                    value={phone || ''}
+                    name="phone"
+                    onChange={(ev) => setPhone(ev.target.value)}
                   />
                 </FormControl>
               </Grid>
             </Grid>
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
-                <Button size="large" variant="contained" color="secondary" style={{ width: 200 }} onClick={updateProfileData}>
-                  Guardar
+                <Button
+                  size="large"
+                  fullWidth
+                  variant="contained"
+                  color="secondary"
+                  style={{ color: '#FFF', height: 50, borderRadius: 12 }}
+                  onClick={updateProfileData}
+                >
+                  {titles.btnSave}
                 </Button>
               </AnimateButton>
             </Box>
           </Grid>
         </Box>
+        <Modal open={openLoader} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
+          <center>
+            <Box sx={uiStyles.loader}>
+              <CircularProgress color="info" size={100} />
+            </Box>
+          </center>
+        </Modal>
       </CardWrapper>
     </>
   );
-};
-
-ProfileData.propTypes = {
-  isLoading: PropTypes.bool
 };
 
 export default ProfileData;

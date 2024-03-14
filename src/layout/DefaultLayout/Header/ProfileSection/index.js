@@ -34,7 +34,7 @@ import Transitions from 'components/extended/Transitions';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 
 // assets
-import { IconLogout, IconSettings, IconUser, IconLock, IconCreditCard, IconNote, IconPhone } from '@tabler/icons';
+import { IconLogout, IconUser, IconLock } from '@tabler/icons';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -89,6 +89,7 @@ const ProfileSection = () => {
     <>
       <Chip
         sx={{
+          width: '48px',
           height: '48px',
           alignItems: 'center',
           borderRadius: '27px',
@@ -111,8 +112,7 @@ const ProfileSection = () => {
           <Avatar
             src={photoURL || User1}
             sx={{
-              ...theme.typography.mediumAvatar,
-              margin: '8px 0 8px 8px !important',
+              margin: '8px 0 8px 21px !important',
               cursor: 'pointer'
             }}
             ref={anchorRef}
@@ -121,7 +121,6 @@ const ProfileSection = () => {
             color="inherit"
           />
         }
-        label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
         variant="outlined"
         ref={anchorRef}
         aria-controls={open ? 'menu-list-grow' : undefined}
@@ -185,30 +184,6 @@ const ProfileSection = () => {
                               <IconUser stroke={1.5} size="1.3rem" />
                             </ListItemIcon>
                             <ListItemText primary={<Typography variant="body2">Cuenta</Typography>} />
-                          </ListItemButton>
-                        </Link>
-                        <Link to="user-contact" style={{ textDecoration: 'none' }}>
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
-                            <ListItemIcon>
-                              <IconPhone stroke={1.5} size="1.3rem" />
-                            </ListItemIcon>
-                            <ListItemText primary={<Typography variant="body2">Datos de Contacto</Typography>} />
-                          </ListItemButton>
-                        </Link>
-                        <Link to="user-bill" style={{ textDecoration: 'none' }}>
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
-                            <ListItemIcon>
-                              <IconNote stroke={1.5} size="1.3rem" />
-                            </ListItemIcon>
-                            <ListItemText primary={<Typography variant="body2">Facturación</Typography>} />
-                          </ListItemButton>
-                        </Link>
-                        <Link to="user-payment-methods" style={{ textDecoration: 'none' }}>
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
-                            <ListItemIcon>
-                              <IconCreditCard stroke={1.5} size="1.3rem" />
-                            </ListItemIcon>
-                            <ListItemText primary={<Typography variant="body2">Métodos de Pago</Typography>} />
                           </ListItemButton>
                         </Link>
                         <Link to="user-security" style={{ textDecoration: 'none' }}>

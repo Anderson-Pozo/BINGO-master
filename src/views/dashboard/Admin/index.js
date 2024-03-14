@@ -4,7 +4,7 @@ import { Grid } from '@mui/material';
 // data
 import { gridSpacing } from 'store/constant';
 //Firebase
-import { countActiveSubscriptions, countAdminUser, countBusiness, countUser, getTotalBenefit } from 'config/firebaseEvents';
+import { countAdminUser, countCards, countGames, countUser } from 'config/firebaseEvents';
 //Components
 import TotalCard from 'components/cards/TotalCard';
 import TotalYellowCard from 'components/cards/TotalYellowCard';
@@ -16,9 +16,8 @@ import EarningGreenCard from 'components/cards/EarningGreenCard';
 const Dashboard = () => {
   const [totalUsers, setTotalUsers] = useState(null);
   const [totalAdminUsers, setTotalAdminUsers] = useState(null);
-  const [totalSubs, setTotalSubs] = useState(null);
-  const [totalBusiness, setTotalBusiness] = useState(null);
-  const [totalIncomes, setTotalIncomes] = useState(0);
+  const [totalCards, setTotalCards] = useState(null);
+  const [totalGames, setTotalGames] = useState(null);
 
   useEffect(() => {
     countUser().then((count) => {
@@ -27,14 +26,11 @@ const Dashboard = () => {
     countAdminUser().then((count) => {
       setTotalAdminUsers(count);
     });
-    countActiveSubscriptions().then((count) => {
-      setTotalSubs(count);
+    countCards().then((count) => {
+      setTotalCards(count);
     });
-    countBusiness().then((count) => {
-      setTotalBusiness(count);
-    });
-    getTotalBenefit().then((res) => {
-      setTotalIncomes(res);
+    countGames().then((count) => {
+      setTotalGames(count);
     });
   }, []);
 
@@ -49,21 +45,21 @@ const Dashboard = () => {
             <TotalCard total={totalAdminUsers} detail="Administradores" />
           </Grid>
           <Grid item sm={6} xs={6} md={6} lg={3}>
-            <TotalYellowCard total={totalSubs} detail="Subscripciones" />
+            <TotalYellowCard total={totalGames} detail="Eventos" />
           </Grid>
           <Grid item sm={6} xs={6} md={6} lg={3}>
-            <TotalYellowCard total={totalBusiness} detail="Negocios" />
+            <TotalYellowCard total={totalCards} detail="Cartillas" />
           </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6}>
-            <EarningCard total={totalIncomes} detail="Ingresos" />
+          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
+            <EarningCard total={0} detail="Ingresos" />
           </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6}>
+          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
             <EarningBlueCard total={0} detail="Beneficio" />
           </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6}>
+          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
             <EarningGreenCard total={0} detail="Pagado" />
           </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6}>
+          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
             <EarningRedCard total={0} detail="Pendiente" />
           </Grid>
         </Grid>

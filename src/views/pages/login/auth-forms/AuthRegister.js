@@ -138,7 +138,7 @@ const AuthRegister = ({ ...others }) => {
                 name: values.firstName,
                 phone: null,
                 profile: genConst.CONST_PRO_DEF,
-                state: genConst.CONST_STATE_IN,
+                state: genConst.CONST_STATE_AC,
                 url: null
               });
               createUserAditionalData(user.uid, values.email);
@@ -287,7 +287,16 @@ const AuthRegister = ({ ...others }) => {
 
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
-                <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="secondary">
+                <Button
+                  disableElevation
+                  disabled={isSubmitting}
+                  fullWidth
+                  size="large"
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  style={{ color: '#FFF', height: 50, borderRadius: 12 }}
+                >
                   Registrarse
                 </Button>
               </AnimateButton>
