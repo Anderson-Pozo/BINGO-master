@@ -15,7 +15,7 @@ import { authentication } from 'config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 //Assets
-import bg01 from 'assets/images/bg/03.webp';
+import bg01 from 'assets/images/bg/bg4.jpg';
 import { genConst } from 'store/constant';
 import notFound from 'assets/images/error/notfound.jpg';
 

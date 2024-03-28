@@ -1,14 +1,16 @@
 import PropTypes from 'prop-types';
+import { useNavigate, createSearchParams } from 'react-router-dom';
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
-import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
+import { Avatar, Box, Button, ButtonGroup, Grid, Typography } from '@mui/material';
 // project imports
 import MainCard from 'components/cards/MainCard';
 // assets
-import { IconCalendar } from '@tabler/icons';
+import { IconCalendar, IconFileDollar, IconPlayCard } from '@tabler/icons';
 
 const EventCard = ({ name, date, bg, id }) => {
   const theme = useTheme();
+  let navigate = useNavigate();
   const CardWrapper = styled(MainCard)(({ theme }) => ({
     backgroundColor: bg,
     color: '#fff',
@@ -31,7 +33,7 @@ const EventCard = ({ name, date, bg, id }) => {
   }));
   return (
     <CardWrapper border={false} content={false}>
-      <Box sx={{ p: 2.25 }}>
+      <Box sx={{ p: 2 }}>
         <Grid container direction="column">
           <Grid item>
             <Grid container>
@@ -49,7 +51,7 @@ const EventCard = ({ name, date, bg, id }) => {
                 </Avatar>
               </Grid>
               <Grid item lg={10}>
-                <Typography sx={{ fontSize: '1.3rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, color: '#FFF' }}>
+                <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, color: '#FFF' }}>
                   Próximo Evento
                 </Typography>
               </Grid>
@@ -58,24 +60,60 @@ const EventCard = ({ name, date, bg, id }) => {
           <Grid item>
             <Grid container alignItems="center">
               <Grid item lg={12}>
-                <Typography sx={{ fontSize: '1.2rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, color: '#FFF' }}>{name}</Typography>
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 1, mt: 1, mb: 0.75, color: '#FFF' }}>{name}</Typography>
               </Grid>
               <Grid item lg={12}>
-                <Typography sx={{ fontSize: '1rem', fontWeight: 500, mr: 1, mt: 1, mb: 1, color: '#FFF' }}>{date}</Typography>
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 1, mt: 0.5, mb: 1, color: '#FFF' }}>{date}</Typography>
+              </Grid>
+              <Grid item lg={12}>
+                <ButtonGroup fullWidth>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    startIcon={<IconFileDollar />}
+                    sx={{
+                      background: '#FFF',
+                      color: '#00adef',
+                      '&:hover': {
+                        backgroundColor: '#00adef',
+                        color: '#FFF'
+                      }
+                    }}
+                    onClick={() => {
+                      navigate({
+                        pathname: '/app/card-selector',
+                        search: createSearchParams({ id: id, name: name, date: date }).toString()
+                      });
+                    }}
+                  >
+                    <span style={{ fontSize: 10 }}>COMPRAR</span>
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    startIcon={<IconPlayCard />}
+                    sx={{
+                      background: '#FFF',
+                      color: '#00adef',
+                      '&:hover': {
+                        backgroundColor: '#00adef',
+                        color: '#FFF'
+                      }
+                    }}
+                    onClick={() => {
+                      navigate({
+                        pathname: '/app/play-bingo',
+                        search: createSearchParams({ id: id, name: name, date: date }).toString()
+                      });
+                    }}
+                  >
+                    <span style={{ fontSize: 10 }}>JUGAR</span>
+                  </Button>
+                </ButtonGroup>
               </Grid>
             </Grid>
-          </Grid>
-          <Grid item sx={{ mt: 1 }}>
-            <Button
-              variant="contained"
-              size="large"
-              style={{ background: '#FFF', color: '#00adef' }}
-              onClick={() => {
-                console.log(id);
-              }}
-            >
-              Compra tus Cartillas
-            </Button>
           </Grid>
         </Grid>
       </Box>

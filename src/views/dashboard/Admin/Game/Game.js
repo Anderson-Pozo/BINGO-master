@@ -157,7 +157,7 @@ export default function Game() {
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {b.map((item) => (
-                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                    <Grid id={'btn' + item} key={item} item lg={1.5} md={1.5} sm={1.5} xs={1.5} sx={uiStyles.midCell}>
                       <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
@@ -175,7 +175,7 @@ export default function Game() {
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {i.map((item) => (
-                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                    <Grid id={'btn' + item} key={item} item lg={1.5} md={1.5} sm={1.5} xs={1.5} sx={uiStyles.midCell}>
                       <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
@@ -193,7 +193,7 @@ export default function Game() {
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {n.map((item) => (
-                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                    <Grid id={'btn' + item} key={item} item lg={1.5} md={1.5} sm={1.5} xs={1.5} sx={uiStyles.midCell}>
                       <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
@@ -211,7 +211,7 @@ export default function Game() {
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {g.map((item) => (
-                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                    <Grid id={'btn' + item} key={item} item lg={1.5} md={1.5} sm={1.5} xs={1.5} sx={uiStyles.midCell}>
                       <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
@@ -229,7 +229,7 @@ export default function Game() {
               <Grid item xs={12}>
                 <Grid container spacing={1}>
                   {o.map((item) => (
-                    <Grid id={'btn' + item} key={item} item lg={1} md={1} sm={1} xs={1} sx={uiStyles.midCell}>
+                    <Grid id={'btn' + item} key={item} item lg={1.5} md={1.5} sm={1.5} xs={1.5} sx={uiStyles.midCell}>
                       <h4 style={uiStyles.cellItem}>{item}</h4>
                     </Grid>
                   ))}
@@ -238,6 +238,16 @@ export default function Game() {
             </Grid>
             <Grid item lg={1} md={1} sm={1} xs={1} sx={uiStyles.leftCell}>
               <h3 style={uiStyles.cellLetter}>{titles.o}</h3>
+            </Grid>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.panelBallEndLeft}>
+              <center>
+                <span style={uiStyles.panelText}>{''}</span>
+              </center>
+            </Grid>
+            <Grid item lg={6} md={6} sm={6} xs={6} sx={uiStyles.panelBallEndRight}>
+              <center>
+                <span style={uiStyles.panelText}>{''}</span>
+              </center>
             </Grid>
           </Grid>
         </Grid>

@@ -165,6 +165,7 @@ const AuthRegister = ({ ...others }) => {
               } else {
                 console.log(error);
               }
+              setOpenLoader(false);
             });
         }}
       >

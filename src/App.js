@@ -49,6 +49,8 @@ const AuthSignup = Loadable(lazy(() => import('views/pages/login/login/Signup'))
 const AuthRecovery = Loadable(lazy(() => import('views/pages/login/login/PasswordRecover')));
 // dashboard Default
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const CardSelectorDefault = Loadable(lazy(() => import('views/dashboard/Default/Main/CardSelector')));
+const PlayBingo = Loadable(lazy(() => import('views/dashboard/Default/Main/PlayBingo')));
 // dashboard Profile
 const UserProfileDefault = Loadable(lazy(() => import('views/dashboard/Default/Profile/UserProfile')));
 const UserSecurityDefault = Loadable(lazy(() => import('views/dashboard/Default/Profile/UserSecurity')));
@@ -104,6 +106,8 @@ const App = () => {
           ) : (
             <Route element={<DefaultLayout />} path="/app" exact>
               <Route element={<DashboardDefault />} path="dashboard" exact />
+              <Route element={<CardSelectorDefault />} path="card-selector" exact />
+              <Route element={<PlayBingo />} path="play-bingo" exact />
               <Route element={<ShareDefault />} path="share" exact />
               <Route element={<NotificationsDefault />} path="notifications" exact />
               <Route element={<UserProfileDefault />} path="user-profile" exact />

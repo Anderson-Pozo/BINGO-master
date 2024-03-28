@@ -13,6 +13,7 @@ export const collIncomes = 'Incomes';
 export const collBoards = 'Boards';
 export const collGames = 'Games';
 export const collCards = 'Cards';
+export const collUserCards = 'UserCards';
 export const collGameInscription = 'GameInscription';
 export const collUserLog = 'UserLog';
 export const collInbox = 'Inbox';

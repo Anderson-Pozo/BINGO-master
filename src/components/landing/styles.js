@@ -19,7 +19,7 @@ export const uiStyles = {
     padding: 40
   },
   appbar: {
-    background: 'rgba(255,255,255,0.4)',
+    background: 'rgba(255,255,255,0)',
     height: 75
   },
   appbarWrapper: {
@@ -36,6 +36,10 @@ export const uiStyles = {
   },
   colorText: {
     color: '#53338a',
+    lineHeight: 'normal'
+  },
+  colorBlueText: {
+    color: '#00adef',
     lineHeight: 'normal'
   },
   container: {

@@ -26,6 +26,7 @@ import logo from 'assets/images/LogoBingo.png';
 import defaultAvatar from 'assets/images/profile/profile-picture-6.jpg';
 import { useAuth } from 'hooks/useAuth';
 import { isSessionActive } from 'config/firebaseEvents';
+import { IconDoorExit } from '@tabler/icons';
 
 const drawerWidth = 240;
 
@@ -94,16 +95,21 @@ const Header = (props) => {
               <List>
                 <ListItem disablePadding>
                   <ListItemButton onClick={handleGoDash}>
-                    <Avatar alt="avatar user" src={defaultAvatar} sx={{ width: 35, height: 35, marginRight: 1 }} />
-                    <p style={{ color: '#FFF', fontSize: 14, fontWeight: 'bold' }}>{name}</p>
+                    <Avatar alt="avatar user" src={defaultAvatar} sx={{ width: 30, height: 30, marginRight: 1 }} />
+                    <p style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>{name}</p>
                   </ListItemButton>
                 </ListItem>
               </List>
             </Box>
           ) : (
             <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-              <Button variant="contained" startIcon={<PersonIcon />} onClick={handleGoTo} style={{ width: 180, fontSize: 15 }}>
-                Iniciar Sesión
+              <Button
+                variant="contained"
+                startIcon={<IconDoorExit color="#FFF" size={18} />}
+                onClick={handleGoTo}
+                style={{ width: 180, fontSize: 12, color: '#FFF' }}
+              >
+                LOGIN
               </Button>
             </Box>
           )}

@@ -12,36 +12,38 @@ export default function Hero({ checked }) {
     <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})} collapsedSize={50}>
       <div style={uiStyles.container}>
         <h3 style={uiStyles.title}>
-          JUNTOS HACIA LA CONSTRUCCIÓN
+          PLAY BINGO
           <br />
-          <span style={uiStyles.colorText}> DE UN FUTURO PROSPERO</span>
+          <span style={uiStyles.colorBlueText}> ONLINE</span>
         </h3>
-        <Grid container spacing={1}>
-          <Grid item xs={12}>
-            <Grid container spacing={1}>
-              <Grid item lg={4} md={4} sm={4} xs={12}>
-                <Link variant="h4" to={''}>
-                  <ImageServiceCard place={places[0]} checked={checked} />
-                </Link>
-              </Grid>
-              <Grid item lg={4} md={4} sm={4} xs={12}>
-                <Link variant="h4" to={''}>
-                  <ImageServiceCard place={places[1]} checked={checked} />
-                </Link>
-              </Grid>
-              <Grid item lg={4} md={4} sm={4} xs={12}>
-                <Link variant="h4" to={'auth/signin'}>
-                  <ImageServiceCard place={places[2]} checked={checked} />
-                </Link>
+        <div hidden>
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Grid container spacing={1}>
+                <Grid item lg={4} md={4} sm={4} xs={12}>
+                  <Link variant="h4" to={''}>
+                    <ImageServiceCard place={places[0]} checked={checked} />
+                  </Link>
+                </Grid>
+                <Grid item lg={4} md={4} sm={4} xs={12}>
+                  <Link variant="h4" to={''}>
+                    <ImageServiceCard place={places[1]} checked={checked} />
+                  </Link>
+                </Grid>
+                <Grid item lg={4} md={4} sm={4} xs={12}>
+                  <Link variant="h4" to={'auth/signin'}>
+                    <ImageServiceCard place={places[2]} checked={checked} />
+                  </Link>
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
-        </Grid>
-        <Scroll to="about" smooth={true}>
-          <IconButton>
-            <ExpandMoreIcon style={uiStyles.goDown} />
-          </IconButton>
-        </Scroll>
+          <Scroll to="about" smooth={true}>
+            <IconButton>
+              <ExpandMoreIcon style={uiStyles.goDown} />
+            </IconButton>
+          </Scroll>
+        </div>
       </div>
     </Collapse>
   );

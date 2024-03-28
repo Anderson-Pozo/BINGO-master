@@ -52,7 +52,6 @@ const ProfileData = () => {
     onAuthStateChanged(authentication, async (user) => {
       if (user) {
         setId(user.uid);
-        setEmail(user.email);
         getUserData(user.uid).then((data) => {
           setName(data[0].name);
           setLastName(data[0].lastName);

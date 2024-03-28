@@ -12,6 +12,7 @@ import {
   collLog,
   collMail,
   collSettings,
+  collUserCards,
   collUsers,
   collUsrNoti
 } from 'store/collections';
@@ -87,6 +88,18 @@ export function createGlobalNotification(message, subject) {
   };
   return addDoc(collection(db, collGenNoti), object);
 }
+//Buscar si existe Usuario
+export async function isExistUser(id) {
+  let isExist = false;
+  const q = query(collection(db, collUsers), where('id', '==', id));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.size > 0) {
+    isExist = true;
+  } else {
+    isExist = false;
+  }
+  return isExist;
+}
 //Obtener Datos Perfil de Usuario por ID
 export async function getProfileUser(id) {
   let profile = null;
@@ -140,6 +153,17 @@ export async function getUserNotifications(id) {
 export const getGameCards = async () => {
   const list = [];
   const querySnapshot = await getDocuments(collCards);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+    list.sort((a, b) => a.order - b.order);
+  });
+  return list;
+};
+//CARTILLAS POR USUARIO
+export const getGameCardsByUser = async (id) => {
+  const list = [];
+  const q = query(collection(db, collUserCards), where('userId', '==', id));
+  const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     list.push(doc.data());
     list.sort((a, b) => a.order - b.order);

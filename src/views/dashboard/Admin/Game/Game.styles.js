@@ -2,7 +2,7 @@ export const uiStyles = {
   box: { width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 },
   box2: { flexGrow: 1, display: { xs: 'none', md: 'flex' } },
   boxCard: { width: '44%', height: '60%', backgroundColor: '#F4F4F4', borderRadius: 4, padding: 2 },
-  paper: { width: '100%', overflow: 'hidden', marginTop: 2 },
+  paper: { width: '100%', overflow: 'hidden', marginTop: 0 },
   styleLoader: {
     position: 'absolute',
     top: '50%',
@@ -100,6 +100,16 @@ export const uiStyles = {
   panelBall: {
     backgroundColor: '#696969',
     height: 40
+  },
+  panelBallEndLeft: {
+    backgroundColor: '#696969',
+    height: 40,
+    borderBottomLeftRadius: 20
+  },
+  panelBallEndRight: {
+    backgroundColor: '#696969',
+    height: 40,
+    borderBottomRightRadius: 20
   },
   bgPanelBallActual: {
     backgroundColor: '#179cdc',

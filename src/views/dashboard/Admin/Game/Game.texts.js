@@ -1,5 +1,6 @@
 export const titles = {
   require: 'Todos los campos marcados con * son obligatorios.!',
+  requireField: 'Ingrese la cantidad que desea generar!',
   successCreate: 'Partida creada correctamente!.',
   successUpdate: 'Partida actualizada correctamente!.',
   successDelete: 'Partida eliminada correctamente!.',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, ButtonGroup, Grid, Modal, OutlinedInput, Paper, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { Box, Button, ButtonGroup, FormControl, Grid, InputLabel, Modal, OutlinedInput, Paper, Typography } from '@mui/material';
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material';
 import { uiStyles } from './Game.styles';
 import { countCards, createDocument, deleteDocument, getGameCards } from 'config/firebaseEvents';
@@ -15,13 +16,14 @@ import { TabContext } from '@mui/lab';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { generateId } from 'utils/idGenerator';
-import { IconCircleX, IconEye, IconTrash } from '@tabler/icons';
+import { IconCards, IconCircleX, IconDeviceFloppy, IconEye, IconPlus, IconTrash } from '@tabler/icons';
 import MessageDark from 'components/message/MessageDark';
 import { titles } from './Game.texts';
 import { bingoValues, genConst } from 'store/constant';
 import { searchingCard } from 'utils/search';
 
 export default function CardGame() {
+  const theme = useTheme();
   const [bNumbers, setBNumbers] = useState([]);
   const [iNumbers, setINumbers] = useState([]);
   const [nNumbers, setNNumbers] = useState([]);
@@ -41,6 +43,12 @@ export default function CardGame() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [search, setSearch] = useState('');
   const [openCard, setOpenCard] = useState(false);
+  const [openCreateCard, setOpenCreateCard] = useState(false);
+  const [quantity, setQuantity] = useState(0);
+  let idCard = 0;
+  let order = 0;
+  let cardBingoNumbers = [];
+  let object = {};
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -50,6 +58,13 @@ export default function CardGame() {
   };
   const handleCloseCard = () => {
     setOpenCard(false);
+  };
+
+  const handleOpenCreateCard = () => {
+    setOpenCreateCard(true);
+  };
+  const handleCloseCreateCard = () => {
+    setOpenCreateCard(false);
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -81,6 +96,7 @@ export default function CardGame() {
     }
     matrix.push(b);
     setBNumbers(matrix[0]);
+    return matrix[0];
   }
 
   function generateIsection(min, max) {
@@ -98,6 +114,7 @@ export default function CardGame() {
     }
     matrix.push(i);
     setINumbers(matrix[0]);
+    return matrix[0];
   }
 
   function generateNsection(min, max) {
@@ -119,6 +136,7 @@ export default function CardGame() {
     }
     matrix.push(n);
     setNNumbers(matrix[0]);
+    return matrix[0];
   }
 
   function generateGsection(min, max) {
@@ -136,6 +154,7 @@ export default function CardGame() {
     }
     matrix.push(g);
     setGNumbers(matrix[0]);
+    return matrix[0];
   }
 
   function generateOsection(min, max) {
@@ -153,22 +172,24 @@ export default function CardGame() {
     }
     matrix.push(o);
     setONumbers(matrix[0]);
+    return matrix[0];
   }
 
-  const handleGetCard = () => {
+  function handleGetCard() {
     generateBsection(bingoValues.B_START, bingoValues.B_END);
     generateIsection(bingoValues.I_START, bingoValues.I_END);
     generateNsection(bingoValues.N_START, bingoValues.N_END);
     generateGsection(bingoValues.G_START, bingoValues.G_END);
     generateOsection(bingoValues.O_START, bingoValues.O_END);
     setShowCard(true);
-  };
+  }
 
-  const handleSaveCard = () => {
-    const idCard = generateId(10);
-    const order = cardNumber + 1;
-    const cardBingoNumbers = [...bNumbers, ...iNumbers, ...nNumbers, ...gNumbers, ...oNumbers];
-    const object = {
+  function handleSaveCard() {
+    setOpenLoader(true);
+    idCard = generateId(10);
+    order = cardNumber + 1;
+    cardBingoNumbers = [...bNumbers, ...iNumbers, ...nNumbers, ...gNumbers, ...oNumbers];
+    object = {
       id: idCard,
       b: bNumbers,
       i: iNumbers,
@@ -178,16 +199,42 @@ export default function CardGame() {
       bingoNumbers: cardBingoNumbers,
       order: order,
       num: order + '',
-      createAt: fullDate()
+      createAt: fullDate(),
+      state: bingoValues.STATE_AVAILABLE
     };
-    setOpenLoader(true);
     createDocument(collCards, idCard, object);
     setTimeout(() => {
       setOpenLoader(false);
       toast.success(titles.successCardCreate, { position: toast.POSITION.TOP_RIGHT });
       reloadData();
     }, 2000);
-  };
+  }
+
+  function generateAndSaveCard(index) {
+    setCardNumber(index + 1);
+    console.log(index);
+    idCard = generateId(10);
+    let array1 = generateBsection(bingoValues.B_START, bingoValues.B_END);
+    let array2 = generateIsection(bingoValues.I_START, bingoValues.I_END);
+    let array3 = generateNsection(bingoValues.N_START, bingoValues.N_END);
+    let array4 = generateGsection(bingoValues.G_START, bingoValues.G_END);
+    let array5 = generateOsection(bingoValues.O_START, bingoValues.O_END);
+    cardBingoNumbers = [...array1, ...array2, ...array3, ...array4, ...array5];
+    let object = {
+      id: idCard,
+      b: array1,
+      i: array2,
+      n: array3,
+      g: array4,
+      o: array5,
+      bingoNumbers: cardBingoNumbers,
+      order: index,
+      num: index + '',
+      createAt: fullDate(),
+      state: bingoValues.STATE_AVAILABLE
+    };
+    createDocument(collCards, idCard, object);
+  }
 
   const reloadData = () => {
     countCards().then((count) => {
@@ -196,11 +243,10 @@ export default function CardGame() {
     getGameCards().then((data) => {
       setCards(data);
     });
-    setShowCard(false);
-    handleGetCard();
   };
 
   const [value, setValue] = useState('1');
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -211,7 +257,7 @@ export default function CardGame() {
       setOpenLoader(false);
       toast.success(titles.successCardDelete, { position: toast.POSITION.TOP_RIGHT });
       reloadData();
-    }, 2000);
+    }, 1000);
   };
 
   return (
@@ -236,6 +282,14 @@ export default function CardGame() {
           </Tabs>
         </Box>
         <TabPanel value="1">
+          <Button
+            style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF', marginBottom: 10, marginTop: -10 }}
+            onClick={() => {
+              handleOpenCreateCard();
+            }}
+          >
+            <IconPlus />
+          </Button>
           {cards.length > 0 ? (
             <Paper sx={uiStyles.paper}>
               <Box sx={uiStyles.box2}>
@@ -252,8 +306,11 @@ export default function CardGame() {
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
                     <TableRow>
-                      <TableCell key="id-col1" align="left" style={{ minWidth: 60, fontWeight: 'bold' }}>
+                      <TableCell key="id-col1" align="left" style={{ minWidth: 40, fontWeight: 'bold' }}>
                         {'Número'}
+                      </TableCell>
+                      <TableCell key="id-col1" align="left" style={{ minWidth: 80, fontWeight: 'bold' }}>
+                        {'Estado'}
                       </TableCell>
                       <TableCell key="id-col3" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                         {'Fecha'}
@@ -270,6 +327,17 @@ export default function CardGame() {
                       .map((r) => (
                         <TableRow hover key={r.id}>
                           <TableCell align="left">{r.num}</TableCell>
+                          <TableCell align="left">
+                            {r.state == bingoValues.STATE_AVAILABLE ? (
+                              <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>
+                                {bingoValues.STATE_DESC_AVAILABLE}
+                              </span>
+                            ) : (
+                              <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
+                                {bingoValues.STATE_DESC_NOT_AVAILABLE}
+                              </span>
+                            )}
+                          </TableCell>
                           <TableCell align="left">{r.createAt}</TableCell>
                           <TableCell align="center">
                             <ButtonGroup variant="contained">
@@ -303,7 +371,7 @@ export default function CardGame() {
                 </Table>
               </TableContainer>
               <TablePagination
-                rowsPerPageOptions={[10, 25, 50, 100]}
+                rowsPerPageOptions={[10, 25, 50, 100, 200, 500, 1000]}
                 labelRowsPerPage={titles.rowsPerPage}
                 component="div"
                 count={cards.length}
@@ -325,18 +393,13 @@ export default function CardGame() {
         </TabPanel>
         <TabPanel value="2">
           <ButtonGroup>
-            <Button variant="contained" style={{ color: '#FFF', height: 50, width: 160 }} onClick={handleGetCard}>
-              Generar Cartilla
+            <Button startIcon={<IconCards />} variant="contained" style={{ color: '#FFF', height: 50, width: 180 }} onClick={handleGetCard}>
+              Generar Cartillas
             </Button>
-            {showCard ? (
-              <Button variant="outlined" style={{ height: 50, width: 160 }} onClick={handleSaveCard}>
-                Guardar Cartilla
-              </Button>
-            ) : (
-              <></>
-            )}
+            <Button startIcon={<IconDeviceFloppy />} variant="outlined" style={{ height: 50, width: 180 }} onClick={handleSaveCard}>
+              Guardar Cartillas
+            </Button>
           </ButtonGroup>
-          <br />
           <br />
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
@@ -346,57 +409,57 @@ export default function CardGame() {
                     <div>
                       <h3>No: {cardNumber + 1}</h3>
                       <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 62, width: 62 }}>
+                        <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 62, width: 62, borderRadius: 0 }}>
                           B
                         </Button>
                         {bNumbers.map((item, key) => (
-                          <Button key={'b' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                          <Button key={'b' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                             {item}
                           </Button>
                         ))}
                       </ButtonGroup>
                       <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
                           I
                         </Button>
                         {iNumbers.map((item, key) => (
-                          <Button key={'i' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                          <Button key={'i' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                             {item}
                           </Button>
                         ))}
                       </ButtonGroup>
                       <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
                           N
                         </Button>
                         {nNumbers.map((item, key) =>
                           item == 0 ? (
-                            <Button key={'n' + key} variant="contained" style={{ height: 62, width: 62, color: '#FFF' }}>
+                            <Button key={'n' + key} variant="contained" style={{ height: 62, width: 62, color: '#FFF', borderRadius: 0 }}>
                               FREE
                             </Button>
                           ) : (
-                            <Button key={'n' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                            <Button key={'n' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                               {item}
                             </Button>
                           )
                         )}
                       </ButtonGroup>
                       <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
                           G
                         </Button>
                         {gNumbers.map((item, key) => (
-                          <Button key={'g' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                          <Button key={'g' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                             {item}
                           </Button>
                         ))}
                       </ButtonGroup>
                       <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
                           O
                         </Button>
                         {oNumbers.map((item, key) => (
-                          <Button key={'o' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                          <Button key={'o' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                             {item}
                           </Button>
                         ))}
@@ -419,57 +482,57 @@ export default function CardGame() {
           <div style={{ marginTop: 20 }}>
             <center>
               <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 62, width: 62 }}>
+                <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 55, width: 55, borderRadius: 0 }}>
                   B
                 </Button>
                 {bN.map((item, key) => (
-                  <Button key={'b' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                  <Button key={'b' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
                     {item}
                   </Button>
                 ))}
               </ButtonGroup>
               <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
                   I
                 </Button>
                 {iN.map((item, key) => (
-                  <Button key={'i' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                  <Button key={'i' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
                     {item}
                   </Button>
                 ))}
               </ButtonGroup>
               <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
                   N
                 </Button>
                 {nN.map((item, key) =>
                   item == 0 ? (
-                    <Button key={'n' + key} variant="contained" style={{ height: 62, width: 62, color: '#FFF' }}>
+                    <Button key={'n' + key} variant="contained" style={{ height: 55, width: 55, color: '#FFF', borderRadius: 0 }}>
                       FREE
                     </Button>
                   ) : (
-                    <Button key={'n' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                    <Button key={'n' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
                       {item}
                     </Button>
                   )
                 )}
               </ButtonGroup>
               <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
                   G
                 </Button>
                 {gN.map((item, key) => (
-                  <Button key={'g' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                  <Button key={'g' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
                     {item}
                   </Button>
                 ))}
               </ButtonGroup>
               <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62 }}>
+                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
                   O
                 </Button>
                 {oN.map((item, key) => (
-                  <Button key={'o' + key} variant="outlined" style={{ height: 62, width: 62 }}>
+                  <Button key={'o' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
                     {item}
                   </Button>
                 ))}
@@ -499,6 +562,72 @@ export default function CardGame() {
           </Grid>
         </Box>
       </Modal>
+
+      <Modal
+        open={openCreateCard}
+        onClose={handleCloseCreateCard}
+        aria-labelledby="parent-modal-title"
+        aria-describedby="parent-modal-description"
+      >
+        <Box sx={uiStyles.modalStyles}>
+          <Typography id="modal-modal-title" variant="h3" component="h2" sx={{ textAlign: 'center' }}>
+            Generar Cartillas
+          </Typography>
+          <Grid container style={{ marginTop: 20 }}>
+            <Grid item xs={12}>
+              <Grid container spacing={1}>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                      <InputLabel htmlFor="quantity">
+                        <span>*</span> {'Ingrese la cantidad de cartillas a generar'}
+                      </InputLabel>
+                      <OutlinedInput
+                        id={'quantity'}
+                        type="number"
+                        name={'quantity'}
+                        inputProps={{}}
+                        onChange={(ev) => setQuantity(ev.target.value)}
+                      />
+                    </FormControl>
+                  </center>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <ButtonGroup>
+                      <Button
+                        startIcon={<IconCards />}
+                        variant="contained"
+                        style={{ color: '#FFF', height: 50, width: 180 }}
+                        onClick={() => {
+                          if (!quantity) {
+                            toast.info(titles.requireField, { position: toast.POSITION.TOP_RIGHT });
+                          } else {
+                            setOpenLoader(true);
+                            let cardNum = cardNumber;
+                            for (let index = cardNum; index < cardNum + parseInt(quantity); index++) {
+                              generateAndSaveCard(index + 1);
+                            }
+                            setTimeout(() => {
+                              setOpenLoader(false);
+                              toast.success(titles.successCardCreate, { position: toast.POSITION.TOP_RIGHT });
+                              reloadData();
+                              setOpenCreateCard(false);
+                            }, parseInt(quantity) * 50);
+                          }
+                        }}
+                      >
+                        Generar
+                      </Button>
+                    </ButtonGroup>
+                  </center>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+
       <Modal open={openLoader} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <center>
           <Box sx={uiStyles.modalStylesLoader}>

@@ -6,8 +6,7 @@ export const ctaAccount = 'CTAACC';
 
 export const bingoValues = {
   INIT: 1,
-  LIMIT: 90,
-  /*
+  LIMIT: 75,
   B_START: 1,
   B_END: 15,
   I_START: 16,
@@ -17,9 +16,12 @@ export const bingoValues = {
   G_START: 46,
   G_END: 60,
   O_START: 61,
-  O_END: 75
-  */
-  B_START: 1,
+  O_END: 75,
+  STATE_AVAILABLE: 1,
+  STATE_NOT_AVAILABLE: 0,
+  STATE_DESC_AVAILABLE: 'DISPONIBLE',
+  STATE_DESC_NOT_AVAILABLE: 'NO DISPONIBLE'
+  /*B_START: 1,
   B_END: 18,
   I_START: 19,
   I_END: 36,
@@ -28,7 +30,7 @@ export const bingoValues = {
   G_START: 55,
   G_END: 72,
   O_START: 73,
-  O_END: 90
+  O_END: 90*/
 };
 
 export const genConst = {
