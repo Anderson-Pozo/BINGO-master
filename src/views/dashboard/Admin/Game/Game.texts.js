@@ -25,7 +25,7 @@ export const titles = {
   tableCellActions: 'Acciones',
   maxRecords: 'Registros máximos',
   noRecordsFound: 'No existen partidas aún!',
-  noCardsFound: 'No existen cartillas aún!',
+  noCardsFound: 'No existen cartillas aún para el evento seleccionado!',
   buttonCreate: 'Crear',
   buttonUpdate: 'Actualizar',
   buttonDelete: 'Eliminar',

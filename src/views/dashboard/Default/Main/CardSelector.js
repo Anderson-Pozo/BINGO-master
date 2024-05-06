@@ -5,7 +5,7 @@ import { Avatar, Box, ButtonBase, Grid, Modal, Typography, ButtonGroup, Button }
 import MessageDark from 'components/message/MessageDark';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect, useState } from 'react';
-import { createDocument, getGameCards, updateDocument } from 'config/firebaseEvents';
+import { createDocument, getGameCardsByEvent, updateDocument } from 'config/firebaseEvents';
 import { IconCards, IconShoppingCart, IconX } from '@tabler/icons';
 import { uiStyles } from './styles';
 import { fullDate } from 'utils/validations';
@@ -43,13 +43,13 @@ const CardSelector = () => {
         setUserId(user.uid);
       }
     });
-    getGameCards().then((data) => {
+    getGameCardsByEvent(id).then((data) => {
       setCards(data);
     });
-  }, []);
+  }, [id]);
 
   const reloadData = () => {
-    getGameCards().then((data) => {
+    getGameCardsByEvent(id).then((data) => {
       setCards(data);
     });
   };

@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material/styles';
 import { Box, Button, ButtonGroup, FormControl, Grid, InputLabel, Modal, OutlinedInput, Paper, Typography } from '@mui/material';
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material';
 import { uiStyles } from './Game.styles';
-import { countCards, createDocument, deleteDocument, getGameCards } from 'config/firebaseEvents';
+import { countCards, createDocument, deleteDocument, getGameCardsByEvent, getGamesList } from 'config/firebaseEvents';
 import { fullDate } from 'utils/validations';
 import { collCards } from 'store/collections';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -16,7 +16,7 @@ import { TabContext } from '@mui/lab';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { generateId } from 'utils/idGenerator';
-import { IconCards, IconCircleX, IconDeviceFloppy, IconEye, IconPlus, IconTrash } from '@tabler/icons';
+import { IconArrowBack, IconCards, IconCheck, IconCircleX, IconDeviceFloppy, IconEye, IconPlus, IconTrash } from '@tabler/icons';
 import MessageDark from 'components/message/MessageDark';
 import { titles } from './Game.texts';
 import { bingoValues, genConst } from 'store/constant';
@@ -34,6 +34,8 @@ export default function CardGame() {
   const [nN, setNN] = useState([]);
   const [gN, setGN] = useState([]);
   const [oN, setON] = useState([]);
+  const [event, setEvent] = useState('');
+  const [eventName, setEventName] = useState('');
   const [cards, setCards] = useState([]);
   const [showCard, setShowCard] = useState(false);
   const [cardNumber, setCardNumber] = useState(0);
@@ -45,6 +47,9 @@ export default function CardGame() {
   const [openCard, setOpenCard] = useState(false);
   const [openCreateCard, setOpenCreateCard] = useState(false);
   const [quantity, setQuantity] = useState(0);
+  const [gameList, setGameList] = useState([]);
+  const [isEvent, setIsEvent] = useState(false);
+
   let idCard = 0;
   let order = 0;
   let cardBingoNumbers = [];
@@ -73,11 +78,8 @@ export default function CardGame() {
   };
 
   useEffect(() => {
-    countCards().then((count) => {
-      setCardNumber(count);
-    });
-    getGameCards().then((data) => {
-      setCards(data);
+    getGamesList().then((data) => {
+      setGameList(data);
     });
   }, []);
 
@@ -190,6 +192,8 @@ export default function CardGame() {
     order = cardNumber + 1;
     cardBingoNumbers = [...bNumbers, ...iNumbers, ...nNumbers, ...gNumbers, ...oNumbers];
     object = {
+      event: event,
+      eventName: eventName,
       id: idCard,
       b: bNumbers,
       i: iNumbers,
@@ -212,7 +216,6 @@ export default function CardGame() {
 
   function generateAndSaveCard(index) {
     setCardNumber(index + 1);
-    console.log(index);
     idCard = generateId(10);
     let array1 = generateBsection(bingoValues.B_START, bingoValues.B_END);
     let array2 = generateIsection(bingoValues.I_START, bingoValues.I_END);
@@ -221,6 +224,8 @@ export default function CardGame() {
     let array5 = generateOsection(bingoValues.O_START, bingoValues.O_END);
     cardBingoNumbers = [...array1, ...array2, ...array3, ...array4, ...array5];
     let object = {
+      event: event,
+      eventName: eventName,
       id: idCard,
       b: array1,
       i: array2,
@@ -237,11 +242,11 @@ export default function CardGame() {
   }
 
   const reloadData = () => {
-    countCards().then((count) => {
-      setCardNumber(count);
-    });
-    getGameCards().then((data) => {
+    getGameCardsByEvent(event).then((data) => {
       setCards(data);
+      countCards().then((count) => {
+        setCardNumber(count);
+      });
     });
   };
 
@@ -256,125 +261,88 @@ export default function CardGame() {
     setTimeout(() => {
       setOpenLoader(false);
       toast.success(titles.successCardDelete, { position: toast.POSITION.TOP_RIGHT });
-      reloadData();
+      reloadData(event);
     }, 1000);
   };
 
   return (
     <Box sx={uiStyles.box}>
       <ToastContainer />
-      <TabContext value={value}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={value}
-            variant="scrollable"
-            scrollButtons
-            onChange={handleChange}
-            aria-label="Tabs cards"
-            sx={{
-              [`& .${tabsClasses.scrollButtons}`]: {
-                '&.Mui-disabled': { opacity: 0.3 }
-              }
-            }}
-          >
-            <Tab label="Lista de Cartillas" value="1" />
-            <Tab label="Generador Cartilla" value="2" />
-          </Tabs>
-        </Box>
-        <TabPanel value="1">
+      {isEvent ? (
+        <>
           <Button
-            style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF', marginBottom: 10, marginTop: -10 }}
-            onClick={() => {
-              handleOpenCreateCard();
-            }}
+            variant="contained"
+            startIcon={<IconArrowBack />}
+            size="large"
+            style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+            onClick={() => setIsEvent(false)}
           >
-            <IconPlus />
+            {'Volver'}
           </Button>
-          {cards.length > 0 ? (
-            <Paper sx={uiStyles.paper}>
-              <Box sx={uiStyles.box2}>
-                <OutlinedInput
-                  id="searchField"
-                  type="text"
-                  name="searchField"
-                  onChange={(ev) => setSearch(ev.target.value)}
-                  placeholder={titles.searchPlace}
-                  style={{ width: '100%' }}
-                />
-              </Box>
+        </>
+      ) : (
+        <>
+          {gameList.length > 0 ? (
+            <Paper style={{ marginTop: 10 }}>
+              <h3>Seleccione el evento</h3>
               <TableContainer sx={{ maxHeight: '100%' }}>
                 <Table stickyHeader aria-label="sticky table">
                   <TableHead>
                     <TableRow>
-                      <TableCell key="id-col1" align="left" style={{ minWidth: 40, fontWeight: 'bold' }}>
-                        {'Número'}
+                      <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
+                        ID
                       </TableCell>
-                      <TableCell key="id-col1" align="left" style={{ minWidth: 80, fontWeight: 'bold' }}>
-                        {'Estado'}
+                      <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
+                        Nombre
                       </TableCell>
-                      <TableCell key="id-col3" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        {'Fecha'}
+                      <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                        Fecha
                       </TableCell>
                       <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
-                        {'Acciones'}
+                        {titles.tableCellActions}
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {cards
-                      .filter(searchingCard(search))
-                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((r) => (
-                        <TableRow hover key={r.id}>
-                          <TableCell align="left">{r.num}</TableCell>
-                          <TableCell align="left">
-                            {r.state == bingoValues.STATE_AVAILABLE ? (
-                              <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>
-                                {bingoValues.STATE_DESC_AVAILABLE}
-                              </span>
-                            ) : (
-                              <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
-                                {bingoValues.STATE_DESC_NOT_AVAILABLE}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell align="left">{r.createAt}</TableCell>
-                          <TableCell align="center">
-                            <ButtonGroup variant="contained">
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
-                                onClick={() => {
-                                  handleOpenCard();
-                                  setCardN(r.num);
-                                  setBN(r.b);
-                                  setIN(r.i);
-                                  setNN(r.n);
-                                  setGN(r.g);
-                                  setON(r.o);
-                                }}
-                              >
-                                <IconEye />
-                              </Button>
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
-                                onClick={() => {
-                                  handleDelete(r.id);
-                                }}
-                              >
-                                <IconTrash />
-                              </Button>
-                            </ButtonGroup>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                    {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
+                      <TableRow hover key={r.id}>
+                        <TableCell align="left">{r.ide}</TableCell>
+                        <TableCell align="left">{r.name}</TableCell>
+                        <TableCell align="left">{r.startDate}</TableCell>
+                        <TableCell align="center">
+                          <ButtonGroup variant="contained">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
+                              onClick={() => {
+                                setEvent(r.ide);
+                                setEventName(r.name);
+                                setIsEvent(true);
+                                setOpenLoader(true);
+                                getGameCardsByEvent(r.ide).then((data) => {
+                                  setCards(data);
+                                  countCards().then((count) => {
+                                    setCardNumber(count);
+                                  });
+                                });
+                                setTimeout(() => {
+                                  setOpenLoader(false);
+                                }, 1000);
+                              }}
+                            >
+                              <IconCheck color="#FFF" />
+                            </Button>
+                          </ButtonGroup>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </TableContainer>
               <TablePagination
-                rowsPerPageOptions={[10, 25, 50, 100, 200, 500, 1000]}
-                labelRowsPerPage={titles.rowsPerPage}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                labelRowsPerPage={titles.maxRecords}
                 component="div"
-                count={cards.length}
+                count={gameList.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
@@ -385,95 +353,234 @@ export default function CardGame() {
             <Grid container style={{ marginTop: 20 }}>
               <Grid item xs={12}>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <MessageDark message={titles.noCardsFound} submessage="" />
+                  <MessageDark message={titles.loading} submessage="" />
                 </Grid>
               </Grid>
             </Grid>
           )}
-        </TabPanel>
-        <TabPanel value="2">
-          <ButtonGroup>
-            <Button startIcon={<IconCards />} variant="contained" style={{ color: '#FFF', height: 50, width: 180 }} onClick={handleGetCard}>
-              Generar Cartillas
+        </>
+      )}
+      {isEvent ? (
+        <TabContext value={value}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={value}
+              variant="scrollable"
+              scrollButtons
+              onChange={handleChange}
+              aria-label="Tabs cards"
+              sx={{
+                [`& .${tabsClasses.scrollButtons}`]: {
+                  '&.Mui-disabled': { opacity: 0.3 }
+                }
+              }}
+            >
+              <Tab label="Lista de Cartillas" value="1" />
+              <Tab label="Generador Cartilla" value="2" />
+            </Tabs>
+          </Box>
+          <TabPanel value="1">
+            <Button
+              style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF', marginBottom: 10, marginTop: -10 }}
+              onClick={() => {
+                handleOpenCreateCard();
+              }}
+            >
+              <IconPlus />
             </Button>
-            <Button startIcon={<IconDeviceFloppy />} variant="outlined" style={{ height: 50, width: 180 }} onClick={handleSaveCard}>
-              Guardar Cartillas
-            </Button>
-          </ButtonGroup>
-          <br />
-          <Grid container style={{ marginTop: 10 }}>
-            <Grid item xs={12}>
-              <Grid container spacing={1}>
-                <Grid item lg={6} md={6} sm={12} xs={12}>
-                  {showCard ? (
-                    <div>
-                      <h3>No: {cardNumber + 1}</h3>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 62, width: 62, borderRadius: 0 }}>
-                          B
-                        </Button>
-                        {bNumbers.map((item, key) => (
-                          <Button key={'b' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
-                            {item}
-                          </Button>
+            {cards.length > 0 ? (
+              <Paper sx={uiStyles.paper}>
+                <Box sx={uiStyles.box2}>
+                  <OutlinedInput
+                    id="searchField"
+                    type="text"
+                    name="searchField"
+                    onChange={(ev) => setSearch(ev.target.value)}
+                    placeholder={titles.searchPlace}
+                    style={{ width: '100%' }}
+                  />
+                </Box>
+                <TableContainer sx={{ maxHeight: '100%' }}>
+                  <Table stickyHeader aria-label="sticky table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell key="id-col1" align="left" style={{ minWidth: 40, fontWeight: 'bold' }}>
+                          {'Número'}
+                        </TableCell>
+                        <TableCell key="id-col1" align="left" style={{ minWidth: 80, fontWeight: 'bold' }}>
+                          {'Estado'}
+                        </TableCell>
+                        <TableCell key="id-col3" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                          {'Fecha'}
+                        </TableCell>
+                        <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
+                          {'Acciones'}
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {cards
+                        .filter(searchingCard(search))
+                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                        .map((r) => (
+                          <TableRow hover key={r.id}>
+                            <TableCell align="left">{r.num}</TableCell>
+                            <TableCell align="left">
+                              {r.state == bingoValues.STATE_AVAILABLE ? (
+                                <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>
+                                  {bingoValues.STATE_DESC_AVAILABLE}
+                                </span>
+                              ) : (
+                                <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
+                                  {bingoValues.STATE_DESC_NOT_AVAILABLE}
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell align="left">{r.createAt}</TableCell>
+                            <TableCell align="center">
+                              <ButtonGroup variant="contained">
+                                <Button
+                                  style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
+                                  onClick={() => {
+                                    handleOpenCard();
+                                    setCardN(r.num);
+                                    setBN(r.b);
+                                    setIN(r.i);
+                                    setNN(r.n);
+                                    setGN(r.g);
+                                    setON(r.o);
+                                  }}
+                                >
+                                  <IconEye />
+                                </Button>
+                                <Button
+                                  style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
+                                  onClick={() => {
+                                    handleDelete(r.id);
+                                  }}
+                                >
+                                  <IconTrash />
+                                </Button>
+                              </ButtonGroup>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
-                          I
-                        </Button>
-                        {iNumbers.map((item, key) => (
-                          <Button key={'i' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
-                            {item}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[10, 25, 50, 100, 200, 500, 1000]}
+                  labelRowsPerPage={titles.rowsPerPage}
+                  component="div"
+                  count={cards.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </Paper>
+            ) : (
+              <Grid container style={{ marginTop: 20 }}>
+                <Grid item xs={12}>
+                  <Grid item lg={12} md={12} sm={12} xs={12}>
+                    <MessageDark message={titles.noCardsFound} submessage="" />
+                  </Grid>
+                </Grid>
+              </Grid>
+            )}
+          </TabPanel>
+          <TabPanel value="2">
+            <ButtonGroup>
+              <Button
+                startIcon={<IconCards />}
+                variant="contained"
+                style={{ color: '#FFF', height: 50, width: 180 }}
+                onClick={handleGetCard}
+              >
+                Generar Cartillas
+              </Button>
+              <Button startIcon={<IconDeviceFloppy />} variant="outlined" style={{ height: 50, width: 180 }} onClick={handleSaveCard}>
+                Guardar Cartillas
+              </Button>
+            </ButtonGroup>
+            <br />
+            <Grid container style={{ marginTop: 10 }}>
+              <Grid item xs={12}>
+                <Grid container spacing={1}>
+                  <Grid item lg={6} md={6} sm={12} xs={12}>
+                    {showCard ? (
+                      <div>
+                        <h3>No: {cardNumber + 1}</h3>
+                        <ButtonGroup aria-label="Basic button group" orientation="vertical">
+                          <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 62, width: 62, borderRadius: 0 }}>
+                            B
                           </Button>
-                        ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
-                          N
-                        </Button>
-                        {nNumbers.map((item, key) =>
-                          item == 0 ? (
-                            <Button key={'n' + key} variant="contained" style={{ height: 62, width: 62, color: '#FFF', borderRadius: 0 }}>
-                              FREE
-                            </Button>
-                          ) : (
-                            <Button key={'n' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
+                          {bNumbers.map((item, key) => (
+                            <Button key={'b' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
                               {item}
                             </Button>
-                          )
-                        )}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
-                          G
-                        </Button>
-                        {gNumbers.map((item, key) => (
-                          <Button key={'g' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
-                            {item}
+                          ))}
+                        </ButtonGroup>
+                        <ButtonGroup aria-label="Basic button group" orientation="vertical">
+                          <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
+                            I
                           </Button>
-                        ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
-                          O
-                        </Button>
-                        {oNumbers.map((item, key) => (
-                          <Button key={'o' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
-                            {item}
+                          {iNumbers.map((item, key) => (
+                            <Button key={'i' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
+                              {item}
+                            </Button>
+                          ))}
+                        </ButtonGroup>
+                        <ButtonGroup aria-label="Basic button group" orientation="vertical">
+                          <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
+                            N
                           </Button>
-                        ))}
-                      </ButtonGroup>
-                    </div>
-                  ) : (
-                    <></>
-                  )}
+                          {nNumbers.map((item, key) =>
+                            item == 0 ? (
+                              <Button key={'n' + key} variant="contained" style={{ height: 62, width: 62, color: '#FFF', borderRadius: 0 }}>
+                                FREE
+                              </Button>
+                            ) : (
+                              <Button key={'n' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
+                                {item}
+                              </Button>
+                            )
+                          )}
+                        </ButtonGroup>
+                        <ButtonGroup aria-label="Basic button group" orientation="vertical">
+                          <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
+                            G
+                          </Button>
+                          {gNumbers.map((item, key) => (
+                            <Button key={'g' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
+                              {item}
+                            </Button>
+                          ))}
+                        </ButtonGroup>
+                        <ButtonGroup aria-label="Basic button group" orientation="vertical">
+                          <Button variant="contained" style={{ color: '#FFF', height: 62, width: 62, borderRadius: 0 }}>
+                            O
+                          </Button>
+                          {oNumbers.map((item, key) => (
+                            <Button key={'o' + key} variant="outlined" style={{ height: 62, width: 62, borderRadius: 0 }}>
+                              {item}
+                            </Button>
+                          ))}
+                        </ButtonGroup>
+                      </div>
+                    ) : (
+                      <></>
+                    )}
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
-          </Grid>
-        </TabPanel>
-      </TabContext>
+          </TabPanel>
+        </TabContext>
+      ) : (
+        <></>
+      )}
+
       <Modal open={openCard} onClose={handleCloseCard} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
           <Typography id="modal-modal-title" variant="h3" component="h2" sx={{ textAlign: 'center' }}>

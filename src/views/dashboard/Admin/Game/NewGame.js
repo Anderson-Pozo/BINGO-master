@@ -25,16 +25,13 @@ import MessageDark from 'components/message/MessageDark';
 import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus, IconUser } from '@tabler/icons';
 //Firebase Events
 import { createDocument, deleteDocument, getGamesList, updateDocument } from 'config/firebaseEvents';
-
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import { genConst } from 'store/constant';
 import { collGames } from 'store/collections';
 import { inputLabels, titles } from './Game.texts';
 import { uiStyles } from './Game.styles';
-
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
@@ -47,15 +44,13 @@ export default function NewGame() {
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
   const [startDate, setStartDate] = useState(null);
+  const [transmition, setTransmition] = useState(null);
   const [gameList, setGameList] = useState([]);
-
   const [openLoader, setOpenLoader] = useState(false);
 
-  //Hook
   useEffect(() => {
     getGamesList().then((data) => {
       setGameList(data);
@@ -93,7 +88,9 @@ export default function NewGame() {
   };
 
   const reloadData = () => {
-    window.location.reload();
+    getGamesList().then((data) => {
+      setGameList(data);
+    });
   };
 
   const handleCreateGame = () => {
@@ -105,6 +102,7 @@ export default function NewGame() {
         ide: ide,
         name: name,
         startDate: startDate,
+        transmition: transmition,
         createAt: fullDate()
       };
       setOpenLoader(true);
@@ -114,6 +112,7 @@ export default function NewGame() {
         setOpenLoader(false);
         setOpenCreate(false);
         cleanData();
+        reloadData();
         toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
       }, 2000);
     }
@@ -126,6 +125,7 @@ export default function NewGame() {
       const object = {
         name: name,
         startDate: startDate,
+        transmition: transmition,
         updateAt: fullDate()
       };
       setOpenLoader(true);
@@ -135,6 +135,7 @@ export default function NewGame() {
         setOpenLoader(false);
         setOpenEdit(false);
         cleanData();
+        reloadData();
         toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
       }, 2000);
     }
@@ -155,6 +156,7 @@ export default function NewGame() {
   const cleanData = () => {
     setName('');
     setStartDate('');
+    setTransmition('');
   };
 
   return (
@@ -215,6 +217,7 @@ export default function NewGame() {
                             setId(r.ide);
                             setName(r.name);
                             setStartDate(r.startDate);
+                            setTransmition(r.transmition);
                             handleOpenEdit();
                           }}
                         >
@@ -296,6 +299,19 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <h4>Link Transmisión:</h4>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <input
+                      type="text"
+                      id="transmition"
+                      name="transmition"
+                      value={transmition || ''}
+                      onChange={(ev) => setTransmition(ev.target.value)}
+                      style={uiStyles.dateInput}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
                   <center>
                     <ButtonGroup>
                       <Button
@@ -357,6 +373,19 @@ export default function NewGame() {
                       name="startDate"
                       value={startDate || ''}
                       onChange={(ev) => setStartDate(ev.target.value)}
+                      style={uiStyles.dateInput}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <h4>Link de Transmisión (Youtube):</h4>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <input
+                      type="text"
+                      id="transmition"
+                      name="transmition"
+                      value={transmition || ''}
+                      onChange={(ev) => setTransmition(ev.target.value)}
                       style={uiStyles.dateInput}
                     />
                   </FormControl>

@@ -125,7 +125,7 @@ export const uiStyles = {
   },
   leftCell: {
     background: '#179cdc',
-    height: 60,
+    height: 80,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -133,14 +133,14 @@ export const uiStyles = {
   },
   midCol: {
     background: '#FFF',
-    height: 60,
+    height: 80,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center'
   },
   midCell: {
     background: '#FFF',
-    height: 30,
+    height: 40,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -150,6 +150,6 @@ export const uiStyles = {
     fontSize: 20,
     color: '#FFF'
   },
-  cellItem: { color: '#179cdc' },
+  cellItem: { color: '#179cdc', fontSize: 18 },
   endBtn: { width: 200, height: 60, backgroundColor: '#FFF', color: '#00adef' }
 };

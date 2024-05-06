@@ -17,7 +17,6 @@ import { genConst } from 'store/constant';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
 import { getProfileUser } from 'config/firebaseEvents';
-import UsersNetwork from 'views/dashboard/Admin/Users/UsersNetwork';
 
 // Main Portal
 const Home = Loadable(lazy(() => import('views/home/Home')));
@@ -29,7 +28,7 @@ const DashboardAdmin = Loadable(lazy(() => import('views/dashboard/Admin')));
 const UserProfile = Loadable(lazy(() => import('views/dashboard/Admin/Profile/UserProfile')));
 const UserSecurity = Loadable(lazy(() => import('views/dashboard/Admin/Profile/UserSecurity')));
 // dashboard Mail
-const Mail = Loadable(lazy(() => import('views/dashboard/Admin/Mail/Mail')));
+//const Mail = Loadable(lazy(() => import('views/dashboard/Admin/Mail/Mail')));
 // dashboard Users
 const AdminUsers = Loadable(lazy(() => import('views/dashboard/Admin/AdminUsers/AdminUsers')));
 const Users = Loadable(lazy(() => import('views/dashboard/Admin/Users/Users')));
@@ -97,9 +96,7 @@ const App = () => {
               <Route element={<CardGame />} path="card-game" exact />
               <Route element={<Share />} path="share" exact />
               <Route element={<Settings />} path="settings" exact />
-              <Route element={<Mail />} path="mail" exact />
               <Route element={<Notifications />} path="notifications" exact />
-              <Route element={<UsersNetwork />} path="network-users" exact />
               <Route element={<UserProfile />} path="user-profile" exact />
               <Route element={<UserSecurity />} path="user-security" exact />
             </Route>

@@ -8,7 +8,7 @@ import MainCard from 'components/cards/MainCard';
 // assets
 import { IconCalendar, IconFileDollar, IconPlayCard } from '@tabler/icons';
 
-const EventCard = ({ name, date, bg, id }) => {
+const EventCard = ({ name, date, bg, id, transmition }) => {
   const theme = useTheme();
   let navigate = useNavigate();
   const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -83,7 +83,7 @@ const EventCard = ({ name, date, bg, id }) => {
                     onClick={() => {
                       navigate({
                         pathname: '/app/card-selector',
-                        search: createSearchParams({ id: id, name: name, date: date }).toString()
+                        search: createSearchParams({ id: id, name: name, date: date, transmition: transmition }).toString()
                       });
                     }}
                   >
@@ -105,7 +105,7 @@ const EventCard = ({ name, date, bg, id }) => {
                     onClick={() => {
                       navigate({
                         pathname: '/app/play-bingo',
-                        search: createSearchParams({ id: id, name: name, date: date }).toString()
+                        search: createSearchParams({ id: id, name: name, date: date, transmition: transmition }).toString()
                       });
                     }}
                   >
@@ -125,7 +125,8 @@ EventCard.propTypes = {
   name: PropTypes.string,
   date: PropTypes.string,
   bg: PropTypes.string,
-  id: PropTypes.string
+  id: PropTypes.string,
+  transmition: PropTypes.string
 };
 
 export default EventCard;

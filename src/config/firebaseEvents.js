@@ -170,6 +170,17 @@ export const getGameCardsByUser = async (id) => {
   });
   return list;
 };
+//
+export const getGameCardsByEvent = async (id) => {
+  const list = [];
+  const q = query(collection(db, collCards), where('event', '==', id));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+    list.sort((a, b) => a.order - b.order);
+  });
+  return list;
+};
 export async function getMail() {
   const list = [];
   const querySnapshot = await getDocuments(collMail);

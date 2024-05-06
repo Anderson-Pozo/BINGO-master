@@ -91,7 +91,16 @@ export default function GameUsers() {
   };
 
   const reloadData = () => {
-    window.location.reload();
+    getGameUsers(idGame).then((data) => {
+      setGameList(data);
+    });
+    getGameNameById(idGame).then((data) => {
+      setGameName(data[0].name);
+      console.log(data);
+    });
+    getUsersList().then((data) => {
+      setUserList(data);
+    });
   };
 
   const handleCreateGame = (idUser, nameUser, emailUser) => {
@@ -110,6 +119,7 @@ export default function GameUsers() {
     setTimeout(() => {
       setOpenLoader(false);
       setOpenCreate(false);
+      reloadData();
       toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
     }, 2000);
   };

@@ -24,13 +24,6 @@ const pages = {
       icon: icons.IconSettings
     },
     {
-      id: 'mail',
-      title: 'Mail',
-      type: 'item',
-      url: '/main/mail',
-      icon: icons.IconMail
-    },
-    {
       id: 'notifications',
       title: 'Notificaciones',
       type: 'item',

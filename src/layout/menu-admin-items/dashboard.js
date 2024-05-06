@@ -60,19 +60,19 @@ const dashboard = {
       breadcrumbs: false
     },
     {
+      id: 'game',
+      title: 'Play BINGO',
+      type: 'item',
+      url: '/main/game',
+      icon: icons.IconGoGame,
+      breadcrumbs: false
+    },
+    {
       id: 'new-game',
       title: 'Crear Evento',
       type: 'item',
       url: '/main/new-game',
       icon: icons.IconDeviceGamepad,
-      breadcrumbs: false
-    },
-    {
-      id: 'game',
-      title: 'Juego',
-      type: 'item',
-      url: '/main/game',
-      icon: icons.IconGoGame,
       breadcrumbs: false
     },
     {
