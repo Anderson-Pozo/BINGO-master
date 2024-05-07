@@ -84,10 +84,10 @@ const dashboard = {
       breadcrumbs: false
     },
     {
-      id: 'inscriptions',
-      title: 'Inscripciones',
+      id: 'cards-user',
+      title: 'Asignar Cartillas',
       type: 'item',
-      url: '/main/inscriptions',
+      url: '/main/cards-user',
       icon: icons.IconNotebook,
       breadcrumbs: false
     }

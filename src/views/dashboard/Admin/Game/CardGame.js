@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material/styles';
 import { Box, Button, ButtonGroup, FormControl, Grid, InputLabel, Modal, OutlinedInput, Paper, Typography } from '@mui/material';
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material';
 import { uiStyles } from './Game.styles';
-import { countCards, createDocument, deleteDocument, getGameCardsByEvent, getGamesList } from 'config/firebaseEvents';
+import { countCardsByEvent, createDocument, deleteDocument, getGameCardsByEvent, getGamesList } from 'config/firebaseEvents';
 import { fullDate } from 'utils/validations';
 import { collCards } from 'store/collections';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -244,7 +244,7 @@ export default function CardGame() {
   const reloadData = () => {
     getGameCardsByEvent(event).then((data) => {
       setCards(data);
-      countCards().then((count) => {
+      countCardsByEvent(event).then((count) => {
         setCardNumber(count);
       });
     });
@@ -290,13 +290,13 @@ export default function CardGame() {
                   <TableHead>
                     <TableRow>
                       <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
-                        ID
+                        {titles.tableCell0}
                       </TableCell>
                       <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
-                        Nombre
+                        {titles.tableCell1}
                       </TableCell>
                       <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        Fecha
+                        {titles.tableCell2}
                       </TableCell>
                       <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
                         {titles.tableCellActions}
@@ -320,7 +320,7 @@ export default function CardGame() {
                                 setOpenLoader(true);
                                 getGameCardsByEvent(r.ide).then((data) => {
                                   setCards(data);
-                                  countCards().then((count) => {
+                                  countCardsByEvent(r.ide).then((count) => {
                                     setCardNumber(count);
                                   });
                                 });

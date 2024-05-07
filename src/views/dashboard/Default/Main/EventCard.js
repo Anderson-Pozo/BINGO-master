@@ -51,21 +51,20 @@ const EventCard = ({ name, date, bg, id, transmition }) => {
                 </Avatar>
               </Grid>
               <Grid item lg={10}>
-                <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, color: '#FFF' }}>
-                  Próximo Evento
+                <Typography sx={{ fontSize: '1.2rem', fontWeight: 500, ml: 2, mr: 1, mt: 1.75, mb: 0.75, color: '#FFF' }}>
+                  {name}
                 </Typography>
               </Grid>
             </Grid>
           </Grid>
           <Grid item>
             <Grid container alignItems="center">
-              <Grid item lg={12}>
-                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 1, mt: 1, mb: 0.75, color: '#FFF' }}>{name}</Typography>
+              <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 2, mt: 1, mb: 0.75, color: '#FFF' }}>
+                  Fecha evento: {date}
+                </Typography>
               </Grid>
-              <Grid item lg={12}>
-                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 1, mt: 0.5, mb: 1, color: '#FFF' }}>{date}</Typography>
-              </Grid>
-              <Grid item lg={12}>
+              <Grid item lg={12} md={12} sm={12} xs={12}>
                 <ButtonGroup fullWidth>
                   <Button
                     variant="contained"

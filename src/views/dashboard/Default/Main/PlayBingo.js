@@ -64,21 +64,23 @@ const PlayBingo = () => {
       <Grid container direction="column" sx={{ mt: 1 }}>
         <Grid item>
           <Grid container spacing={0.3}>
-            <Grid item lg={6} md={12} sm={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
               <MessageDark message={name + ' / ' + date} submessage={'Espera que el evento inicie!'} />
-              <div style={{ marginTop: 10, height: '140%', padding: 5, backgroundColor: '#000', borderRadius: 10 }}>
+            </Grid>
+            <Grid item lg={6} md={12} sm={12} xs={12}>
+              <div style={{ marginTop: 10, padding: 5, height: 400, backgroundColor: '#000', borderRadius: 10 }}>
                 <ReactPlayer className="react-player" url={transmition || null} width="100%" height="100%" loop volume={0.1} playing />
               </div>
             </Grid>
-            <Grid item lg={6} md={12} sm={12}>
+            <Grid item lg={6} md={12} sm={12} xs={12}>
               <center>
-                <h3 style={{ color: '#FFF' }}>Mis cartillas</h3>
+                <h3 style={{ color: '#000' }}>Mis cartillas</h3>
               </center>
               <Grid container direction="column">
                 <Grid item>
                   <Grid container>
                     {cards.map((item) => (
-                      <Grid key={item.id} item lg={3} md={4} sm={6} xs={12}>
+                      <Grid key={item.id} item lg={6} md={6} sm={6} xs={12}>
                         <center>
                           <h3 style={{ color: '#FFF' }}>00000{item.num}</h3>
                           <ButtonGroup aria-label="Basic button group" orientation="vertical">

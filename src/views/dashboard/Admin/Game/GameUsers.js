@@ -15,7 +15,8 @@ import {
   Typography,
   Modal,
   Grid,
-  ButtonGroup
+  ButtonGroup,
+  OutlinedInput
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
@@ -35,15 +36,17 @@ import { uiStyles } from './Game.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
+import { searchingData } from 'utils/search';
 
 export default function GameUsers() {
   let navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const idGame = searchParams.get('id');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(4);
   const [openCreate, setOpenCreate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [search, setSearch] = useState('');
 
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
@@ -228,6 +231,16 @@ export default function GameUsers() {
           <Typography id="modal-modal-title" variant="h3" component="h2">
             Inscribir Usuario
           </Typography>
+          <Box sx={{ mt: 1 }}>
+            <OutlinedInput
+              id={'search'}
+              type="text"
+              name={'search'}
+              onChange={(ev) => setSearch(ev.target.value)}
+              placeholder={'Buscar usuario por nombre o apellido'}
+              style={{ width: '100%' }}
+            />
+          </Box>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
@@ -250,35 +263,38 @@ export default function GameUsers() {
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {userList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                              <TableRow hover key={r.id}>
-                                <TableCell align="left">{r.fullName}</TableCell>
-                                <TableCell align="left">{r.email}</TableCell>
-                                <TableCell align="center">
-                                  <ButtonGroup variant="contained">
-                                    <Button
-                                      style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                                      onClick={() => {
-                                        setId(r.id);
-                                        handleCreateGame(r.id, r.fullName, r.email);
-                                      }}
-                                    >
-                                      <IconUserPlus color="#FFF" />
-                                    </Button>
-                                    <Button
-                                      style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                                      onClick={() => {
-                                        setId(r.ide);
-                                        setName(r.name);
-                                        handleOpenDelete();
-                                      }}
-                                    >
-                                      <IconTrash color="#FFF" />
-                                    </Button>
-                                  </ButtonGroup>
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {userList
+                              .filter(searchingData(search))
+                              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                              .map((r) => (
+                                <TableRow hover key={r.id}>
+                                  <TableCell align="left">{r.fullName}</TableCell>
+                                  <TableCell align="left">{r.email}</TableCell>
+                                  <TableCell align="center">
+                                    <ButtonGroup variant="contained">
+                                      <Button
+                                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
+                                        onClick={() => {
+                                          setId(r.id);
+                                          handleCreateGame(r.id, r.name + ' ' + r.lastName, r.email);
+                                        }}
+                                      >
+                                        <IconUserPlus color="#FFF" />
+                                      </Button>
+                                      <Button
+                                        style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                                        onClick={() => {
+                                          setId(r.ide);
+                                          setName(r.name);
+                                          handleOpenDelete();
+                                        }}
+                                      >
+                                        <IconTrash color="#FFF" />
+                                      </Button>
+                                    </ButtonGroup>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
                           </TableBody>
                         </Table>
                       </TableContainer>

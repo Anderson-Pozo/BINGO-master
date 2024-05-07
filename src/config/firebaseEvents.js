@@ -286,6 +286,13 @@ export const countUser = async () => {
   const count = querySnapshot.size;
   return count;
 };
+//
+export const countCardsByEvent = async (id) => {
+  const q = query(collection(db, collCards), where('event', '==', id));
+  const querySnapshot = await getDocs(q);
+  const count = querySnapshot.size;
+  return count;
+};
 //Obtenemos cantidad de Cartillas
 export const countCards = async () => {
   const data = collection(db, collCards);

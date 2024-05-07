@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
 import {
   Paper,
   Table,
@@ -22,7 +21,7 @@ import {
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus, IconUser } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus } from '@tabler/icons';
 //Firebase Events
 import { createDocument, deleteDocument, getGamesList, updateDocument } from 'config/firebaseEvents';
 //Notifications
@@ -37,7 +36,6 @@ import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
 
 export default function NewGame() {
-  let navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
@@ -199,18 +197,6 @@ export default function NewGame() {
                     <TableCell align="left">{r.startDate}</TableCell>
                     <TableCell align="center">
                       <ButtonGroup variant="contained">
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                          onClick={() => {
-                            setId(r.ide);
-                            navigate({
-                              pathname: '/main/game-users',
-                              search: `?id=${r.ide}`
-                            });
-                          }}
-                        >
-                          <IconUser color="#FFF" />
-                        </Button>
                         <Button
                           style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
                           onClick={() => {
