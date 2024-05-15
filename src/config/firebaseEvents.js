@@ -170,6 +170,17 @@ export const getGameCardsByUser = async (id) => {
   });
   return list;
 };
+//CARTILLAS POR USUARIO Y EVENTO
+export const getGameCardsByUserEvent = async (id, eventId) => {
+  const list = [];
+  const q = query(collection(db, collUserCards), where('userId', '==', id), where('eventId', '==', eventId));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+    list.sort((a, b) => a.order - b.order);
+  });
+  return list;
+};
 //
 export const getGameCardsByEvent = async (id) => {
   const list = [];

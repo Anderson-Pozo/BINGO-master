@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Box, Grid, ButtonGroup, Button } from '@mui/material';
 import MessageDark from 'components/message/MessageDark';
 import { useEffect, useState } from 'react';
-import { getGameCardsByUser } from 'config/firebaseEvents';
+import { getGameCardsByUserEvent } from 'config/firebaseEvents';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
 import ReactPlayer from 'react-player/lazy';
@@ -24,12 +24,12 @@ const PlayBingo = () => {
     onAuthStateChanged(authentication, async (user) => {
       if (user) {
         setUserId(user.uid);
-        getGameCardsByUser(user.uid).then((data) => {
+        getGameCardsByUserEvent(user.uid, id).then((data) => {
           setCards(data);
         });
       }
     });
-  }, []);
+  }, [id]);
 
   const handleMarkB = (id, val) => {
     document.getElementById('b' + id + val).style.background = '#737373';
@@ -72,17 +72,14 @@ const PlayBingo = () => {
                 <ReactPlayer className="react-player" url={transmition || null} width="100%" height="100%" loop volume={0.1} playing />
               </div>
             </Grid>
-            <Grid item lg={6} md={12} sm={12} xs={12}>
-              <center>
-                <h3 style={{ color: '#000' }}>Mis cartillas</h3>
-              </center>
+            <Grid item lg={6} md={12} sm={12} xs={12} style={{ marginTop: 0 }}>
               <Grid container direction="column">
                 <Grid item>
                   <Grid container>
                     {cards.map((item) => (
                       <Grid key={item.id} item lg={6} md={6} sm={6} xs={12}>
                         <center>
-                          <h3 style={{ color: '#FFF' }}>00000{item.num}</h3>
+                          <h3 style={{ color: '#00adef' }}>00000{item.num}</h3>
                           <ButtonGroup aria-label="Basic button group" orientation="vertical">
                             <Button
                               variant="contained"
