@@ -11,6 +11,7 @@ import {
   collIncomes,
   collLog,
   collMail,
+  collPayments,
   collSettings,
   collUserCards,
   collUsers,
@@ -170,6 +171,16 @@ export const getGameCardsByUser = async (id) => {
   });
   return list;
 };
+//CARTILLA POR ID
+export const getGameCardsById = async (id) => {
+  const list = [];
+  const q = query(collection(db, collCards), where('id', '==', id));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
 //CARTILLAS POR USUARIO Y EVENTO
 export const getGameCardsByUserEvent = async (id, eventId) => {
   const list = [];
@@ -229,6 +240,15 @@ export const getGamesList = async () => {
   });
   return list;
 };
+//Obtenemos la lista de Pagos
+export const getPaymentsList = async () => {
+  const list = [];
+  const querySnapshot = await getDocuments(collPayments);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
 //Obtenemos la lista de Usuarios por Partida
 export const getGameUsers = async (id) => {
   const list = [];
@@ -265,7 +285,7 @@ export async function getParamsData() {
   const querySnapshot = await getDocuments(collSettings);
   querySnapshot.forEach((doc) => {
     list.push(doc.data());
-    list.sort((a, b) => a.name.localeCompare(b.name));
+    list.sort((a, b) => a.type.localeCompare(b.type));
   });
   return list;
 }
@@ -318,6 +338,18 @@ export const countGames = async () => {
   const count = querySnapshot.size;
   return count;
 };
+//Total beneficio
+export async function getTotalPaidBenefit() {
+  let total = 0;
+  const q = query(collection(db, collPayments));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.size > 0) {
+    querySnapshot.forEach((doc) => {
+      total = Number.parseFloat(total) + Number.parseFloat(doc.data().total);
+    });
+  }
+  return total;
+}
 //Obtenemos cantidad de Usuarios Administradores Registrados
 export const countAdminUser = async () => {
   const q = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_ADM));

@@ -2,16 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Outlet, useNavigate } from 'react-router-dom';
-
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
 import { AppBar, Box, CssBaseline, Toolbar } from '@mui/material';
-
 // project imports
 import Header from './Header';
 import { drawerWidth } from 'store/constant';
 import { SET_MENU } from 'store/actions';
-
 //Firebase
 import { authentication } from 'config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -22,6 +19,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
   ...theme.typography.mainContent,
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
+  paddingLeft: 20,
   transition: theme.transitions.create(
     'margin',
     open

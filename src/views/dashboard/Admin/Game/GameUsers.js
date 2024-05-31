@@ -228,7 +228,7 @@ export default function GameUsers() {
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             Inscribir Usuario
           </Typography>
           <Box sx={{ mt: 1 }}>
@@ -327,7 +327,7 @@ export default function GameUsers() {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             Eliminar Usuario de Partida
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>

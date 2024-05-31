@@ -32,6 +32,7 @@ const UserSecurity = Loadable(lazy(() => import('views/dashboard/Admin/Profile/U
 // dashboard Users
 const AdminUsers = Loadable(lazy(() => import('views/dashboard/Admin/AdminUsers/AdminUsers')));
 const Users = Loadable(lazy(() => import('views/dashboard/Admin/Users/Users')));
+const Payments = Loadable(lazy(() => import('views/dashboard/Admin/Payments/Payments')));
 // dashboard Settings
 const Share = Loadable(lazy(() => import('views/dashboard/Admin/Share/Share')));
 const Settings = Loadable(lazy(() => import('views/dashboard/Admin/Settings/Settings')));
@@ -51,12 +52,15 @@ const AuthRecovery = Loadable(lazy(() => import('views/pages/login/login/Passwor
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 const CardSelectorDefault = Loadable(lazy(() => import('views/dashboard/Default/Main/CardSelector')));
 const PlayBingo = Loadable(lazy(() => import('views/dashboard/Default/Main/PlayBingo')));
+const ConfirmationBuy = Loadable(lazy(() => import('views/dashboard/Default/Main/ConfirmationBuy')));
 // dashboard Profile
 const UserProfileDefault = Loadable(lazy(() => import('views/dashboard/Default/Profile/UserProfile')));
 const UserSecurityDefault = Loadable(lazy(() => import('views/dashboard/Default/Profile/UserSecurity')));
 // dashboard Settings
 const ShareDefault = Loadable(lazy(() => import('views/dashboard/Default/Share/Share')));
 const NotificationsDefault = Loadable(lazy(() => import('views/dashboard/Default/Notifications/Notifications')));
+const Success = Loadable(lazy(() => import('views/dashboard/Default/Response/Success')));
+const Failure = Loadable(lazy(() => import('views/dashboard/Default/Response/Failure')));
 
 const App = () => {
   const customization = useSelector((state) => state.customization);
@@ -91,6 +95,7 @@ const App = () => {
               <Route element={<DashboardAdmin />} path="dashboard" exact />
               <Route element={<AdminUsers />} path="admin-users" exact />
               <Route element={<Users />} path="users" exact />
+              <Route element={<Payments />} path="payments" exact />
               <Route element={<Game />} path="game" exact />
               <Route element={<NewGame />} path="new-game" exact />
               <Route element={<GameUsers />} path="game-users" exact />
@@ -107,10 +112,13 @@ const App = () => {
               <Route element={<DashboardDefault />} path="dashboard" exact />
               <Route element={<CardSelectorDefault />} path="card-selector" exact />
               <Route element={<PlayBingo />} path="play-bingo" exact />
+              <Route element={<ConfirmationBuy />} path="confirmation" exact />
               <Route element={<ShareDefault />} path="share" exact />
               <Route element={<NotificationsDefault />} path="notifications" exact />
               <Route element={<UserProfileDefault />} path="user-profile" exact />
               <Route element={<UserSecurityDefault />} path="user-security" exact />
+              <Route element={<Success />} path="success" exact />
+              <Route element={<Failure />} path="failure" exact />
             </Route>
           )}
         </Routes>

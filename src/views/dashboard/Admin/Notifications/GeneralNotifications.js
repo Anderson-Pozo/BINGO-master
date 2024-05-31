@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 import { useTheme } from '@mui/material/styles';
-import { AppBar, Toolbar, Typography, IconButton, MenuItem, Menu, Paper, Avatar } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Paper, Avatar, Tooltip } from '@mui/material';
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material';
 import { ButtonGroup, Button, Grid, Modal, Box, FormControl, OutlinedInput } from '@mui/material';
-import { IconCircleX, IconDeviceFloppy, IconEdit, IconMenu2, IconNotification, IconTrash } from '@tabler/icons';
+import { IconCircleX, IconDeviceFloppy, IconEdit, IconNotification, IconPlus, IconTrash } from '@tabler/icons';
 import { uiStyles } from './Notifications.styles';
 import MessageDark from 'components/message/MessageDark';
 import { collGenNoti } from 'store/collections';
@@ -22,17 +22,16 @@ import * as Msg from 'store/message';
 import { fullDate } from 'utils/validations';
 
 const GeneralNotifications = () => {
-  const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
-  const [dataList, setDataList] = React.useState([]);
-  const [openCreate, setOpenCreate] = React.useState(false);
-  const [openEdit, setOpenEdit] = React.useState(false);
-  const [openDelete, setOpenDelete] = React.useState(false);
-  const [openLoader, setOpenLoader] = React.useState(false);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [message, setMessage] = React.useState(null);
-  const [notId, setNotId] = React.useState(null);
+  const [dataList, setDataList] = useState([]);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [openLoader, setOpenLoader] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [message, setMessage] = useState(null);
+  const [notId, setNotId] = useState(null);
 
   const getData = async () => {
     getGeneralNotifications().then((list) => {
@@ -65,14 +64,6 @@ const GeneralNotifications = () => {
   };
   const handleCloseDelete = () => {
     setOpenDelete(false);
-  };
-
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
   };
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -136,48 +127,22 @@ const GeneralNotifications = () => {
       <ToastContainer />
       <AppBar position="static" style={uiStyles.appbar}>
         <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-            <IconNotification />
+          <IconButton size="large" edge="start" color="inherit" aria-label="menu">
+            <IconNotification color="#FFF" />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: '#FFF' }}></Typography>
-
-          <div>
+          <Tooltip title="Crear Notificación">
             <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
               color="inherit"
+              onClick={() => {
+                handleOpenCreate();
+              }}
             >
-              <IconMenu2 />
+              <IconPlus color="#FFF" />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right'
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right'
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem
-                onClick={() => {
-                  handleOpenCreate();
-                  handleClose();
-                }}
-              >
-                Crear Notificación
-              </MenuItem>
-              <MenuItem onClick={handleClose}>Refrescar</MenuItem>
-            </Menu>
-          </div>
+          </Tooltip>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+            Notificaciones
+          </Typography>
         </Toolbar>
       </AppBar>
       {dataList.length > 0 ? (
@@ -259,7 +224,7 @@ const GeneralNotifications = () => {
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {titles.modalCreate}
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
@@ -286,7 +251,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconDeviceFloppy />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CREATE_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
                         onClick={handleCreate}
                       >
                         {titles.buttonCreate}
@@ -295,7 +260,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseCreate}
                       >
                         {titles.buttonCancel}
@@ -311,7 +276,7 @@ const GeneralNotifications = () => {
 
       <Modal open={openEdit} onClose={handleCloseEdit} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {titles.modalEdit}
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
@@ -338,7 +303,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconDeviceFloppy />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
                         onClick={handleEdit}
                       >
                         {titles.buttonEdit}
@@ -347,7 +312,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseEdit}
                       >
                         {titles.buttonCancel}
@@ -363,7 +328,7 @@ const GeneralNotifications = () => {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.styleDelete}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {titles.modalDelete}
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={uiStyles.modalDeleteTitle}>
@@ -379,7 +344,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconTrash />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_DELETE_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
                         onClick={handleDelete}
                       >
                         {titles.buttonDelete}
@@ -388,7 +353,7 @@ const GeneralNotifications = () => {
                         variant="contained"
                         startIcon={<IconCircleX />}
                         size="large"
-                        style={{ margin: 5, borderRadius: 10, backgroundColor: genConst.CONST_CANCEL_COLOR }}
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
                         onClick={handleCloseDelete}
                       >
                         {titles.buttonCancel}

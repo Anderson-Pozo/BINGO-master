@@ -61,5 +61,5 @@ export const inputLabels = {
   labelProfile: 'Perfil',
   state: 'State',
   labelState: 'Estado',
-  placeHolderSearch: 'Buscar por Nombre o Correo electrónico'
+  placeHolderSearch: 'Buscar por Nombre'
 };

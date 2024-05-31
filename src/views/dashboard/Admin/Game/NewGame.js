@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useTheme } from '@mui/material/styles';
 import {
   Paper,
   Table,
@@ -17,11 +16,17 @@ import {
   InputLabel,
   OutlinedInput,
   FormControl,
-  ButtonGroup
+  ButtonGroup,
+  IconButton,
+  Toolbar,
+  AppBar,
+  Tooltip,
+  Select,
+  MenuItem
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus, IconCalendar, IconSearch } from '@tabler/icons';
 //Firebase Events
 import { createDocument, deleteDocument, getGamesList, updateDocument } from 'config/firebaseEvents';
 //Notifications
@@ -34,11 +39,11 @@ import { uiStyles } from './Game.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
+import { searchingGameData } from 'utils/search';
 
 export default function NewGame() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const theme = useTheme();
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -46,8 +51,11 @@ export default function NewGame() {
   const [name, setName] = useState(null);
   const [startDate, setStartDate] = useState(null);
   const [transmition, setTransmition] = useState(null);
+  const [state, setState] = useState(0);
   const [gameList, setGameList] = useState([]);
   const [openLoader, setOpenLoader] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     getGamesList().then((data) => {
@@ -60,6 +68,7 @@ export default function NewGame() {
   };
   const handleCloseCreate = () => {
     setOpenCreate(false);
+    cleanData();
   };
 
   const handleOpenEdit = () => {
@@ -67,6 +76,7 @@ export default function NewGame() {
   };
   const handleCloseEdit = () => {
     setOpenEdit(false);
+    cleanData();
   };
 
   const handleOpenDelete = () => {
@@ -101,7 +111,8 @@ export default function NewGame() {
         name: name,
         startDate: startDate,
         transmition: transmition,
-        createAt: fullDate()
+        createAt: fullDate(),
+        state: 0
       };
       setOpenLoader(true);
       createDocument(collGames, ide, object);
@@ -124,7 +135,8 @@ export default function NewGame() {
         name: name,
         startDate: startDate,
         transmition: transmition,
-        updateAt: fullDate()
+        updateAt: fullDate(),
+        state: state
       };
       setOpenLoader(true);
       updateDocument(collGames, id, object);
@@ -154,21 +166,59 @@ export default function NewGame() {
   const cleanData = () => {
     setName('');
     setStartDate('');
+    setState(0);
     setTransmition('');
   };
 
   return (
     <Box sx={uiStyles.box}>
       <ToastContainer />
-      <Button
-        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, borderRadius: 8 }}
-        onClick={() => {
-          handleOpenCreate();
-        }}
-        startIcon={<IconPlus color="#FFF" />}
-      >
-        <span style={{ paddingLeft: 10, color: '#FFF' }}>Crear nuevo evento</span>
-      </Button>
+      <AppBar position="static" style={uiStyles.appbar}>
+        <Toolbar>
+          <IconButton color="inherit">
+            <IconCalendar color="#FFF" />
+          </IconButton>
+          <Tooltip title="Crear Evento">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                handleOpenCreate();
+              }}
+            >
+              <IconPlus color="#FFF" />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+            Eventos
+          </Typography>
+          <Tooltip title="Buscar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                setShowSearch(!showSearch);
+              }}
+            >
+              <IconSearch color="#FFF" />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
+      </AppBar>
+      {showSearch && (
+        <Box sx={{ flexGrow: 0 }}>
+          {gameList.length > 0 ? (
+            <OutlinedInput
+              id={inputLabels.search}
+              type="text"
+              name={inputLabels.search}
+              onChange={(ev) => setSearch(ev.target.value)}
+              placeholder={inputLabels.placeHolderSearch}
+              style={{ width: '100%', marginTop: 10 }}
+            />
+          ) : (
+            <></>
+          )}
+        </Box>
+      )}
       {gameList.length > 0 ? (
         <Paper style={{ marginTop: 10 }}>
           <TableContainer sx={{ maxHeight: '100%' }}>
@@ -190,40 +240,47 @@ export default function NewGame() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {gameList.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r) => (
-                  <TableRow hover key={r.id}>
-                    <TableCell align="left">{r.ide}</TableCell>
-                    <TableCell align="left">{r.name}</TableCell>
-                    <TableCell align="left">{r.startDate}</TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained">
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                          onClick={() => {
-                            setId(r.ide);
-                            setName(r.name);
-                            setStartDate(r.startDate);
-                            setTransmition(r.transmition);
-                            handleOpenEdit();
-                          }}
-                        >
-                          <IconEdit color="#FFF" />
-                        </Button>
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                          onClick={() => {
-                            setId(r.ide);
-                            setName(r.name);
-                            setStartDate(r.startDate);
-                            handleOpenDelete();
-                          }}
-                        >
-                          <IconTrash color="#FFF" />
-                        </Button>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {gameList
+                  .filter(searchingGameData(search))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((r) => (
+                    <TableRow hover key={r.id}>
+                      <TableCell align="left">{r.ide}</TableCell>
+                      <TableCell align="left">{r.name}</TableCell>
+                      <TableCell align="left">{r.startDate}</TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="contained">
+                          <Tooltip title="Editar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                              onClick={() => {
+                                setId(r.ide);
+                                setName(r.name);
+                                setStartDate(r.startDate);
+                                setTransmition(r.transmition);
+                                handleOpenEdit();
+                              }}
+                            >
+                              <IconEdit color="#FFF" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Eliminar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                              onClick={() => {
+                                setId(r.ide);
+                                setName(r.name);
+                                setStartDate(r.startDate);
+                                handleOpenDelete();
+                              }}
+                            >
+                              <IconTrash color="#FFF" />
+                            </Button>
+                          </Tooltip>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -250,17 +307,15 @@ export default function NewGame() {
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             Crear nuevo evento
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="name">
-                      <span>*</span> {inputLabels.labelName}
-                    </InputLabel>
+                  <InputLabel id={inputLabels.name}>* {inputLabels.labelName}</InputLabel>
+                  <FormControl fullWidth>
                     <OutlinedInput
                       id={inputLabels.name}
                       type="text"
@@ -272,8 +327,8 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <h4>Fecha:</h4>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                  <InputLabel id={'startDate'}>* {'Fecha'}</InputLabel>
+                  <FormControl fullWidth>
                     <input
                       type="date"
                       id="startDate"
@@ -285,8 +340,23 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <h4>Link Transmisión:</h4>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                  <InputLabel id={inputLabels.state}>* {inputLabels.labelState}</InputLabel>
+                  <FormControl fullWidth>
+                    <Select
+                      labelId={inputLabels.state}
+                      id={inputLabels.state}
+                      value={state}
+                      label={inputLabels.labelState}
+                      onChange={(ev) => setState(ev.target.value)}
+                    >
+                      <MenuItem value={genConst.CONST_STA_ACT}>{genConst.CONST_STA_ACT_TXT}</MenuItem>
+                      <MenuItem value={genConst.CONST_STA_INACT}>{genConst.CONST_STA_INACT_TXT}</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <InputLabel id={'transmition'}>* {'Link Transmisión:'}</InputLabel>
+                  <FormControl fullWidth>
                     <input
                       type="text"
                       id="transmition"
@@ -329,17 +399,15 @@ export default function NewGame() {
 
       <Modal open={openEdit} onClose={handleCloseEdit} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             Editar evento
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="name">
-                      <span>*</span> {inputLabels.labelName}
-                    </InputLabel>
+                  <InputLabel id={inputLabels.name}>* {inputLabels.labelName}</InputLabel>
+                  <FormControl fullWidth>
                     <OutlinedInput
                       id={inputLabels.name}
                       type="text"
@@ -351,8 +419,8 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <h4>Fecha:</h4>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                  <InputLabel id={'startDate'}>* {'Fecha'}</InputLabel>
+                  <FormControl fullWidth>
                     <input
                       type="date"
                       id="startDate"
@@ -364,8 +432,23 @@ export default function NewGame() {
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <h4>Link de Transmisión (Youtube):</h4>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                  <InputLabel id={inputLabels.state}>* {inputLabels.labelState}</InputLabel>
+                  <FormControl fullWidth>
+                    <Select
+                      labelId={inputLabels.state}
+                      id={inputLabels.state}
+                      value={state}
+                      label={inputLabels.labelState}
+                      onChange={(ev) => setState(ev.target.value)}
+                    >
+                      <MenuItem value={genConst.CONST_STA_ACT}>{genConst.CONST_STA_ACT_TXT}</MenuItem>
+                      <MenuItem value={genConst.CONST_STA_INACT}>{genConst.CONST_STA_INACT_TXT}</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <InputLabel id={'transmition'}>* {'Link Transmisión:'}</InputLabel>
+                  <FormControl fullWidth>
                     <input
                       type="text"
                       id="transmition"
@@ -408,7 +491,7 @@ export default function NewGame() {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             Eliminar Evento
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>

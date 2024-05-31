@@ -16,19 +16,20 @@ import {
   Box,
   Toolbar,
   Typography,
-  Container,
   Modal,
   Grid,
   InputLabel,
   OutlinedInput,
   FormControl,
   ButtonGroup,
-  Select
+  Select,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPencil, IconUsers, IconReload } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconUserCircle, IconSearch } from '@tabler/icons';
 
 //Firebase Events
 import { createDocument, getAdminUsersData, updateDocument } from 'config/firebaseEvents';
@@ -68,6 +69,7 @@ export default function Users() {
   const [search, setSearch] = useState('');
   const [openLoader, setOpenLoader] = useState(false);
   const [usersList, setUsersList] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     getAdminUsersData().then((data) => {
@@ -166,23 +168,51 @@ export default function Users() {
     <Box sx={uiStyles.box}>
       <ToastContainer />
       <AppBar position="static" style={uiStyles.appbar}>
-        <Container maxWidth="xl" style={uiStyles.container}>
-          <Toolbar disableGutters>
-            <IconUsers color="#FFF" style={{ marginLeft: 0, marginRight: 20 }} />
-            <IconReload color="#FFF" style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }} onClick={reloadData} />
-          </Toolbar>
-        </Container>
+        <Toolbar>
+          <IconButton color="inherit">
+            <IconUserCircle color="#FFF" />
+          </IconButton>
+          <Tooltip title="Recargar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                reloadData();
+              }}
+            >
+              <IconReload color="#FFF" />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+            Administradores
+          </Typography>
+          <Tooltip title="Buscar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                setShowSearch(!showSearch);
+              }}
+            >
+              <IconSearch color="#FFF" />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
       </AppBar>
-      <Box sx={{ mt: 1 }}>
-        <OutlinedInput
-          id={inputLabels.search}
-          type="text"
-          name={inputLabels.search}
-          onChange={(ev) => setSearch(ev.target.value)}
-          placeholder={inputLabels.placeHolderSearch}
-          style={{ width: '100%' }}
-        />
-      </Box>
+      {showSearch && (
+        <Box sx={{ flexGrow: 0 }}>
+          {usersList.length > 0 ? (
+            <OutlinedInput
+              id={inputLabels.search}
+              type="text"
+              name={inputLabels.search}
+              onChange={(ev) => setSearch(ev.target.value)}
+              placeholder={inputLabels.placeHolderSearch}
+              style={{ width: '100%', marginTop: 10 }}
+            />
+          ) : (
+            <></>
+          )}
+        </Box>
+      )}
       {usersList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 500 }}>
@@ -227,37 +257,41 @@ export default function Users() {
                       </TableCell>
                       <TableCell align="center">
                         <ButtonGroup variant="contained">
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                            onClick={() => {
-                              setId(r.id);
-                              setTitle(titles.titleUpdate);
-                              setName(r.name);
-                              setLastName(r.lastName);
-                              setEMail(r.email);
-                              setProfile(r.profile);
-                              setState(r.state);
-                              setCreateAt(r.createAt);
-                              setUpdateAt(r.updateAt);
-                              handleOpenCreate();
-                              setIsEdit(true);
-                            }}
-                          >
-                            <IconEdit color="#FFF" />
-                          </Button>
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                            onClick={() => {
-                              setTitle(titles.titleDelete);
-                              setId(r.id);
-                              setName(r.name);
-                              setLastName(r.lastName);
-                              setEMail(r.email);
-                              handleOpenDelete();
-                            }}
-                          >
-                            <IconTrash color="#FFF" />
-                          </Button>
+                          <Tooltip title="Editar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                              onClick={() => {
+                                setId(r.id);
+                                setTitle(titles.titleUpdate);
+                                setName(r.name);
+                                setLastName(r.lastName);
+                                setEMail(r.email);
+                                setProfile(r.profile);
+                                setState(r.state);
+                                setCreateAt(r.createAt);
+                                setUpdateAt(r.updateAt);
+                                handleOpenCreate();
+                                setIsEdit(true);
+                              }}
+                            >
+                              <IconEdit color="#FFF" />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Eliminar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                              onClick={() => {
+                                setTitle(titles.titleDelete);
+                                setId(r.id);
+                                setName(r.name);
+                                setLastName(r.lastName);
+                                setEMail(r.email);
+                                handleOpenDelete();
+                              }}
+                            >
+                              <IconTrash color="#FFF" />
+                            </Button>
+                          </Tooltip>
                         </ButtonGroup>
                       </TableCell>
                     </TableRow>
@@ -288,7 +322,7 @@ export default function Users() {
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {title}
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
@@ -350,7 +384,7 @@ export default function Users() {
                       onChange={(ev) => setProfile(ev.target.value)}
                     >
                       <MenuItem value={genConst.CONST_PRO_ADM}>{genConst.CONST_PRO_ADM_TXT}</MenuItem>
-                      <MenuItem value={genConst.CONST_PRO_STU}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
+                      <MenuItem value={genConst.CONST_PRO_DEF}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -388,7 +422,7 @@ export default function Users() {
                         variant="contained"
                         startIcon={<IconPencil color="#FFF" />}
                         size="large"
-                        style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
+                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
                         onClick={handleEditUser}
                       >
                         {titles.buttonUpdate}
@@ -413,7 +447,7 @@ export default function Users() {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStylesDelete}>
-          <Typography id="modal-modal-title" variant="h3" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {title}
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>

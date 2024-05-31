@@ -5,7 +5,6 @@ import Tabs, { tabsClasses } from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import TabPanel from '@mui/lab/TabPanel';
 import { TabContext } from '@mui/lab';
-import { IconMessageShare, IconNotification } from '@tabler/icons';
 import GeneralNotifications from './GeneralNotifications';
 import { uiStyles } from './Notifications.styles';
 import UserNotifications from './UserNotifications';
@@ -32,8 +31,8 @@ const Notifications = () => {
               }
             }}
           >
-            <Tab icon={<IconNotification />} label="Notificaciones Generales" value="1" />
-            <Tab icon={<IconMessageShare />} label="Notificaciones por Usuario" value="2" />
+            <Tab label="Generales" value="1" />
+            <Tab label="Por Usuario" value="2" />
           </Tabs>
         </Box>
         <TabPanel value="1">
@@ -42,7 +41,6 @@ const Notifications = () => {
         <TabPanel value="2">
           <UserNotifications />
         </TabPanel>
-        <TabPanel value="3"></TabPanel>
       </TabContext>
     </Box>
   );

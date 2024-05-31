@@ -1,24 +1,20 @@
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, createSearchParams } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import { Avatar, Box, ButtonBase, Grid, Modal, Typography, ButtonGroup, Button } from '@mui/material';
 import MessageDark from 'components/message/MessageDark';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useEffect, useState } from 'react';
-import { createDocument, getGameCardsByEvent, updateDocument } from 'config/firebaseEvents';
-import { IconCards, IconShoppingCart, IconX } from '@tabler/icons';
+import { getGameCardsByEvent } from 'config/firebaseEvents';
+import { IconCards, IconX } from '@tabler/icons';
 import { uiStyles } from './styles';
-import { fullDate } from 'utils/validations';
-import { onAuthStateChanged } from 'firebase/auth';
 import { generateId } from 'utils/idGenerator';
-import { authentication } from 'config/firebase';
-import { collCards, collUserCards } from 'store/collections';
 //Notifications
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CardSelector = () => {
-  //let navigate = useNavigate();
+  let navigate = useNavigate();
   const theme = useTheme();
   const [searchParams] = useSearchParams();
   const id = searchParams.get('id');
@@ -29,8 +25,6 @@ const CardSelector = () => {
   const [openLoader, setOpenLoader] = useState(false);
   const [cardN, setCardN] = useState(0);
   const [idCard, setIdCard] = useState(0);
-  const [bingo, setBingo] = useState([]);
-  const [userId, setUserId] = useState('');
   const [bN, setBN] = useState([]);
   const [iN, setIN] = useState([]);
   const [nN, setNN] = useState([]);
@@ -38,28 +32,17 @@ const CardSelector = () => {
   const [oN, setON] = useState([]);
 
   useEffect(() => {
-    onAuthStateChanged(authentication, async (user) => {
-      if (user) {
-        setUserId(user.uid);
-      }
-    });
     getGameCardsByEvent(id).then((data) => {
       setCards(data);
     });
   }, [id]);
-
-  const reloadData = () => {
-    getGameCardsByEvent(id).then((data) => {
-      setCards(data);
-    });
-  };
 
   const handleCloseCard = () => {
     setOpenCard(false);
   };
 
   return (
-    <Box sx={{ width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2 }}>
+    <div>
       <ToastContainer />
       <MessageDark message={name} submessage={date} />
       <h3 hidden>{id}</h3>
@@ -82,8 +65,8 @@ const CardSelector = () => {
                                 ...theme.typography.mediumAvatar,
                                 transition: 'all .2s ease-in-out',
                                 background: item.state == 1 ? '#00adef' : '#525252',
-                                width: 30,
-                                height: 30,
+                                width: 28,
+                                height: 28,
                                 color: '#FFF',
                                 '&[aria-controls="menu-list-grow"],&:hover': {
                                   background: theme.palette.secondary.light,
@@ -93,7 +76,6 @@ const CardSelector = () => {
                               onClick={() => {
                                 setIdCard(item.id);
                                 setCardN(item.num);
-                                setBingo(item.bingoNumbers);
                                 setBN(item.b);
                                 setIN(item.i);
                                 setNN(item.n);
@@ -102,7 +84,7 @@ const CardSelector = () => {
                                 setOpenCard(true);
                               }}
                             >
-                              <span style={{ color: '#FFF', fontSize: 11.5 }}>{item.order}</span>
+                              <span style={{ color: '#FFF', fontSize: 12 }}>{item.order}</span>
                             </Avatar>
                           </ButtonBase>
                         </Grid>
@@ -189,16 +171,6 @@ const CardSelector = () => {
                   <center>
                     <ButtonGroup>
                       <Button
-                        startIcon={<IconShoppingCart />}
-                        variant="outlined"
-                        style={{ color: '#00adef', height: 40 }}
-                        onClick={() => {
-                          console.log('clic');
-                        }}
-                      >
-                        Agregar
-                      </Button>
-                      <Button
                         startIcon={<IconCards />}
                         variant="contained"
                         style={{ color: '#FFF', height: 40 }}
@@ -211,28 +183,14 @@ const CardSelector = () => {
                             num: cardN,
                             eventId: id,
                             eventName: name,
-                            eventDate: date,
-                            order: parseInt(cardN),
-                            b: bN,
-                            i: iN,
-                            n: nN,
-                            g: gN,
-                            o: oN,
-                            bingoNumbers: bingo,
-                            state: 0,
-                            createAt: fullDate(),
-                            userId: userId
+                            eventDate: date
                           };
-                          const updateObject = {
-                            state: 0,
-                            updateAt: fullDate()
-                          };
-                          updateDocument(collCards, idCard, updateObject);
-                          createDocument(collUserCards, ide, object);
                           setTimeout(() => {
+                            navigate({
+                              pathname: '/app/confirmation',
+                              search: createSearchParams(object).toString()
+                            });
                             setOpenLoader(false);
-                            reloadData();
-                            toast.success('Compra realizada!', { position: toast.POSITION.TOP_RIGHT });
                             setOpenCard(false);
                           }, 2000);
                         }}
@@ -240,7 +198,7 @@ const CardSelector = () => {
                         Comprar
                       </Button>
                       <Button
-                        startIcon={<IconX />}
+                        endIcon={<IconX />}
                         variant="outlined"
                         style={{ color: '#00adef', height: 40 }}
                         onClick={() => {
@@ -264,7 +222,7 @@ const CardSelector = () => {
           </Box>
         </center>
       </Modal>
-    </Box>
+    </div>
   );
 };
 

@@ -8,7 +8,6 @@ import ProfileSection from './ProfileSection';
 import NotificationSection from './NotificationSection';
 import { IconHome } from '@tabler/icons';
 import logoMobile from 'assets/images/LogoBingo.png';
-import iconBingo from 'assets/images/bingo.png';
 
 const Header = () => {
   const theme = useTheme();
@@ -53,28 +52,6 @@ const Header = () => {
           }}
         >
           <IconHome stroke={1.4} size="1.5rem" color="#FFF" />
-        </Avatar>
-      </ButtonBase>
-      <ButtonBase sx={{ borderRadius: '12px', ml: 1 }}>
-        <Avatar
-          variant="rounded"
-          color="inherit"
-          sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
-            transition: 'all .2s ease-in-out',
-            background: '#00adef',
-            color: theme.palette.secondary.dark,
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.light
-            }
-          }}
-          onClick={() => {
-            navigate('/app/dashboard');
-          }}
-        >
-          <img src={iconBingo} width={23} height={23} alt="Icono Bingo" />
         </Avatar>
       </ButtonBase>
       <Box sx={{ flexGrow: 1 }} />

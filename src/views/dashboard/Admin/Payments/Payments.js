@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
-  Avatar,
   Paper,
   Table,
   TableBody,
@@ -11,7 +10,6 @@ import {
   TablePagination,
   TableRow,
   Button,
-  MenuItem,
   AppBar,
   Box,
   Toolbar,
@@ -22,29 +20,27 @@ import {
   OutlinedInput,
   FormControl,
   ButtonGroup,
-  Select,
   IconButton,
   Tooltip
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconUserCircle, IconSearch } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconSearch, IconPlus, IconHomeDollar } from '@tabler/icons';
 //Firebase Events
-import { createDocument, getUsersList, updateDocument } from 'config/firebaseEvents';
+import { getPaymentsList, getTotalPaidBenefit, updateDocument } from 'config/firebaseEvents';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { genConst } from 'store/constant';
-import { collHistUsr, collUsers } from 'store/collections';
-import { inputLabels, titles } from './Users.texts';
-import { uiStyles } from './Users.styles';
+import { collPayments } from 'store/collections';
+import { inputLabels, titles } from './Payments.texts';
+import { uiStyles } from './Payments.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { searchingData } from 'utils/search';
+import { searchingPaymentsData } from 'utils/search';
 
-export default function Users() {
+export default function Payments() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
@@ -54,23 +50,26 @@ export default function Users() {
   const [title, setTitle] = useState(null);
 
   const [id, setId] = useState(null);
-  const [name, setName] = useState(null);
-  const [lastName, setLastName] = useState(null);
-  const [email, setEMail] = useState(null);
-  const [phone, setPhone] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [state, setState] = useState(null);
+  const [card, setCard] = useState(null);
   const [createAt, setCreateAt] = useState(null);
+  const [details, setDetails] = useState(null);
+  const [paypalOrderId, setPaypalOrderId] = useState(null);
+  const [status, setStatus] = useState(null);
+  const [total, setTotal] = useState(null);
   const [updateAt, setUpdateAt] = useState(null);
 
   const [search, setSearch] = useState('');
   const [openLoader, setOpenLoader] = useState(false);
-  const [usersList, setUsersList] = useState([]);
+  const [paymentsList, setPaymentsList] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [totalIncomes, setTotalIncomes] = useState(null);
 
   useEffect(() => {
-    getUsersList().then((data) => {
-      setUsersList(data);
+    getPaymentsList().then((data) => {
+      setPaymentsList(data);
+    });
+    getTotalPaidBenefit().then((total) => {
+      setTotalIncomes(Number.parseFloat(total).toFixed(2));
     });
   }, []);
 
@@ -98,25 +97,30 @@ export default function Users() {
   };
 
   const reloadData = () => {
-    getUsersList().then((data) => {
-      setUsersList(data);
+    getPaymentsList().then((data) => {
+      setPaymentsList(data);
+    });
+    getTotalPaidBenefit().then((total) => {
+      setTotalIncomes(Number.parseFloat(total).toFixed(2));
     });
   };
 
-  const handleEditUser = () => {
-    if (!name || !lastName || !phone || !profile || !state) {
+  const handleCreate = () => {
+    if (!card || !details || !total || !status) {
       toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
     } else {
+      const idd = generateId(10);
       const object = {
-        name: name,
-        lastName: lastName,
-        state: state,
-        phone: phone,
-        profile: profile,
+        id: idd,
+        card: card,
+        details: details,
+        status: status,
+        total: total,
+        paypalOrderId: paypalOrderId,
         updateAt: fullDate()
       };
       setOpenLoader(true);
-      updateDocument(collUsers, id, object);
+      updateDocument(collPayments, idd, object);
       setTimeout(() => {
         setOpenLoader(false);
         setOpenCreate(false);
@@ -127,26 +131,37 @@ export default function Users() {
     }
   };
 
-  const handleDeleteUser = () => {
+  const handleEdit = () => {
+    if (!card || !details || !total || !status) {
+      toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
+    } else {
+      const object = {
+        card: card,
+        details: details,
+        status: status,
+        total: total,
+        paypalOrderId: null,
+        updateAt: fullDate()
+      };
+      setOpenLoader(true);
+      updateDocument(collPayments, id, object);
+      setTimeout(() => {
+        setOpenLoader(false);
+        setOpenCreate(false);
+        reloadData();
+        toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
+        cleanData();
+      }, 2000);
+    }
+  };
+
+  const handleDelete = () => {
     setOpenLoader(true);
-    const usrHistId = generateId(10);
-    const objectHist = {
-      action: titles.labelDelete,
-      createAt: createAt,
-      deleteAt: fullDate(),
-      email: email,
-      phone: phone,
-      id: usrHistId,
-      name: name + ' ' + lastName,
-      state: genConst.CONST_STA_INACT,
-      updateAt: updateAt
-    };
     const object = {
       state: genConst.CONST_STA_INACT,
       deleteAt: fullDate()
     };
-    updateDocument(collUsers, id, object);
-    createDocument(collHistUsr, usrHistId, objectHist);
+    updateDocument(collPayments, id, object);
     setTimeout(() => {
       setOpenLoader(false);
       setOpenDelete(false);
@@ -157,12 +172,13 @@ export default function Users() {
   };
 
   const cleanData = () => {
-    setName('');
-    setLastName('');
-    setPhone('');
-    setEMail('');
-    setProfile('');
-    setState('');
+    setId('');
+    setCard('');
+    setDetails('');
+    setStatus('');
+    setTotal('');
+    setPaypalOrderId('');
+    setCreateAt('');
   };
 
   return (
@@ -171,8 +187,21 @@ export default function Users() {
       <AppBar position="static" style={uiStyles.appbar}>
         <Toolbar>
           <IconButton color="inherit">
-            <IconUserCircle color="#FFF" />
+            <IconHomeDollar color="#FFF" />
           </IconButton>
+          <Tooltip title="Agregar Pago">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                handleOpenCreate();
+                cleanData();
+                setIsEdit(false);
+                setTitle(titles.titleCreate);
+              }}
+            >
+              <IconPlus color="#FFF" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Recargar">
             <IconButton
               color="inherit"
@@ -184,7 +213,7 @@ export default function Users() {
             </IconButton>
           </Tooltip>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
-            Usuarios
+            {titles.title} - ${totalIncomes}
           </Typography>
           <Tooltip title="Buscar">
             <IconButton
@@ -200,7 +229,7 @@ export default function Users() {
       </AppBar>
       {showSearch && (
         <Box sx={{ flexGrow: 0 }}>
-          {usersList.length > 0 ? (
+          {paymentsList.length > 0 ? (
             <OutlinedInput
               id={inputLabels.search}
               type="text"
@@ -214,26 +243,26 @@ export default function Users() {
           )}
         </Box>
       )}
-      {usersList.length > 0 ? (
+      {paymentsList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: '100%' }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                  <TableCell key="id-id" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell1}
                   </TableCell>
-                  <TableCell key="id-email" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                  <TableCell key="id-status" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell2}
                   </TableCell>
-                  <TableCell key="id-phone" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    {titles.tableCellP}
-                  </TableCell>
-                  <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                  <TableCell key="id-card" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell3}
                   </TableCell>
-                  <TableCell key="id-state" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                  <TableCell key="id-total" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell4}
+                  </TableCell>
+                  <TableCell key="id-date" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    {titles.tableCell5}
                   </TableCell>
                   <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
                     {titles.tableCellActions}
@@ -241,25 +270,16 @@ export default function Users() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {usersList
-                  .filter(searchingData(search))
+                {paymentsList
+                  .filter(searchingPaymentsData(search))
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((r) => (
                     <TableRow hover key={r.id}>
-                      <TableCell align="left">
-                        <ButtonGroup>
-                          <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                          <span style={{ margin: 6 }}>{r.name + ' ' + r.lastName}</span>
-                        </ButtonGroup>
-                      </TableCell>
-                      <TableCell align="left">{r.email}</TableCell>
-                      <TableCell align="left">{r.phone}</TableCell>
-                      <TableCell align="left">
-                        {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
-                      </TableCell>
-                      <TableCell align="left">
-                        {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
-                      </TableCell>
+                      <TableCell align="left">{r.id}</TableCell>
+                      <TableCell align="left">{r.status}</TableCell>
+                      <TableCell align="left">{r.card}</TableCell>
+                      <TableCell align="left">${r.total}</TableCell>
+                      <TableCell align="left">{r.createAt}</TableCell>
                       <TableCell align="center">
                         <ButtonGroup variant="contained">
                           <Tooltip title="Editar">
@@ -268,12 +288,11 @@ export default function Users() {
                               onClick={() => {
                                 setId(r.id);
                                 setTitle(titles.titleUpdate);
-                                setName(r.name);
-                                setLastName(r.lastName);
-                                setEMail(r.email);
-                                setPhone(r.phone);
-                                setProfile(r.profile);
-                                setState(r.state);
+                                setCard(r.card);
+                                setDetails(r.details);
+                                setStatus(r.status);
+                                setTotal(r.total);
+                                setPaypalOrderId(r.paypalOrderId);
                                 setCreateAt(r.createAt);
                                 setUpdateAt(r.updateAt);
                                 handleOpenCreate();
@@ -289,9 +308,11 @@ export default function Users() {
                               onClick={() => {
                                 setTitle(titles.titleDelete);
                                 setId(r.id);
-                                setName(r.name);
-                                setLastName(r.lastName);
-                                setEMail(r.email);
+                                setCard(r.card);
+                                setDetails(r.details);
+                                setStatus(r.status);
+                                setTotal(r.total);
+                                setPaypalOrderId(r.paypalOrderId);
                                 handleOpenDelete();
                               }}
                             >
@@ -309,7 +330,7 @@ export default function Users() {
             rowsPerPageOptions={[10, 25, 50, 100]}
             labelRowsPerPage={titles.maxRecords}
             component="div"
-            count={usersList.length}
+            count={paymentsList.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -334,120 +355,121 @@ export default function Users() {
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
-                <Grid item lg={6} md={6} sm={6} xs={6}>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="name">
-                      <span>*</span> {inputLabels.labelName}
+                    <InputLabel htmlFor={inputLabels.details}>
+                      <span>*</span> {inputLabels.labelDetails}
                     </InputLabel>
                     <OutlinedInput
-                      id={inputLabels.name}
+                      id={inputLabels.details}
                       type="text"
-                      name={inputLabels.name}
-                      value={name || ''}
+                      name={inputLabels.details}
+                      value={details || ''}
                       inputProps={{}}
-                      onChange={(ev) => setName(ev.target.value)}
+                      onChange={(ev) => setDetails(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="lastName">
-                      <span>*</span> {inputLabels.labelLastName}
+                    <InputLabel htmlFor={inputLabels.card}>
+                      <span>*</span> {inputLabels.labelCard}
                     </InputLabel>
                     <OutlinedInput
-                      id={inputLabels.labelLastName}
+                      id={inputLabels.labelCard}
                       type="text"
-                      name={inputLabels.labelLastName}
-                      value={lastName || ''}
+                      name={inputLabels.labelCard}
+                      value={card || ''}
                       inputProps={{}}
-                      onChange={(ev) => setLastName(ev.target.value)}
+                      onChange={(ev) => setCard(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="email">
-                      <span></span> {inputLabels.labelEmail}
+                    <InputLabel htmlFor={inputLabels.status}>
+                      <span></span> {inputLabels.labelStatus}
                     </InputLabel>
                     <OutlinedInput
-                      id={inputLabels.email}
-                      type="email"
-                      name={inputLabels.email}
-                      value={email || ''}
+                      id={inputLabels.status}
+                      type="text"
+                      name={inputLabels.status}
+                      value={status || ''}
                       inputProps={{}}
-                      onChange={(ev) => setEMail(ev.target.value)}
+                      onChange={(ev) => setStatus(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor="phone">
-                      <span></span> {inputLabels.phone}
+                    <InputLabel htmlFor={inputLabels.total}>
+                      <span></span> {inputLabels.labelTotal}
                     </InputLabel>
                     <OutlinedInput
-                      id={inputLabels.phone}
-                      type="number"
-                      name={inputLabels.phone}
-                      value={phone || ''}
+                      id={inputLabels.total}
+                      type="text"
+                      name={inputLabels.total}
+                      value={total || ''}
                       inputProps={{}}
-                      onChange={(ev) => setPhone(ev.target.value)}
+                      onChange={(ev) => setTotal(ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id={inputLabels.profile}>* {inputLabels.labelProfile}</InputLabel>
-                    <Select
-                      labelId={inputLabels.profile}
-                      id={inputLabels.profile}
-                      value={profile}
-                      label={inputLabels.labelProfile}
-                      onChange={(ev) => setProfile(ev.target.value)}
-                    >
-                      <MenuItem value={genConst.CONST_PRO_ADM}>{genConst.CONST_PRO_ADM_TXT}</MenuItem>
-                      <MenuItem value={genConst.CONST_PRO_DEF}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <FormControl fullWidth>
-                    <InputLabel id={inputLabels.state}>* {inputLabels.labelState}</InputLabel>
-                    <Select
-                      labelId={inputLabels.state}
-                      id={inputLabels.state}
-                      value={state}
-                      label={inputLabels.labelState}
-                      onChange={(ev) => setState(ev.target.value)}
-                    >
-                      <MenuItem value={genConst.CONST_STA_ACT}>{genConst.CONST_STA_ACT_TXT}</MenuItem>
-                      <MenuItem value={genConst.CONST_STA_INACT}>{genConst.CONST_STA_INACT_TXT}</MenuItem>
-                    </Select>
+                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                    <InputLabel htmlFor={inputLabels.paypal}>
+                      <span></span> {inputLabels.labelPaypal}
+                    </InputLabel>
+                    <OutlinedInput
+                      id={inputLabels.paypal}
+                      type="text"
+                      name={inputLabels.paypal}
+                      value={paypalOrderId || ''}
+                      inputProps={{}}
+                      onChange={(ev) => setPaypalOrderId(ev.target.value)}
+                    />
                   </FormControl>
                 </Grid>
                 {isEdit ? (
-                  <Grid item lg={6} md={6} sm={6} xs={6} style={{ marginBottom: 30 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>
-                        <strong>Usuario desde: </strong>
-                        {createAt}
-                      </InputLabel>
-                    </FormControl>
-                  </Grid>
+                  <>
+                    <Grid item lg={6} md={6} sm={6} xs={6}>
+                      <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                        <span>{inputLabels.labelCreateAt}: </span> {createAt}
+                      </FormControl>
+                    </Grid>
+                    <Grid item lg={6} md={6} sm={6} xs={6}>
+                      <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                        <span>{inputLabels.labelUpdateAt}: </span> {updateAt}
+                      </FormControl>
+                    </Grid>
+                  </>
                 ) : (
                   <></>
                 )}
-                <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid item lg={12} md={12} sm={12} xs={12} sx={{ mt: 4 }}>
                   <center>
                     <ButtonGroup>
-                      <Button
-                        variant="contained"
-                        startIcon={<IconPencil />}
-                        size="large"
-                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
-                        onClick={handleEditUser}
-                      >
-                        {titles.buttonUpdate}
-                      </Button>
+                      {isEdit ? (
+                        <Button
+                          variant="contained"
+                          startIcon={<IconPencil />}
+                          size="large"
+                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+                          onClick={handleEdit}
+                        >
+                          {titles.buttonUpdate}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="contained"
+                          startIcon={<IconPencil />}
+                          size="large"
+                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+                          onClick={handleCreate}
+                        >
+                          {titles.buttonCreate}
+                        </Button>
+                      )}
                       <Button
                         variant="contained"
                         startIcon={<IconCircleX />}
@@ -472,7 +494,7 @@ export default function Users() {
             {title}
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
-            {titles.titleDeleteModal} <strong>{name}</strong>
+            {titles.titleDeleteModal} <strong>{id}</strong>
           </Typography>
           <Grid container style={{ marginTop: 20 }}>
             <Grid item xs={12}>
@@ -485,7 +507,7 @@ export default function Users() {
                         startIcon={<IconTrash size={20} />}
                         size="large"
                         style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
-                        onClick={handleDeleteUser}
+                        onClick={handleDelete}
                       >
                         {titles.buttonDelete}
                       </Button>

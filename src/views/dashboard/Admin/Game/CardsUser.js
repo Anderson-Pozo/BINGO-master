@@ -77,7 +77,7 @@ export default function CardsUser() {
   const steps = [
     {
       label: 'Evento ' + eventName,
-      description: 'Selecciona el evento al cual quieres asiganr usuario.',
+      description: 'Selecciona el evento al cual quieres asignar usuario.',
       onClick: handleStep1
     },
     {
@@ -133,7 +133,8 @@ export default function CardsUser() {
           alignItems: 'center',
           height: 50,
           pl: 2,
-          bgcolor: 'background.default'
+          bgcolor: 'background.default',
+          borderRadius: 3
         }}
       >
         <Typography style={{ fontSize: 18, fontWeight: 'bold' }}>{steps[activeStep].label}</Typography>
@@ -153,6 +154,7 @@ export default function CardsUser() {
                         setEventDate(item.startDate);
                       }}
                       aria-hidden="true"
+                      style={{ cursor: 'pointer' }}
                     >
                       <EventCard name={item.name} date={item.startDate} bg={'#00adef'} />
                     </div>
@@ -284,6 +286,7 @@ export default function CardsUser() {
         steps={maxSteps}
         position="static"
         activeStep={activeStep}
+        sx={{ borderRadius: 3 }}
         nextButton={
           <Button
             size="small"

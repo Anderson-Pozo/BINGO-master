@@ -16,19 +16,30 @@ import {
   Box,
   Toolbar,
   Typography,
-  Container,
   Modal,
   Grid,
   InputLabel,
   OutlinedInput,
   FormControl,
   TextField,
-  ButtonGroup
+  ButtonGroup,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { uiStyles } from './Settings.styles';
 
-import { IconPlus, IconDeviceFloppy, IconTrash, IconEdit, IconCircleX, IconPencil, IconSettings, IconReload } from '@tabler/icons';
+import {
+  IconPlus,
+  IconDeviceFloppy,
+  IconTrash,
+  IconEdit,
+  IconCircleX,
+  IconPencil,
+  IconSettings,
+  IconReload,
+  IconSearch
+} from '@tabler/icons';
 
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -80,6 +91,7 @@ export default function Settings() {
   const [search, setSearch] = useState('');
   const [openLoader, setOpenLoader] = useState(false);
   const [listData, setListData] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     getParamsData().then((data) => {
@@ -92,6 +104,7 @@ export default function Settings() {
   };
   const handleCloseCreate = () => {
     setOpenCreate(false);
+    cleanData();
   };
 
   const handleOpenDelete = () => {
@@ -99,6 +112,7 @@ export default function Settings() {
   };
   const handleCloseDelete = () => {
     setOpenDelete(false);
+    cleanData();
   };
 
   const handleChangePage = (newPage) => {
@@ -208,41 +222,74 @@ export default function Settings() {
     setType('');
     setName('');
     setValue('');
+    setNameAccount('');
+    setCtaNumberAccount('');
+    setCtaCi('');
+    setCtaBankName('');
   };
 
   return (
     <Box sx={uiStyles.box1}>
       <ToastContainer />
       <AppBar position="static" style={uiStyles.appbar}>
-        <Container maxWidth="xl" style={uiStyles.container}>
-          <Toolbar disableGutters>
-            <IconSettings color="#FFF" style={{ marginLeft: 0, marginRight: 20 }} />
-            <IconReload color="#FFF" style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }} onClick={reloadData} />
-            <IconPlus
-              color="#FFF"
-              style={{ marginLeft: 20, marginRight: 20, cursor: 'pointer' }}
+        <Toolbar>
+          <IconButton color="inherit">
+            <IconSettings color="#FFF" />
+          </IconButton>
+          <Tooltip title="Recargar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                reloadData();
+              }}
+            >
+              <IconReload color="#FFF" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Crear Parámetro">
+            <IconButton
+              color="inherit"
               onClick={() => {
                 setTitle(titles.modalCreate);
+                setIsEdit(false);
+                cleanData();
                 handleOpenCreate();
               }}
-            />
-          </Toolbar>
-        </Container>
+            >
+              <IconPlus color="#FFF" />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+            Configuraciones
+          </Typography>
+          <Tooltip title="Buscar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                setShowSearch(!showSearch);
+              }}
+            >
+              <IconSearch color="#FFF" />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
       </AppBar>
-      <Box sx={{ mt: 1 }}>
-        {listData.length > 0 ? (
-          <OutlinedInput
-            id="searchField"
-            type="text"
-            name="searchField"
-            onChange={(ev) => setSearch(ev.target.value)}
-            placeholder={inputLabels.search}
-            style={{ width: '100%' }}
-          />
-        ) : (
-          <></>
-        )}
-      </Box>
+      {showSearch && (
+        <Box sx={{ flexGrow: 0 }}>
+          {listData.length > 0 ? (
+            <OutlinedInput
+              id="searchField"
+              type="text"
+              name="searchField"
+              onChange={(ev) => setSearch(ev.target.value)}
+              placeholder={inputLabels.search}
+              style={{ width: '100%', marginTop: 10 }}
+            />
+          ) : (
+            <></>
+          )}
+        </Box>
+      )}
       {listData.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 600 }}>
@@ -274,34 +321,38 @@ export default function Settings() {
                       <TableCell align="left">{r.value || r.ctaNumberAccount}</TableCell>
                       <TableCell align="center">
                         <ButtonGroup variant="contained">
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
-                            onClick={() => {
-                              setId(r.id);
-                              setTitle(titles.modalEdit);
-                              setType(r.type);
-                              setName(r.name);
-                              setValue(r.value);
-                              setCreateAt(r.createAt);
-                              setUpdateAt(r.updateAt);
-                              handleOpenCreate();
-                              setIsEdit(true);
-                            }}
-                          >
-                            <IconEdit />
-                          </Button>
-                          <Button
-                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
-                            onClick={() => {
-                              setId(r.id);
-                              setType(r.type);
-                              setName(r.name);
-                              setValue(r.value);
-                              handleOpenDelete();
-                            }}
-                          >
-                            <IconTrash />
-                          </Button>
+                          <Tooltip title="Editar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
+                              onClick={() => {
+                                setId(r.id);
+                                setTitle(titles.modalEdit);
+                                setType(r.type);
+                                setName(r.name);
+                                setValue(r.value);
+                                setCreateAt(r.createAt);
+                                setUpdateAt(r.updateAt);
+                                handleOpenCreate();
+                                setIsEdit(true);
+                              }}
+                            >
+                              <IconEdit />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Eliminar">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
+                              onClick={() => {
+                                setId(r.id);
+                                setType(r.type);
+                                setName(r.name);
+                                setValue(r.value);
+                                handleOpenDelete();
+                              }}
+                            >
+                              <IconTrash />
+                            </Button>
+                          </Tooltip>
                         </ButtonGroup>
                       </TableCell>
                     </TableRow>
@@ -332,7 +383,7 @@ export default function Settings() {
 
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {title}
           </Typography>
           <Grid container style={{ marginTop: 10 }}>
@@ -456,7 +507,13 @@ export default function Settings() {
                           {titles.buttonCreate}
                         </Button>
                       ) : (
-                        <Button variant="contained" startIcon={<IconPencil />} size="large" style={{ margin: 5 }} onClick={handleEdit}>
+                        <Button
+                          variant="contained"
+                          startIcon={<IconPencil />}
+                          size="large"
+                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
+                          onClick={handleEdit}
+                        >
                           {titles.buttonEdit}
                         </Button>
                       )}
@@ -481,7 +538,7 @@ export default function Settings() {
 
       <Modal open={openDelete} onClose={handleCloseDelete} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.styleDelete}>
-          <Typography id="modal-modal-title" variant="h2" component="h2">
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {titles.modalDelete}
           </Typography>
           <Typography id="modal-modal-title" variant="p" component="p" style={{ marginTop: 20, fontSize: 16 }}>
@@ -490,29 +547,31 @@ export default function Settings() {
           <Grid container style={{ marginTop: 10 }}>
             <Grid item xs={12}>
               <Grid container spacing={1}>
-                <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <ButtonGroup>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<IconTrash />}
-                      size="large"
-                      style={{ margin: 5 }}
-                      onClick={handleDelete}
-                    >
-                      {titles.buttonDelete}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      startIcon={<IconCircleX />}
-                      size="large"
-                      style={{ margin: 5 }}
-                      onClick={handleCloseDelete}
-                    >
-                      {titles.buttonCancel}
-                    </Button>
-                  </ButtonGroup>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <center>
+                    <ButtonGroup>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<IconTrash />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
+                        onClick={handleDelete}
+                      >
+                        {titles.buttonDelete}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="error"
+                        startIcon={<IconCircleX />}
+                        size="large"
+                        style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                        onClick={handleCloseDelete}
+                      >
+                        {titles.buttonCancel}
+                      </Button>
+                    </ButtonGroup>
+                  </center>
                 </Grid>
               </Grid>
             </Grid>

@@ -11,7 +11,8 @@ import {
   IconGoGame,
   IconCardboards,
   IconNotebook,
-  IconDeviceGamepad
+  IconDeviceGamepad,
+  IconCash
 } from '@tabler/icons';
 
 // constant
@@ -27,7 +28,8 @@ const icons = {
   IconMoneybag,
   IconGoGame,
   IconNotebook,
-  IconDeviceGamepad
+  IconDeviceGamepad,
+  IconCash
 };
 
 const dashboard = {
@@ -89,6 +91,14 @@ const dashboard = {
       type: 'item',
       url: '/main/cards-user',
       icon: icons.IconNotebook,
+      breadcrumbs: false
+    },
+    {
+      id: 'payments',
+      title: 'Pagos',
+      type: 'item',
+      url: '/main/payments',
+      icon: icons.IconCash,
       breadcrumbs: false
     }
   ]
