@@ -12,12 +12,10 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemText,
   IconButton,
   Avatar
 } from '@mui/material';
 import { uiStyles } from './styles';
-import { Link as Scroll } from 'react-scroll';
 import PersonIcon from '@mui/icons-material/Person';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Box } from '@mui/system';
@@ -60,13 +58,6 @@ const Header = (props) => {
       </Typography>
       <Divider />
       <List>
-        <Scroll to="contacts" smooth={true}>
-          <ListItem key={5} disablePadding>
-            <ListItemButton sx={{ textAlign: 'center' }}>
-              <ListItemText primary={'Red de Negocios'} />
-            </ListItemButton>
-          </ListItem>
-        </Scroll>
         <Box style={{ marginTop: 10 }}>
           <center>
             <Button variant="contained" startIcon={<PersonIcon />} onClick={handleGoTo}>
@@ -91,10 +82,10 @@ const Header = (props) => {
             </Link>
           </div>
           {isLoggin ? (
-            <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }} onClick={handleGoTo}>
+            <Box sx={{ display: { xs: 'none', sm: 'none', md: 'block' }, borderRadius: 2 }} onClick={handleGoTo}>
               <List>
                 <ListItem disablePadding>
-                  <ListItemButton onClick={handleGoDash}>
+                  <ListItemButton onClick={handleGoDash} style={{ borderRadius: 12, height: 50 }}>
                     <Avatar alt="avatar user" src={defaultAvatar} sx={{ width: 30, height: 30, marginRight: 1 }} />
                     <p style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>{name}</p>
                   </ListItemButton>

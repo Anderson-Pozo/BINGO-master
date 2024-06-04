@@ -1,0 +1,39 @@
+[debug] [2024-06-04T08:18:47.224Z] ----------------------------------------------------------------------
+[debug] [2024-06-04T08:18:47.226Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\paul_\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2024-06-04T08:18:47.227Z] CLI Version:   13.10.2
+[debug] [2024-06-04T08:18:47.227Z] Platform:      win32
+[debug] [2024-06-04T08:18:47.227Z] Node Version:  v20.11.0
+[debug] [2024-06-04T08:18:47.227Z] Time:          Tue Jun 04 2024 03:18:47 GMT-0500 (hora de Ecuador)
+[debug] [2024-06-04T08:18:47.227Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-06-04T08:18:47.233Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-06-04T08:18:47.233Z] > authorizing via signed-in user (alcorp.tech.uio@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  F:\React JS\BINGO-master
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-06-04T08:18:54.712Z] Using project from CLI flag: khuska-54cf3
+[debug] [2024-06-04T08:18:54.714Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/khuska-54cf3 [none]
+[debug] [2024-06-04T08:18:55.295Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/khuska-54cf3 403
+[debug] [2024-06-04T08:18:55.295Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/khuska-54cf3 {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2024-06-04T08:18:55.295Z] HTTP Error: 403, The caller does not have permission
+[debug] [2024-06-04T08:18:55.575Z] FirebaseError: HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\paul_\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:49:12)
+    at RetryOperation._fn (C:\Users\paul_\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:305:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[error] 
+[error] Error: Failed to get Firebase project khuska-54cf3. Please make sure the project exists and your account has permission to access it.
