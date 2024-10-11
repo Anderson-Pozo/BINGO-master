@@ -179,7 +179,7 @@ const ProfileSection = () => {
                         }}
                       >
                         <Link to="user-profile" style={{ textDecoration: 'none' }}>
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
+                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleClose}>
                             <ListItemIcon>
                               <IconUser stroke={1.5} size="1.3rem" />
                             </ListItemIcon>
@@ -187,7 +187,7 @@ const ProfileSection = () => {
                           </ListItemButton>
                         </Link>
                         <Link to="user-security" style={{ textDecoration: 'none' }}>
-                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }}>
+                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleClose}>
                             <ListItemIcon>
                               <IconLock stroke={1.5} size="1.3rem" />
                             </ListItemIcon>

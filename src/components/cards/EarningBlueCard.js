@@ -95,7 +95,7 @@ const EarningBlueCard = ({ total, detail }) => {
 };
 
 EarningBlueCard.propTypes = {
-  total: PropTypes.number,
+  total: PropTypes.string,
   detail: PropTypes.string
 };
 

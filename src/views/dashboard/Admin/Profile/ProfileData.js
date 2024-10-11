@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 // material-ui
@@ -22,49 +22,20 @@ import AnimateButton from 'components/extended/AnimateButton';
 import { collUsers } from 'store/collections';
 import { fullDate } from 'utils/validations';
 
-const CardWrapper = styled(MainCard)(({ theme }) => ({
+const CardWrapper = styled(MainCard)(() => ({
   backgroundColor: '#414551',
   color: '#fff',
   overflow: 'hidden',
-  position: 'relative',
-  '&:after': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -85,
-    right: -95,
-    [theme.breakpoints.down('sm')]: {
-      top: -105,
-      right: -140
-    }
-  },
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -125,
-    right: -15,
-    opacity: 0.5,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  position: 'relative'
 }));
 
 const ProfileData = () => {
   const theme = useTheme();
-  const [id, setId] = React.useState(null);
-  const [name, setName] = React.useState(null);
-  const [lastName, setLastName] = React.useState(null);
-  const [email, setEmail] = React.useState(null);
-  const [phone, setPhone] = React.useState(null);
+  const [id, setId] = useState(null);
+  const [name, setName] = useState(null);
+  const [lastName, setLastName] = useState(null);
+  const [email, setEmail] = useState(null);
+  const [phone, setPhone] = useState(null);
 
   useEffect(() => {
     onAuthStateChanged(authentication, async (user) => {
@@ -124,7 +95,7 @@ const ProfileData = () => {
               </Grid>
             </Grid>
             <Grid container>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2, paddingRight: 1 }}>
                   <InputLabel htmlFor="outlined-adornment-name-register">Nombre</InputLabel>
                   <OutlinedInput
@@ -136,7 +107,7 @@ const ProfileData = () => {
                   />
                 </FormControl>
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2, paddingRight: 1 }}>
                   <InputLabel htmlFor="outlined-adornment-name-register">Apellido</InputLabel>
                   <OutlinedInput
@@ -150,7 +121,7 @@ const ProfileData = () => {
               </Grid>
             </Grid>
             <Grid container>
-              <Grid item xs={6}>
+              <Grid item xs={12}>
                 <FormControl fullWidth sx={{ ...theme.typography.customInput, padding: 0.2 }}>
                   <InputLabel htmlFor="outlined-adornment-phone-register">Teléfono</InputLabel>
                   <OutlinedInput
@@ -165,7 +136,14 @@ const ProfileData = () => {
             </Grid>
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
-                <Button size="large" variant="contained" color="secondary" style={{ width: 200 }} onClick={updateProfileData}>
+                <Button
+                  style={{ borderRadius: 10, color: '#FFF', height: 50 }}
+                  fullWidth
+                  size="large"
+                  variant="contained"
+                  color="secondary"
+                  onClick={updateProfileData}
+                >
                   Guardar
                 </Button>
               </AnimateButton>

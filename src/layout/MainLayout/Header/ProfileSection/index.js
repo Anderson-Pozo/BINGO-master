@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 // material-ui
@@ -43,7 +43,6 @@ const ProfileSection = () => {
   const customization = useSelector((state) => state.customization);
   const navigate = useNavigate();
 
-  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [photoURL, setPhotoURL] = useState(null);
   const [open, setOpen] = useState(false);
   const auth = getAuth();
@@ -72,15 +71,6 @@ const ProfileSection = () => {
       return;
     }
     setOpen(false);
-  };
-
-  const handleListItemClick = (event, index, route = '') => {
-    setSelectedIndex(index);
-    handleClose(event);
-
-    if (route && route !== '') {
-      navigate(route);
-    }
   };
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -188,33 +178,23 @@ const ProfileSection = () => {
                           }
                         }}
                       >
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 1}
-                          onClick={(event) => handleListItemClick(event, 1, '#')}
-                          to="user-profile"
-                        >
-                          <ListItemIcon>
-                            <IconUser stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Administrar Cuenta</Typography>} />
-                        </ListItemButton>
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 1}
-                          onClick={(event) => handleListItemClick(event, 1, '#')}
-                          to="user-security"
-                        >
-                          <ListItemIcon>
-                            <IconLock stroke={1.5} size="1.3rem" />
-                          </ListItemIcon>
-                          <ListItemText primary={<Typography variant="body2">Seguridad</Typography>} />
-                        </ListItemButton>
-                        <ListItemButton
-                          sx={{ borderRadius: `${customization.borderRadius}px` }}
-                          selected={selectedIndex === 4}
-                          onClick={handleLogout}
-                        >
+                        <Link to="user-profile" style={{ textDecoration: 'none' }}>
+                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleClose}>
+                            <ListItemIcon>
+                              <IconUser stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText primary={<Typography variant="body2">Administrar Cuenta</Typography>} />
+                          </ListItemButton>
+                        </Link>
+                        <Link to="user-security" style={{ textDecoration: 'none' }}>
+                          <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleClose}>
+                            <ListItemIcon>
+                              <IconLock stroke={1.5} size="1.3rem" />
+                            </ListItemIcon>
+                            <ListItemText primary={<Typography variant="body2">Seguridad</Typography>} />
+                          </ListItemButton>
+                        </Link>
+                        <ListItemButton sx={{ borderRadius: `${customization.borderRadius}px` }} onClick={handleLogout}>
                           <ListItemIcon>
                             <IconLogout stroke={1.5} size="1.3rem" />
                           </ListItemIcon>

@@ -9,8 +9,6 @@ import { countAdminUser, countCards, countGames, countUser, getTotalPaidBenefit 
 import TotalCard from 'components/cards/TotalCard';
 import TotalYellowCard from 'components/cards/TotalYellowCard';
 import EarningBlueCard from 'components/cards/EarningBlueCard';
-import EarningRedCard from 'components/cards/EarningRedCard';
-import EarningGreenCard from 'components/cards/EarningGreenCard';
 
 const Dashboard = () => {
   const [totalUsers, setTotalUsers] = useState(null);
@@ -55,15 +53,6 @@ const Dashboard = () => {
           </Grid>
           <Grid item lg={3} md={6} sm={6} xs={6}>
             <EarningBlueCard total={totalIncomes} detail="Ingresos" />
-          </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
-            <EarningBlueCard total={0} detail="Beneficio" />
-          </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
-            <EarningGreenCard total={0} detail="Pagado" />
-          </Grid>
-          <Grid item lg={3} md={6} sm={6} xs={6} hidden>
-            <EarningRedCard total={0} detail="Pendiente" />
           </Grid>
         </Grid>
       </Grid>

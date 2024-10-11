@@ -8,6 +8,6 @@ export const titles = {
   subTitle: 'Perfil',
   name: 'Nombre',
   lastName: 'Apellido',
-  phone: 'Teleéfono',
+  phone: 'Teléfono',
   btnSave: 'Actualizar'
 };

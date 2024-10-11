@@ -168,7 +168,7 @@ const ProfileChangeEmail = ({ email }) => {
                         type="submit"
                         variant="contained"
                         color="secondary"
-                        style={{ borderRadius: 10 }}
+                        style={{ borderRadius: 10, color: '#FFF', height: 50 }}
                       >
                         Actualizar Correo
                       </Button>

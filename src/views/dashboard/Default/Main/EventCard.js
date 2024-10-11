@@ -11,25 +11,11 @@ import { IconCalendar, IconFileDollar, IconPlayCard } from '@tabler/icons';
 const EventCard = ({ name, date, bg, id, transmition }) => {
   const theme = useTheme();
   let navigate = useNavigate();
-  const CardWrapper = styled(MainCard)(({ theme }) => ({
+  const CardWrapper = styled(MainCard)(() => ({
     backgroundColor: bg,
     color: '#fff',
     overflow: 'hidden',
-    position: 'relative',
-    '&:after': {
-      content: '""',
-      position: 'absolute',
-      width: 210,
-      height: 210,
-      background: 'rgba(255,255,255,0.7)',
-      borderRadius: '50%',
-      top: -85,
-      right: -95,
-      [theme.breakpoints.down('sm')]: {
-        top: -105,
-        right: -140
-      }
-    }
+    position: 'relative'
   }));
   return (
     <CardWrapper border={false} content={false}>
@@ -60,12 +46,12 @@ const EventCard = ({ name, date, bg, id, transmition }) => {
           <Grid item>
             <Grid container alignItems="center">
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <Typography sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 2, mt: 1, mb: 0.75, color: '#FFF' }}>
+                <Typography textAlign={'center'} sx={{ fontSize: '0.9rem', fontWeight: 500, mr: 2, mt: 1, mb: 0.75, color: '#FFF' }}>
                   Fecha evento: {date}
                 </Typography>
               </Grid>
               <Grid item lg={12} md={12} sm={12} xs={12}>
-                <ButtonGroup fullWidth>
+                <ButtonGroup fullWidth sx={{ mt: 1 }}>
                   <Button
                     variant="contained"
                     size="large"

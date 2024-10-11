@@ -20,7 +20,7 @@ import {
 import { genConst } from 'store/constant';
 import { labels } from 'store/labels';
 import { generateId } from 'utils/idGenerator';
-import { generateDate } from 'utils/validations';
+import { fullDate, generateDate } from 'utils/validations';
 
 //Encontrar Sesión activa
 export function isSessionActive(navigate) {
@@ -77,6 +77,15 @@ export function createSystemNotification(object) {
 }
 export function createLogRecordWithId(idRecord, object) {
   return setDoc(doc(db, collLog, idRecord), object);
+}
+export function createLog(idRecord, object, collection) {
+  const objectLog = {
+    id: idRecord,
+    createAt: fullDate(),
+    collection: collection,
+    object: object
+  };
+  return setDoc(doc(db, collLog, idRecord), objectLog);
 }
 export function createGlobalNotification(message, subject) {
   const object = {

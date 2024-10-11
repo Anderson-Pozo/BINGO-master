@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { lazy, useState } from 'react';
+import React, { lazy, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
@@ -66,7 +66,7 @@ const App = () => {
   const customization = useSelector((state) => state.customization);
   const [profile, setProfile] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     onAuthStateChanged(authentication, (user) => {
       if (user) {
         getProfileUser(user.uid).then((pro) => {

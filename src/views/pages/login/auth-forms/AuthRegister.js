@@ -44,8 +44,8 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 //Utils
 import { fullDate, generateDate } from 'utils/validations';
 import { genConst } from 'store/constant';
-import { collUsers, collUserLog, collNotifications } from 'store/collections';
-import { createDocument } from 'config/firebaseEvents';
+import { collUsers, collNotifications } from 'store/collections';
+import { createDocument, createLog } from 'config/firebaseEvents';
 
 const AuthRegister = ({ ...others }) => {
   let navigate = useNavigate();
@@ -83,17 +83,17 @@ const AuthRegister = ({ ...others }) => {
   const createUserAditionalData = (uid, email) => {
     //Log
     const userLog = {
-      idUser: uid,
+      userId: uid,
       loginDate: fullDate(),
       email: email,
       state: genConst.CONST_STATE_IN,
       message: 'Registro de nuevo usuario.'
     };
-    createDocument(collUserLog, uid, userLog);
+    createLog(uid, userLog, collUsers);
     //Notifications
     const notifications = {
       to: email,
-      from: 'Khuska Admin',
+      from: 'Play BINGO',
       date: generateDate(),
       message: 'No olvides actualizar tu información de perfil.',
       subject: 'Notificación',
@@ -156,6 +156,8 @@ const AuthRegister = ({ ...others }) => {
                 toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
               } else if (error.code === 'auth/user-disabled') {
                 toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
+              } else if (error.code === 'auth/email-already-in-use') {
+                toast.error('Upsss! Tu correo ya se encuentra registrado!.', { position: toast.POSITION.TOP_RIGHT });
               } else if (error.code === 'auth/internal-error') {
                 toast.error('Error interno, por favor comuniquese con el administrador del sistema!.', {
                   position: toast.POSITION.TOP_RIGHT

@@ -296,7 +296,7 @@ export default function Settings() {
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
+                  <TableCell key="id-type" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
                     {inputLabels.type}
                   </TableCell>
                   <TableCell key="id-name" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>

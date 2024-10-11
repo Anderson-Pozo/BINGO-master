@@ -213,13 +213,13 @@ const ProfileChangePassword = ({ email }) => {
                   <Box sx={{ mt: 4 }}>
                     <AnimateButton>
                       <Button
+                        style={{ borderRadius: 10, color: '#FFF', height: 50 }}
                         fullWidth
                         disabled={isSubmitting}
                         size="large"
                         type="submit"
                         variant="contained"
                         color="secondary"
-                        style={{ borderRadius: 10 }}
                       >
                         Actualizar Contraseña
                       </Button>

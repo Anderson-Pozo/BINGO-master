@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 // material-ui
 import { styled } from '@mui/material/styles';
@@ -21,41 +21,12 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
   color: '#fff',
   overflow: 'hidden',
-  position: 'relative',
-  '&:after': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -85,
-    right: -95,
-    [theme.breakpoints.down('sm')]: {
-      top: -105,
-      right: -140
-    }
-  },
-  '&:before': {
-    content: '""',
-    position: 'absolute',
-    width: 210,
-    height: 210,
-    background: theme.palette.secondary[800],
-    borderRadius: '50%',
-    top: -125,
-    right: -15,
-    opacity: 0.5,
-    [theme.breakpoints.down('sm')]: {
-      top: -155,
-      right: -70
-    }
-  }
+  position: 'relative'
 }));
 
 const ProfileAvatar = ({ id, name, email }) => {
-  const [userList, setUserList] = React.useState([]);
-  const [open, setOpen] = React.useState(false);
+  const [userList, setUserList] = useState([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
