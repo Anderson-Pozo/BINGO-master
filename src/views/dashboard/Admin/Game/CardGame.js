@@ -324,7 +324,7 @@ export default function CardGame() {
             <></>
           )}
           <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
-            Generar Cartillas para Evento
+            Generar Cartillas para Eventos
           </Typography>
           <IconButton
             color="inherit"

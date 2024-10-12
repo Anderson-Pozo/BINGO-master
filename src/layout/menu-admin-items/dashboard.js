@@ -12,7 +12,8 @@ import {
   IconCardboards,
   IconNotebook,
   IconDeviceGamepad,
-  IconCash
+  IconCash,
+  IconCalendar
 } from '@tabler/icons';
 
 // constant
@@ -29,7 +30,8 @@ const icons = {
   IconGoGame,
   IconNotebook,
   IconDeviceGamepad,
-  IconCash
+  IconCash,
+  IconCalendar
 };
 
 const dashboard = {
@@ -62,24 +64,24 @@ const dashboard = {
       breadcrumbs: false
     },
     {
+      id: 'new-game',
+      title: 'Eventos',
+      type: 'item',
+      url: '/main/new-game',
+      icon: icons.IconCalendar,
+      breadcrumbs: false
+    },
+    {
       id: 'game',
-      title: 'Play BINGO',
+      title: 'BINGO',
       type: 'item',
       url: '/main/game',
       icon: icons.IconGoGame,
       breadcrumbs: false
     },
     {
-      id: 'new-game',
-      title: 'Crear Evento',
-      type: 'item',
-      url: '/main/new-game',
-      icon: icons.IconDeviceGamepad,
-      breadcrumbs: false
-    },
-    {
       id: 'cards',
-      title: 'Generador de Cartas',
+      title: 'Cartillas',
       type: 'item',
       url: '/main/card-game',
       icon: icons.IconCardboards,

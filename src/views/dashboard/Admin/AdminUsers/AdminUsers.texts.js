@@ -17,6 +17,7 @@ export const titles = {
   tableCell2: 'Email',
   tableCell3: 'Perfil',
   tableCell4: 'Estado',
+  tableCell5: 'Proveedor',
   tableCellActions: 'Acciones',
   maxRecords: 'Registros máximos',
   noRecordsFound: 'No existen usuarios aún!',

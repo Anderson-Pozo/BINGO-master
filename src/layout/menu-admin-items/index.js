@@ -1,7 +1,8 @@
 import dashboard from './dashboard';
+import historic from './historic';
 import pages from './pages';
 
 const menuItems = {
-  items: [dashboard, pages]
+  items: [dashboard, pages, historic]
 };
 export default menuItems;

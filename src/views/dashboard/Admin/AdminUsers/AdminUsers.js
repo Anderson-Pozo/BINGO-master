@@ -228,6 +228,9 @@ export default function Users() {
                   <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell3}
                   </TableCell>
+                  <TableCell key="id-provider" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    {titles.tableCell5}
+                  </TableCell>
                   <TableCell key="id-state" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell4}
                   </TableCell>
@@ -252,6 +255,7 @@ export default function Users() {
                       <TableCell align="left">
                         {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
                       </TableCell>
+                      <TableCell align="left">{r.provider}</TableCell>
                       <TableCell align="left">
                         {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
                       </TableCell>

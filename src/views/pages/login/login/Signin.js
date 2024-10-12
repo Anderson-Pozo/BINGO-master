@@ -56,7 +56,8 @@ const Signin = () => {
               phone: null,
               profile: genConst.CONST_PRO_DEF,
               state: genConst.CONST_STATE_AC,
-              url: null
+              url: null,
+              provider: 'Google'
             };
             createDocument(collUsers, user.uid, userObject);
             toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });

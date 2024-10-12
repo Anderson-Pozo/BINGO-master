@@ -268,7 +268,17 @@ export const getGameUsers = async (id) => {
   });
   return list;
 };
-//Obtenemos la lista de Usuarios por Partida
+//Obtenemos la lista de Cartillas por Evento y Usuario
+export const getCardsByEventUsers = async (event, user) => {
+  const list = [];
+  const q = query(collection(db, collUserCards), where('eventId', '==', event), where('userId', '==', user));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
+//Obtenemos la lista de Eventos por Id
 export const getGameNameById = async (id) => {
   let list = [];
   const q = query(collection(db, collGames), where('ide', '==', id));

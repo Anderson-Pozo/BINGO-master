@@ -139,7 +139,8 @@ const AuthRegister = ({ ...others }) => {
                 phone: null,
                 profile: genConst.CONST_PRO_DEF,
                 state: genConst.CONST_STATE_AC,
-                url: null
+                url: null,
+                provider: 'Firebase'
               });
               createUserAditionalData(user.uid, values.email);
               resetForm({ values: '' });
