@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Button, Grid, Typography, Modal } from '@mui/material';
+import { Button, Grid, Typography, Modal, OutlinedInput, InputAdornment } from '@mui/material';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
@@ -11,11 +11,14 @@ import { genConst } from 'store/constant';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import PayPalButton from './PayPalButton';
+import Cards from 'react-credit-cards-2';
+import 'react-credit-cards-2/dist/es/styles-compiled.css';
+import validator from 'validator';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
 import { fullDate } from 'utils/validations';
 import { createDocument, getGameCardsById, updateDocument } from 'config/firebaseEvents';
-import { IconFile } from '@tabler/icons';
+import { IconCreditCard, IconFile } from '@tabler/icons';
 import defaultImage from 'assets/images/addImage.png';
 import { generateId } from 'utils/idGenerator';
 import { ToastContainer, toast } from 'react-toastify';
@@ -39,9 +42,49 @@ const ConfirmationBuy = () => {
   const [value, setValue] = useState('1');
   const [userId, setUserId] = useState('');
   const [object, setObject] = useState({});
+  //CARD PAYMENT
+  const [openCard, setOpenCard] = useState(false);
+  const [cardNumber, setCardNumber] = useState('');
+  const [name, setName] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [focus, setFocus] = useState('');
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handleInputFocus = (e) => {
+    setFocus(e.target.name);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    switch (name) {
+      case 'number':
+        if (value.length <= 16 && /^\d*$/.test(value)) {
+          setCardNumber(value);
+        }
+        break;
+      case 'name':
+        setName(value);
+        break;
+      case 'expiry':
+        var formattedExpiry = value.replace(/[^0-9]/g, ''); // Permitir solo números
+        if (formattedExpiry.length === 2 && expiry.length < 3) {
+          formattedExpiry += '/'; // Insertar la barra después de MM
+        }
+        setExpiry(formattedExpiry);
+        break;
+      case 'cvc':
+        if (value.length <= 3 && /^\d*$/.test(value)) {
+          setCvc(value);
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   useEffect(() => {
@@ -129,6 +172,46 @@ const ConfirmationBuy = () => {
 
   const handleClean = () => {
     setPicture({ preview: '', raw: '' });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    // Validar los campos antes de enviar al backend
+    if (!validator.isCreditCard(cardNumber)) {
+      toast.warn('Número de tarjeta no es válido!', { position: toast.POSITION.TOP_RIGHT });
+      return;
+    }
+    if (!validator.isLength(cvc, { min: 3, max: 4 })) {
+      toast.warn('CVC no es válido!', { position: toast.POSITION.TOP_RIGHT });
+      return;
+    }
+    if (!validator.isLength(expiry, { min: 4, max: 4 })) {
+      toast.warn('Vencimiento no es válido!', { position: toast.POSITION.TOP_RIGHT });
+      return;
+    }
+
+    // Preparar los datos para enviar al backend
+    const paymentData = {
+      cardNumber,
+      name,
+      expiry,
+      cvc
+    };
+    setOpenLoader(true);
+    // Aquí puedes enviar los datos a tu backend o API
+    setTimeout(() => {
+      console.log('Enviando datos de pago', paymentData);
+      setOpenLoader(false);
+    }, 3000);
+    // fetch('/api/pay', { method: 'POST', body: JSON.stringify(paymentData) ... })
+  };
+
+  const handleOpenCard = () => {
+    setOpenCard(true);
+  };
+  const handleCloseCard = () => {
+    setOpenCard(false);
   };
 
   return (
@@ -248,6 +331,31 @@ const ConfirmationBuy = () => {
                       }}
                     >
                       <center>
+                        <div style={{ width: '50%', margin: 10, marginBottom: 20 }}>
+                          <Button
+                            startIcon={<IconCreditCard />}
+                            fullWidth
+                            style={{
+                              backgroundColor: '#009ee3',
+                              height: 40,
+                              borderRadius: 5,
+                              padding: 12,
+                              color: '#FFF',
+                              marginTop: 0
+                            }}
+                            onClick={handleOpenCard}
+                          >
+                            Pagar con Paymentez
+                          </Button>
+                        </div>
+                        <Typography
+                          variant="p"
+                          component="p"
+                          sx={{ flexGrow: 1, color: '#000', mt: 3, mb: 2, fontSize: 16 }}
+                          align="center"
+                        >
+                          o pagar utilizando:
+                        </Typography>
                         <div style={{ width: '50%' }}>
                           <PayPalButton
                             invoice={eventName + ' / ' + eventDate + ' / Cartilla Nro: ' + num}
@@ -264,6 +372,97 @@ const ConfirmationBuy = () => {
           </Grid>
         </Grid>
       </Grid>
+
+      <Modal open={openCard} onClose={handleCloseCard} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
+        <Box sx={uiStyles.modalPayment}>
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
+            Pagar
+          </Typography>
+          <div style={{ marginTop: 20 }}>
+            <center>
+              <div id="PaymentForm">
+                <Cards number={cardNumber} name={name} expiry={expiry} cvc={cvc} focused={focus} />
+                <form id="card-form" onSubmit={handleSubmit}>
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    {/* Número de Tarjeta */}
+                    <Grid item xs={12}>
+                      <OutlinedInput
+                        name="number"
+                        value={cardNumber}
+                        onChange={handleInputChange}
+                        onFocus={handleInputFocus}
+                        placeholder="Número de tarjeta"
+                        inputProps={{ maxLength: 16 }}
+                        startAdornment={<InputAdornment position="start">💳</InputAdornment>}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    {/* Nombre en la Tarjeta */}
+                    <Grid item xs={12}>
+                      <OutlinedInput
+                        name="name"
+                        value={name}
+                        onChange={handleInputChange}
+                        onFocus={handleInputFocus}
+                        placeholder="Nombre en la tarjeta"
+                        fullWidth
+                      />
+                    </Grid>
+
+                    {/* Fecha de Expiración */}
+                    <Grid item xs={6}>
+                      <OutlinedInput
+                        name="expiry"
+                        value={expiry}
+                        onChange={handleInputChange}
+                        onFocus={handleInputFocus}
+                        placeholder="MM/AA"
+                        inputProps={{ maxLength: 5 }}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    {/* CVC */}
+                    <Grid item xs={6}>
+                      <OutlinedInput
+                        name="cvc"
+                        value={cvc}
+                        onChange={handleInputChange}
+                        onFocus={handleInputFocus}
+                        placeholder="CVC"
+                        type="password"
+                        inputProps={{ maxLength: 3 }}
+                        fullWidth
+                      />
+                    </Grid>
+
+                    {/* Botón de Pago */}
+                    <Grid item xs={12}>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        fullWidth
+                        style={{
+                          backgroundColor: '#009ee3',
+                          height: 40,
+                          borderRadius: 5,
+                          padding: 12,
+                          color: '#FFF',
+                          marginTop: 0
+                        }}
+                      >
+                        Pagar
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+              </div>
+            </center>
+          </div>
+        </Box>
+      </Modal>
+
       <Modal open={openLoader} aria-labelledby="modal-loader" aria-describedby="modal-loader">
         <center>
           <Box sx={uiStyles.loader}>
