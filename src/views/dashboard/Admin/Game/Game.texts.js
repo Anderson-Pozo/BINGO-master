@@ -19,7 +19,7 @@ export const titles = {
   generalAction: 'Acciones',
   menuCreate: 'Agregar Partida',
   tableCell0: 'ID',
-  tableCell1: 'Nombre',
+  tableCell1: 'Evento',
   tableCell2: 'Fecha',
   tableCell3: 'Perfil',
   tableCell4: 'Estado',
@@ -59,6 +59,8 @@ export const inputLabels = {
   labelEmail: 'E-mail',
   profile: 'profile',
   labelProfile: 'Perfil',
+  price: 'price',
+  labelPrice: 'Precio de Cartilla',
   state: 'State',
   labelState: 'Estado',
   placeHolderSearch: 'Buscar por Nombre'

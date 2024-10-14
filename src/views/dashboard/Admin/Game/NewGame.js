@@ -49,6 +49,7 @@ export default function NewGame() {
   const [openDelete, setOpenDelete] = useState(false);
   const [id, setId] = useState(null);
   const [name, setName] = useState(null);
+  const [price, setPrice] = useState(0);
   const [startDate, setStartDate] = useState(null);
   const [transmition, setTransmition] = useState(null);
   const [state, setState] = useState(0);
@@ -56,6 +57,7 @@ export default function NewGame() {
   const [openLoader, setOpenLoader] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState('');
+  const regex = /^[0-9]*\.?[0-9]{0,2}$/;
 
   useEffect(() => {
     getGamesList().then((data) => {
@@ -104,12 +106,16 @@ export default function NewGame() {
   const handleCreateGame = () => {
     if (!name) {
       toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
+    } else if (!regex.test(price)) {
+      toast.info('Ingrese un precio válido ej: (19.99)', { position: toast.POSITION.TOP_RIGHT });
+      setPrice('');
     } else {
       const ide = generateId(10);
       const object = {
         ide: ide,
         name: name,
         startDate: startDate,
+        price: price,
         transmition: transmition,
         createAt: fullDate(),
         state: 0
@@ -130,10 +136,14 @@ export default function NewGame() {
   const handleEditGame = () => {
     if (!name) {
       toast.info(titles.require, { position: toast.POSITION.TOP_RIGHT });
+    } else if (!regex.test(price)) {
+      toast.info('Ingrese un precio válido ej: (19.99)', { position: toast.POSITION.TOP_RIGHT });
+      setPrice('');
     } else {
       const object = {
         name: name,
         startDate: startDate,
+        price: price,
         transmition: transmition,
         updateAt: fullDate(),
         state: state
@@ -166,6 +176,7 @@ export default function NewGame() {
   const cleanData = () => {
     setName('');
     setStartDate('');
+    setPrice('');
     setState(0);
     setTransmition('');
   };
@@ -225,13 +236,16 @@ export default function NewGame() {
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
+                  <TableCell key="id-id" align="left" style={{ minWidth: 70, fontWeight: 'bold' }}>
                     ID
                   </TableCell>
-                  <TableCell key="id-email" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
+                  <TableCell key="id-name" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
                     Nombre
                   </TableCell>
-                  <TableCell key="id-profile" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                  <TableCell key="id-price" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    Precio
+                  </TableCell>
+                  <TableCell key="id-date" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     Fecha
                   </TableCell>
                   <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
@@ -247,6 +261,7 @@ export default function NewGame() {
                     <TableRow hover key={r.id}>
                       <TableCell align="left">{r.ide}</TableCell>
                       <TableCell align="left">{r.name}</TableCell>
+                      <TableCell align="left">$ {r.price}</TableCell>
                       <TableCell align="left">{r.startDate}</TableCell>
                       <TableCell align="center">
                         <ButtonGroup variant="contained">
@@ -256,6 +271,8 @@ export default function NewGame() {
                               onClick={() => {
                                 setId(r.ide);
                                 setName(r.name);
+                                setPrice(r.price);
+                                setState(r.state);
                                 setStartDate(r.startDate);
                                 setTransmition(r.transmition);
                                 handleOpenEdit();
@@ -270,6 +287,7 @@ export default function NewGame() {
                               onClick={() => {
                                 setId(r.ide);
                                 setName(r.name);
+                                setPrice(r.price);
                                 setStartDate(r.startDate);
                                 handleOpenDelete();
                               }}
@@ -339,19 +357,31 @@ export default function NewGame() {
                     />
                   </FormControl>
                 </Grid>
-                <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
                   <InputLabel id={inputLabels.state}>* {inputLabels.labelState}</InputLabel>
                   <FormControl fullWidth>
                     <Select
                       labelId={inputLabels.state}
                       id={inputLabels.state}
-                      value={state}
                       label={inputLabels.labelState}
                       onChange={(ev) => setState(ev.target.value)}
                     >
                       <MenuItem value={genConst.CONST_STA_ACT}>{genConst.CONST_STA_ACT_TXT}</MenuItem>
                       <MenuItem value={genConst.CONST_STA_INACT}>{genConst.CONST_STA_INACT_TXT}</MenuItem>
                     </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
+                  <InputLabel id={inputLabels.price}>* {inputLabels.labelPrice}</InputLabel>
+                  <FormControl fullWidth>
+                    <OutlinedInput
+                      id={inputLabels.price}
+                      type="text"
+                      name={inputLabels.price}
+                      value={price || ''}
+                      inputProps={{}}
+                      onChange={(ev) => setPrice(ev.target.value)}
+                    />
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>
@@ -431,7 +461,7 @@ export default function NewGame() {
                     />
                   </FormControl>
                 </Grid>
-                <Grid item lg={12} md={12} sm={12} xs={12}>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
                   <InputLabel id={inputLabels.state}>* {inputLabels.labelState}</InputLabel>
                   <FormControl fullWidth>
                     <Select
@@ -444,6 +474,18 @@ export default function NewGame() {
                       <MenuItem value={genConst.CONST_STA_ACT}>{genConst.CONST_STA_ACT_TXT}</MenuItem>
                       <MenuItem value={genConst.CONST_STA_INACT}>{genConst.CONST_STA_INACT_TXT}</MenuItem>
                     </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item lg={6} md={6} sm={6} xs={6}>
+                  <InputLabel id={inputLabels.price}>* {inputLabels.labelPrice}</InputLabel>
+                  <FormControl fullWidth>
+                    <OutlinedInput
+                      id={inputLabels.price}
+                      type="text"
+                      name={inputLabels.price}
+                      value={price}
+                      onChange={(ev) => setPrice(ev.target.value)}
+                    />
                   </FormControl>
                 </Grid>
                 <Grid item lg={12} md={12} sm={12} xs={12}>

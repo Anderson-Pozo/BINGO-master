@@ -18,7 +18,7 @@ const Dashboard = () => {
         <Grid container spacing={1}>
           {events.length > 0 ? (
             events.map((item, key) => (
-              <Grid key={key} item lg={4} md={6} sm={6} xs={12}>
+              <Grid key={key} item lg={3} md={4} sm={6} xs={12}>
                 <EventCard name={item.name} date={item.startDate} bg={'#00adef'} id={item.ide} transmition={item.transmition} />
               </Grid>
             ))

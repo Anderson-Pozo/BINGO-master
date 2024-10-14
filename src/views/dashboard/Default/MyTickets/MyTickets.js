@@ -24,6 +24,7 @@ import { getCardsByEventUsers, getGamesList } from 'config/firebaseEvents';
 import { bingoValues, genConst } from 'store/constant';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
+import MessageDark from 'components/message/MessageDark';
 
 function MyTickets() {
   const [eventList, setEventList] = useState([]);
@@ -159,74 +160,88 @@ function MyTickets() {
       </Paper>
       {isTicketShow ? (
         <Paper style={{ marginTop: 10 }}>
-          <Typography sx={{ mt: 2, mb: 2 }} variant="h6" id="tableTitle" component="div" align="left">
+          <Typography sx={{ p: 2 }} variant="h4" id="tableTitle" component="div" align="center">
             Evento: {eventName}
           </Typography>
-          <TableContainer sx={{ maxHeight: '100%' }}>
-            <Table stickyHeader aria-label="sticky table">
-              <TableHead>
-                <TableRow>
-                  <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    # Cartilla
-                  </TableCell>
-                  <TableCell key="id-date" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    Fecha Compra
-                  </TableCell>
-                  <TableCell key="id-state" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    Estado
-                  </TableCell>
-                  <TableCell key="id-actions" align="center" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    Acciones
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {cardList.slice(pageC * rowsPerPageC, pageC * rowsPerPageC + rowsPerPageC).map((r) => (
-                  <TableRow hover key={r.id}>
-                    <TableCell align="left">{r.idCard}</TableCell>
-                    <TableCell align="left">{r.createAt}</TableCell>
-                    <TableCell align="left">
-                      {r.state == bingoValues.STATE_AVAILABLE ? (
-                        <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_DESC_AVAILABLE}</span>
-                      ) : (
-                        <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
-                          {bingoValues.STATE_DESC_NOT_AVAILABLE}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell align="center">
-                      <ButtonGroup variant="contained">
-                        <Button
-                          style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                          onClick={() => {
-                            handleOpenCard();
-                            setCardN(r.num);
-                            setBN(r.b);
-                            setIN(r.i);
-                            setNN(r.n);
-                            setGN(r.g);
-                            setON(r.o);
-                          }}
-                        >
-                          <IconEye color="#FFF" />
-                        </Button>
-                      </ButtonGroup>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 50, 100]}
-            labelRowsPerPage={'Registros máximos'}
-            component="div"
-            count={cardList.length}
-            rowsPerPage={rowsPerPageC}
-            page={pageC}
-            onPageChange={handleChangePageC}
-            onRowsPerPageChange={handleChangeRowsPerPageC}
-          />
+          {cardList.length > 0 ? (
+            <>
+              <TableContainer sx={{ maxHeight: '100%' }}>
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                        # Cartilla
+                      </TableCell>
+                      <TableCell key="id-date" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                        Fecha Compra
+                      </TableCell>
+                      <TableCell key="id-state" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                        Estado
+                      </TableCell>
+                      <TableCell key="id-actions" align="center" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                        Acciones
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {cardList.slice(pageC * rowsPerPageC, pageC * rowsPerPageC + rowsPerPageC).map((r) => (
+                      <TableRow hover key={r.id}>
+                        <TableCell align="left">{r.idCard}</TableCell>
+                        <TableCell align="left">{r.createAt}</TableCell>
+                        <TableCell align="left">
+                          {r.state == bingoValues.STATE_AVAILABLE ? (
+                            <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>
+                              {bingoValues.STATE_DESC_AVAILABLE}
+                            </span>
+                          ) : (
+                            <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
+                              {bingoValues.STATE_DESC_NOT_AVAILABLE}
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell align="center">
+                          <ButtonGroup variant="contained">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
+                              onClick={() => {
+                                handleOpenCard();
+                                setCardN(r.num);
+                                setBN(r.b);
+                                setIN(r.i);
+                                setNN(r.n);
+                                setGN(r.g);
+                                setON(r.o);
+                              }}
+                            >
+                              <IconEye color="#FFF" />
+                            </Button>
+                          </ButtonGroup>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                labelRowsPerPage={'Registros máximos'}
+                component="div"
+                count={cardList.length}
+                rowsPerPage={rowsPerPageC}
+                page={pageC}
+                onPageChange={handleChangePageC}
+                onRowsPerPageChange={handleChangeRowsPerPageC}
+              />
+            </>
+          ) : (
+            <Grid container style={{ marginTop: 20 }}>
+              <Grid item xs={12}>
+                <Grid item lg={12} md={12} sm={12} xs={12}>
+                  <MessageDark message={'No tienes cartillas para el evento seleccionado!'} submessage="" />
+                </Grid>
+              </Grid>
+            </Grid>
+          )}
         </Paper>
       ) : (
         <></>
@@ -263,7 +278,7 @@ function MyTickets() {
                   N
                 </Button>
                 {nN.map((item, key) =>
-                  item == 0 ? (
+                  item === 'FREE' ? (
                     <Button key={'n' + key} variant="contained" style={{ height: 55, width: 55, color: '#FFF', borderRadius: 0 }}>
                       FREE
                     </Button>

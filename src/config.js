@@ -6,6 +6,7 @@ const config = {
   borderRadius: 15,
   outlinedFilled: true,
   theme: 'light',
+  price: 20,
   i18n: 'en' // 'en' - English, 'fr' - French, 'ro' - Romanian, 'zh' - Chinese
 };
 
