@@ -131,4 +131,5 @@ src/assets/images/creah/.DS_Store
 .firebase/hosting.YnVpbGQ.cache
 .firebaserc
 firebase.json
+firebase-debug.log
 src/.DS_Store
