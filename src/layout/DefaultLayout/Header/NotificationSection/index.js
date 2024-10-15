@@ -14,6 +14,7 @@ import {
   Grid,
   Paper,
   Popper,
+  Tooltip,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -91,27 +92,29 @@ const NotificationSection = () => {
         }}
       >
         <ButtonBase sx={{ borderRadius: '12px' }}>
-          <Avatar
-            variant="rounded"
-            sx={{
-              ...theme.typography.commonAvatar,
-              ...theme.typography.mediumAvatar,
-              transition: 'all .2s ease-in-out',
-              background: '#00adef',
-              color: theme.palette.secondary.dark,
-              '&[aria-controls="menu-list-grow"],&:hover': {
-                background: theme.palette.secondary.light,
-                color: theme.palette.secondary.light
-              }
-            }}
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            onClick={handleToggle}
-            color="inherit"
-          >
-            <IconBell stroke={1.5} size="1.3rem" color="#FFF" />
-          </Avatar>
+          <Tooltip title="Notificaciones">
+            <Avatar
+              variant="rounded"
+              sx={{
+                ...theme.typography.commonAvatar,
+                ...theme.typography.mediumAvatar,
+                transition: 'all .2s ease-in-out',
+                background: '#00adef',
+                color: theme.palette.secondary.dark,
+                '&[aria-controls="menu-list-grow"],&:hover': {
+                  background: theme.palette.secondary.light,
+                  color: theme.palette.secondary.light
+                }
+              }}
+              ref={anchorRef}
+              aria-controls={open ? 'menu-list-grow' : undefined}
+              aria-haspopup="true"
+              onClick={handleToggle}
+              color="inherit"
+            >
+              <IconBell stroke={1.5} size="1.3rem" color="#FFF" />
+            </Avatar>
+          </Tooltip>
         </ButtonBase>
       </Box>
       <Popper

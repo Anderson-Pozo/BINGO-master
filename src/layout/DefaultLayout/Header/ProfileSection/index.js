@@ -18,6 +18,7 @@ import {
   Paper,
   Popper,
   Stack,
+  Tooltip,
   Typography
 } from '@mui/material';
 
@@ -87,47 +88,49 @@ const ProfileSection = () => {
 
   return (
     <>
-      <Chip
-        sx={{
-          width: '48px',
-          height: '48px',
-          alignItems: 'center',
-          borderRadius: '27px',
-          transition: 'all .2s ease-in-out',
-          borderColor: theme.palette.primary.light,
-          backgroundColor: theme.palette.primary.light,
-          '&[aria-controls="menu-list-grow"], &:hover': {
-            borderColor: theme.palette.primary.main,
-            background: `${theme.palette.primary.main}!important`,
-            color: theme.palette.primary.light,
-            '& svg': {
-              stroke: theme.palette.primary.light
+      <Tooltip title="Perfil">
+        <Chip
+          sx={{
+            width: '48px',
+            height: '48px',
+            alignItems: 'center',
+            borderRadius: '27px',
+            transition: 'all .2s ease-in-out',
+            borderColor: theme.palette.primary.light,
+            backgroundColor: theme.palette.primary.light,
+            '&[aria-controls="menu-list-grow"], &:hover': {
+              borderColor: theme.palette.primary.main,
+              background: `${theme.palette.primary.main}!important`,
+              color: theme.palette.primary.light,
+              '& svg': {
+                stroke: theme.palette.primary.light
+              }
+            },
+            '& .MuiChip-label': {
+              lineHeight: 0
             }
-          },
-          '& .MuiChip-label': {
-            lineHeight: 0
+          }}
+          icon={
+            <Avatar
+              src={photoURL || User1}
+              sx={{
+                margin: '8px 0 8px 21px !important',
+                cursor: 'pointer'
+              }}
+              ref={anchorRef}
+              aria-controls={open ? 'menu-list-grow' : undefined}
+              aria-haspopup="true"
+              color="inherit"
+            />
           }
-        }}
-        icon={
-          <Avatar
-            src={photoURL || User1}
-            sx={{
-              margin: '8px 0 8px 21px !important',
-              cursor: 'pointer'
-            }}
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            color="inherit"
-          />
-        }
-        variant="outlined"
-        ref={anchorRef}
-        aria-controls={open ? 'menu-list-grow' : undefined}
-        aria-haspopup="true"
-        onClick={handleToggle}
-        color="primary"
-      />
+          variant="outlined"
+          ref={anchorRef}
+          aria-controls={open ? 'menu-list-grow' : undefined}
+          aria-haspopup="true"
+          onClick={handleToggle}
+          color="primary"
+        />
+      </Tooltip>
       <Popper
         placement="bottom-end"
         open={open}

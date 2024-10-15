@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Avatar, Box, ButtonBase } from '@mui/material';
+import { Avatar, Box, ButtonBase, Tooltip } from '@mui/material';
 // project imports
 import LogoSection from '../LogoSection';
 import ProfileSection from './ProfileSection';
@@ -33,48 +33,52 @@ const Header = () => {
         </Box>
       </Box>
       <ButtonBase sx={{ borderRadius: '12px', ml: 1 }}>
-        <Avatar
-          variant="rounded"
-          color="inherit"
-          sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
-            transition: 'all .2s ease-in-out',
-            background: '#00adef',
-            color: theme.palette.secondary.dark,
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.light
-            }
-          }}
-          onClick={() => {
-            navigate('/app/dashboard');
-          }}
-        >
-          <IconHome stroke={1.4} size="1.5rem" color="#FFF" />
-        </Avatar>
+        <Tooltip title="Inicio - Eventos">
+          <Avatar
+            variant="rounded"
+            color="inherit"
+            sx={{
+              ...theme.typography.commonAvatar,
+              ...theme.typography.mediumAvatar,
+              transition: 'all .2s ease-in-out',
+              background: '#00adef',
+              color: theme.palette.secondary.dark,
+              '&[aria-controls="menu-list-grow"],&:hover': {
+                background: theme.palette.secondary.light,
+                color: theme.palette.secondary.light
+              }
+            }}
+            onClick={() => {
+              navigate('/app/dashboard');
+            }}
+          >
+            <IconHome stroke={1.4} size="1.5rem" color="#FFF" />
+          </Avatar>
+        </Tooltip>
       </ButtonBase>
       <ButtonBase sx={{ borderRadius: '12px', ml: 1 }}>
-        <Avatar
-          variant="rounded"
-          color="inherit"
-          sx={{
-            ...theme.typography.commonAvatar,
-            ...theme.typography.mediumAvatar,
-            transition: 'all .2s ease-in-out',
-            background: '#00adef',
-            color: theme.palette.secondary.dark,
-            '&[aria-controls="menu-list-grow"],&:hover': {
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.light
-            }
-          }}
-          onClick={() => {
-            navigate('/app/my-tickets');
-          }}
-        >
-          <IconTicket stroke={1.4} size="1.5rem" color="#FFF" />
-        </Avatar>
+        <Tooltip title="Mis Tickets">
+          <Avatar
+            variant="rounded"
+            color="inherit"
+            sx={{
+              ...theme.typography.commonAvatar,
+              ...theme.typography.mediumAvatar,
+              transition: 'all .2s ease-in-out',
+              background: '#00adef',
+              color: theme.palette.secondary.dark,
+              '&[aria-controls="menu-list-grow"],&:hover': {
+                background: theme.palette.secondary.light,
+                color: theme.palette.secondary.light
+              }
+            }}
+            onClick={() => {
+              navigate('/app/my-tickets');
+            }}
+          >
+            <IconTicket stroke={1.4} size="1.5rem" color="#FFF" />
+          </Avatar>
+        </Tooltip>
       </ButtonBase>
       <Box sx={{ flexGrow: 1 }} />
       <NotificationSection />

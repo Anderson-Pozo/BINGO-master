@@ -8,7 +8,7 @@ import MainCard from 'components/cards/MainCard';
 // assets
 import { IconCalendar, IconFileDollar, IconPlayCard } from '@tabler/icons';
 
-const EventCard = ({ name, date, bg, id, transmition }) => {
+const EventCard = ({ name, date, bg, id, transmition, state }) => {
   const theme = useTheme();
   let navigate = useNavigate();
   const CardWrapper = styled(MainCard)(() => ({
@@ -78,6 +78,7 @@ const EventCard = ({ name, date, bg, id, transmition }) => {
                     variant="contained"
                     size="large"
                     fullWidth
+                    disabled={state === 1 ? false : true}
                     startIcon={<IconPlayCard />}
                     sx={{
                       background: '#FFF',
@@ -111,7 +112,8 @@ EventCard.propTypes = {
   date: PropTypes.string,
   bg: PropTypes.string,
   id: PropTypes.string,
-  transmition: PropTypes.string
+  transmition: PropTypes.string,
+  state: PropTypes.bool
 };
 
 export default EventCard;

@@ -33,6 +33,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
 import { fullDate } from 'utils/validations';
 import { collUserCards } from 'store/collections';
+import StateTickets from 'components/StateTickets';
 
 const CardSelector = () => {
   //let navigate = useNavigate();
@@ -199,9 +200,10 @@ const CardSelector = () => {
       <h3 hidden>{id}</h3>
       <Grid container direction="column" sx={{ mt: 1 }}>
         <Grid item>
-          <Typography id="modal-modal-title" variant="h4" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
+          <Typography id="modal-modal-title" variant="h4" component="h4" align="center" sx={{ mt: 1, mb: 1 }}>
             Selecciona las Cartillas que deseas comprar
           </Typography>
+          <StateTickets />
           <Grid container spacing={0.3}>
             <Grid item lg={12} md={12} sm={12}>
               <Box sx={{ width: '100%', height: '100%', backgroundColor: '#242526', borderRadius: 4, padding: 2 }}>
@@ -253,40 +255,39 @@ const CardSelector = () => {
                   <Typography id="modal-modal-title" variant="h4" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
                     Resumen de cartillas seleccionadas
                   </Typography>
-                  <Typography id="modal-modal-title" variant="h6" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
-                    Seleccione la cartilla para ver su contenido
-                  </Typography>
                   <Grid container spacing={1}>
                     {selectedItems.map((item) => (
                       <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
-                        <Avatar
-                          variant="rounded"
-                          color="inherit"
-                          sx={{
-                            ...theme.typography.commonAvatar,
-                            ...theme.typography.mediumAvatar,
-                            transition: 'all .2s ease-in-out',
-                            backgroundColor: '#00adef',
-                            width: 40,
-                            height: 40,
-                            color: '#FFF',
-                            '&[aria-controls="menu-list-grow"],&:hover': {
-                              background: theme.palette.secondary.light,
-                              color: '#FFF'
-                            }
-                          }}
-                          onClick={() => {
-                            setCardN(item.num);
-                            setBN(item.b);
-                            setIN(item.i);
-                            setNN(item.n);
-                            setGN(item.g);
-                            setON(item.o);
-                            setOpenCard(true);
-                          }}
-                        >
-                          <span style={{ color: '#FFF', fontSize: 15 }}>{item.num}</span>
-                        </Avatar>
+                        <Tooltip title="Clic para ver cartilla">
+                          <Avatar
+                            variant="rounded"
+                            color="inherit"
+                            sx={{
+                              ...theme.typography.commonAvatar,
+                              ...theme.typography.mediumAvatar,
+                              transition: 'all .2s ease-in-out',
+                              backgroundColor: '#00adef',
+                              width: 40,
+                              height: 40,
+                              color: '#FFF',
+                              '&[aria-controls="menu-list-grow"],&:hover': {
+                                background: theme.palette.secondary.light,
+                                color: '#FFF'
+                              }
+                            }}
+                            onClick={() => {
+                              setCardN(item.num);
+                              setBN(item.b);
+                              setIN(item.i);
+                              setNN(item.n);
+                              setGN(item.g);
+                              setON(item.o);
+                              setOpenCard(true);
+                            }}
+                          >
+                            <span style={{ color: '#FFF', fontSize: 15 }}>{item.num}</span>
+                          </Avatar>
+                        </Tooltip>
                       </Grid>
                     ))}
                   </Grid>
