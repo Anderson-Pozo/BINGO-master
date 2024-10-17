@@ -243,12 +243,24 @@ export const getUsersList = async () => {
 //Obtenemos la lista de Partidas
 export const getGamesList = async () => {
   const list = [];
-  const querySnapshot = await getDocuments(collGames);
+  const q = query(collection(db, collGames), where('state', '!=', genConst.CONST_STA_OFF));
+  const querySnapshot = await getDocs(q);
   querySnapshot.forEach((doc) => {
     list.push(doc.data());
   });
   return list;
 };
+
+export const getAllGamesList = async () => {
+  const list = [];
+  const q = query(collection(db, collGames));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+};
+
 //Obtenemos la lista de Pagos
 export const getPaymentsList = async () => {
   const list = [];

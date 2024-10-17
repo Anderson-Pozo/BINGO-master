@@ -196,139 +196,149 @@ const CardSelector = () => {
   return (
     <div>
       <ToastContainer />
-      <MessageDark message={name + '  /  ' + date} submessage={''} />
+      <MessageDark message={name} submessage={date} />
       <h3 hidden>{id}</h3>
-      <Grid container direction="column" sx={{ mt: 1 }}>
-        <Grid item>
-          <Typography id="modal-modal-title" variant="h4" component="h4" align="center" sx={{ mt: 1, mb: 1 }}>
-            Selecciona las Cartillas que deseas comprar
-          </Typography>
-          <StateTickets />
-          <Grid container spacing={0.3}>
-            <Grid item lg={12} md={12} sm={12}>
-              <Box sx={{ width: '100%', height: '100%', backgroundColor: '#242526', borderRadius: 4, padding: 2 }}>
-                <Grid container direction="column">
-                  <Grid item>
-                    <Grid container spacing={0.5}>
-                      {cards.map((item) => {
-                        const buttonColor = item.state === 0 ? '#525252' : selectedItems.includes(item) ? 'green' : '#00adef';
-                        return (
-                          <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
-                            <ButtonBase
-                              sx={{ borderRadius: 8, cursor: item.state === 1 ? 'pointer' : 'not-allowed' }}
-                              disabled={item.state == 1 ? false : true}
-                            >
-                              <Avatar
-                                variant="rounded"
-                                color="inherit"
-                                sx={{
-                                  ...theme.typography.commonAvatar,
-                                  ...theme.typography.mediumAvatar,
-                                  transition: 'all .2s ease-in-out',
-                                  backgroundColor: buttonColor,
-                                  width: 28,
-                                  height: 28,
-                                  color: '#FFF',
-                                  '&[aria-controls="menu-list-grow"],&:hover': {
-                                    background: theme.palette.secondary.light,
-                                    color: '#FFF'
-                                  }
-                                }}
-                                onClick={() => {
-                                  handleSelect(item);
-                                }}
+      {cards.length > 0 ? (
+        <Grid container direction="column" sx={{ mt: 1 }}>
+          <Grid item>
+            <Typography id="modal-modal-title" variant="h5" component="h4" align="center" sx={{ mt: 1, mb: 1 }}>
+              Selecciona las Cartillas que deseas comprar
+            </Typography>
+            <StateTickets />
+            <Grid container spacing={0.3}>
+              <Grid item lg={12} md={12} sm={12}>
+                <Box sx={{ width: '100%', height: '100%', backgroundColor: '#242526', borderRadius: 4, padding: 2 }}>
+                  <Grid container direction="column">
+                    <Grid item>
+                      <Grid container spacing={0.5}>
+                        {cards.map((item) => {
+                          const buttonColor = item.state === 0 ? '#525252' : selectedItems.includes(item) ? 'green' : '#00adef';
+                          return (
+                            <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
+                              <ButtonBase
+                                sx={{ borderRadius: 8, cursor: item.state === 1 ? 'pointer' : 'not-allowed' }}
+                                disabled={item.state == 1 ? false : true}
                               >
-                                <span style={{ color: '#FFF', fontSize: 12 }}>{item.order}</span>
-                              </Avatar>
-                            </ButtonBase>
-                          </Grid>
-                        );
-                      })}
+                                <Avatar
+                                  variant="rounded"
+                                  color="inherit"
+                                  sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    backgroundColor: buttonColor,
+                                    width: 28,
+                                    height: 28,
+                                    color: '#FFF',
+                                    '&[aria-controls="menu-list-grow"],&:hover': {
+                                      background: theme.palette.secondary.light,
+                                      color: '#FFF'
+                                    }
+                                  }}
+                                  onClick={() => {
+                                    handleSelect(item);
+                                  }}
+                                >
+                                  <span style={{ color: '#FFF', fontSize: 12 }}>{item.order}</span>
+                                </Avatar>
+                              </ButtonBase>
+                            </Grid>
+                          );
+                        })}
+                      </Grid>
                     </Grid>
                   </Grid>
-                </Grid>
-              </Box>
-            </Grid>
-            <Grid item lg={12} md={12} sm={12}>
-              <div>
-                <Box sx={{ width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2, mt: 1 }}>
-                  <Typography id="modal-modal-title" variant="h4" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
-                    Resumen de cartillas seleccionadas
-                  </Typography>
-                  <Grid container spacing={1}>
-                    {selectedItems.map((item) => (
-                      <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
-                        <Tooltip title="Clic para ver cartilla">
-                          <Avatar
-                            variant="rounded"
-                            color="inherit"
-                            sx={{
-                              ...theme.typography.commonAvatar,
-                              ...theme.typography.mediumAvatar,
-                              transition: 'all .2s ease-in-out',
-                              backgroundColor: '#00adef',
-                              width: 40,
-                              height: 40,
-                              color: '#FFF',
-                              '&[aria-controls="menu-list-grow"],&:hover': {
-                                background: theme.palette.secondary.light,
-                                color: '#FFF'
-                              }
-                            }}
-                            onClick={() => {
-                              setCardN(item.num);
-                              setBN(item.b);
-                              setIN(item.i);
-                              setNN(item.n);
-                              setGN(item.g);
-                              setON(item.o);
-                              setOpenCard(true);
-                            }}
-                          >
-                            <span style={{ color: '#FFF', fontSize: 15 }}>{item.num}</span>
-                          </Avatar>
-                        </Tooltip>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <center>
-                    <Tooltip title="Pagar con Paymentez">
-                      <Button
-                        color="primary"
-                        disabled={selectedItems.length === 0}
-                        startIcon={<IconCreditCard />}
-                        variant="contained"
-                        style={{ color: '#FFF', height: 40, marginTop: 20 }}
-                        onClick={() => {
-                          handleOpenPayment();
-                          setTotal(selectedItems.reduce((total, item) => total + Number(item.price), 0));
-                        }}
-                      >
-                        <p>PAGAR ${selectedItems.reduce((total, item) => total + Number(item.price), 0)}</p>
-                      </Button>
-                    </Tooltip>
-                    <Tooltip title="Pagar con PayPal">
-                      <Button
-                        color="primary"
-                        disabled={selectedItems.length === 0}
-                        startIcon={<IconBrandPaypal />}
-                        variant="contained"
-                        style={{ color: '#FFF', height: 40, marginTop: 20, marginLeft: 10 }}
-                        onClick={() => {
-                          handleOpenPayPal();
-                          setTotal(selectedItems.reduce((total, item) => total + Number(item.price), 0));
-                        }}
-                      >
-                        <p>PayPal ${selectedItems.reduce((total, item) => total + Number(item.price), 0)}</p>
-                      </Button>
-                    </Tooltip>
-                  </center>
                 </Box>
-              </div>
+              </Grid>
+              <Grid item lg={12} md={12} sm={12}>
+                <div>
+                  <Box sx={{ width: '100%', height: '100%', backgroundColor: '#FFF', borderRadius: 4, padding: 2, mt: 1 }}>
+                    <Typography id="modal-modal-title" variant="h5" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
+                      Resumen de cartillas seleccionadas
+                    </Typography>
+                    <Grid container spacing={1}>
+                      {selectedItems.map((item) => (
+                        <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
+                          <Tooltip title="Clic para ver cartilla">
+                            <Avatar
+                              variant="rounded"
+                              color="inherit"
+                              sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                backgroundColor: '#00adef',
+                                width: 40,
+                                height: 40,
+                                color: '#FFF',
+                                '&[aria-controls="menu-list-grow"],&:hover': {
+                                  background: theme.palette.secondary.light,
+                                  color: '#FFF'
+                                }
+                              }}
+                              onClick={() => {
+                                setCardN(item.num);
+                                setBN(item.b);
+                                setIN(item.i);
+                                setNN(item.n);
+                                setGN(item.g);
+                                setON(item.o);
+                                setOpenCard(true);
+                              }}
+                            >
+                              <span style={{ color: '#FFF', fontSize: 15 }}>{item.num}</span>
+                            </Avatar>
+                          </Tooltip>
+                        </Grid>
+                      ))}
+                    </Grid>
+                    <center>
+                      <Tooltip title="Pagar con Paymentez">
+                        <Button
+                          color="primary"
+                          disabled={selectedItems.length === 0}
+                          startIcon={<IconCreditCard />}
+                          variant="contained"
+                          style={{ color: '#FFF', height: 40, marginTop: 20 }}
+                          onClick={() => {
+                            handleOpenPayment();
+                            setTotal(selectedItems.reduce((total, item) => total + Number(item.price), 0));
+                          }}
+                        >
+                          <p>PAGAR ${selectedItems.reduce((total, item) => total + Number(item.price), 0)}</p>
+                        </Button>
+                      </Tooltip>
+                      <Tooltip title="Pagar con PayPal">
+                        <Button
+                          color="primary"
+                          disabled={selectedItems.length === 0}
+                          startIcon={<IconBrandPaypal />}
+                          variant="contained"
+                          style={{ color: '#FFF', height: 40, marginTop: 20, marginLeft: 10 }}
+                          onClick={() => {
+                            handleOpenPayPal();
+                            setTotal(selectedItems.reduce((total, item) => total + Number(item.price), 0));
+                          }}
+                        >
+                          <p>PayPal ${selectedItems.reduce((total, item) => total + Number(item.price), 0)}</p>
+                        </Button>
+                      </Tooltip>
+                    </center>
+                  </Box>
+                </div>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
-      </Grid>
+      ) : (
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <MessageDark message={'No existen cartillas para este evento!'} submessage="" />
+            </Grid>
+          </Grid>
+        </Grid>
+      )}
       <Modal open={openCard} onClose={handleCloseCard} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
           <Typography id="modal-modal-title" variant="h3" component="h2" sx={{ textAlign: 'center' }}>

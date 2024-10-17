@@ -35,7 +35,7 @@ const MessageDark = ({ message, submessage }) => {
 
   return (
     <CardWrapper border={false} content={false}>
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ pl: 1 }}>
         <List sx={{ py: 0 }}>
           <ListItem alignItems="center" disableGutters sx={{ py: 0 }}>
             <ListItemAvatar>
@@ -44,7 +44,7 @@ const MessageDark = ({ message, submessage }) => {
                 sx={{
                   ...theme.typography.commonAvatar,
                   ...theme.typography.largeAvatar,
-                  backgroundColor: theme.palette.secondary.light[800],
+                  backgroundColor: theme.palette.secondary.light[700],
                   color: '#fff'
                 }}
               >
@@ -54,16 +54,16 @@ const MessageDark = ({ message, submessage }) => {
             <ListItemText
               sx={{
                 py: 0,
-                mt: 0.45,
-                mb: 0.45
+                mt: 0.1,
+                mb: 0.1
               }}
               primary={
-                <Typography sx={{ fontSize: '1.255rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, textAlign: 'center', color: '#FFF' }}>
+                <Typography sx={{ fontSize: '1rem', fontWeight: 500, mr: 1, mt: 2, mb: 1, textAlign: 'center', color: '#FFF' }}>
                   {message}
                 </Typography>
               }
               secondary={
-                <Typography sx={{ fontSize: '0.975rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, textAlign: 'center', color: '#FFF' }}>
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: 400, mr: 0, mt: 1.75, mb: 1, textAlign: 'center', color: '#FFF' }}>
                   {submessage}
                 </Typography>
               }

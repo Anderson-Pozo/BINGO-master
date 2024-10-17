@@ -28,11 +28,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
 import { IconTrash, IconEdit, IconCircleX, IconDeviceFloppy, IconPlus, IconCalendar, IconSearch } from '@tabler/icons';
 //Firebase Events
-import { createDocument, deleteDocument, getGamesList, updateDocument } from 'config/firebaseEvents';
+import { createDocument, deleteDocument, getAllGamesList, getGamesList, updateDocument } from 'config/firebaseEvents';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { genConst } from 'store/constant';
+import { bingoValues, genConst } from 'store/constant';
 import { collGames } from 'store/collections';
 import { inputLabels, titles } from './Game.texts';
 import { uiStyles } from './Game.styles';
@@ -60,7 +60,7 @@ export default function NewGame() {
   const regex = /^[0-9]*\.?[0-9]{0,2}$/;
 
   useEffect(() => {
-    getGamesList().then((data) => {
+    getAllGamesList().then((data) => {
       setGameList(data);
     });
   }, []);
@@ -242,6 +242,9 @@ export default function NewGame() {
                   <TableCell key="id-name" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
                     Nombre
                   </TableCell>
+                  <TableCell key="id-State" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    Estado
+                  </TableCell>
                   <TableCell key="id-price" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     Precio
                   </TableCell>
@@ -261,6 +264,15 @@ export default function NewGame() {
                     <TableRow hover key={r.id}>
                       <TableCell align="left">{r.ide}</TableCell>
                       <TableCell align="left">{r.name}</TableCell>
+                      <TableCell align="left">
+                        {r.state === 0 ? (
+                          <span style={{ color: genConst.CONST_INFO_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_INC}</span>
+                        ) : r.state === 1 ? (
+                          <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_ACT}</span>
+                        ) : (
+                          <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_END}</span>
+                        )}
+                      </TableCell>
                       <TableCell align="left">$ {r.price}</TableCell>
                       <TableCell align="left">{r.startDate}</TableCell>
                       <TableCell align="center">

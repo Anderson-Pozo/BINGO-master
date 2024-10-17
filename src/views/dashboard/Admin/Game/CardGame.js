@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material';
 import { uiStyles } from './Game.styles';
-import { countCardsByEvent, createDocument, deleteDocument, getGameCardsByEvent, getGamesList } from 'config/firebaseEvents';
+import { countCardsByEvent, createDocument, deleteDocument, getAllGamesList, getGameCardsByEvent } from 'config/firebaseEvents';
 import { collCards } from 'store/collections';
 import CircularProgress from '@mui/material/CircularProgress';
 //Notifications
@@ -90,7 +90,7 @@ export default function CardGame() {
   };
 
   useEffect(() => {
-    getGamesList().then((data) => {
+    getAllGamesList().then((data) => {
       setGameList(data);
     });
   }, []);
@@ -229,10 +229,12 @@ export default function CardGame() {
                           <TableCell align="left">{r.name}</TableCell>
                           <TableCell align="left">{r.startDate}</TableCell>
                           <TableCell align="left">
-                            {r.state === 1 ? (
+                            {r.state === 0 ? (
+                              <span style={{ color: genConst.CONST_INFO_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_INC}</span>
+                            ) : r.state === 1 ? (
                               <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_ACT}</span>
                             ) : (
-                              <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_INC}</span>
+                              <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_END}</span>
                             )}
                           </TableCell>
                           <TableCell align="center">

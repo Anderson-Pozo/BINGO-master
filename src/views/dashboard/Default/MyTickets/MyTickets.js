@@ -18,9 +18,9 @@ import {
   Toolbar,
   Typography
 } from '@mui/material';
-import { IconCalendar, IconCheck, IconCircleX, IconEye, IconTicket } from '@tabler/icons';
+import { IconCalendar, IconCheck, IconCircleX, IconTicket } from '@tabler/icons';
 import { uiStyles } from './MyTickets.styles';
-import { getCardsByEventUsers, getGamesList } from 'config/firebaseEvents';
+import { getAllGamesList, getCardsByEventUsers } from 'config/firebaseEvents';
 import { bingoValues, genConst } from 'store/constant';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
@@ -33,8 +33,6 @@ function MyTickets() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [eventName, setEventName] = useState(null);
-  const [pageC, setPageC] = useState(0);
-  const [rowsPerPageC, setRowsPerPageC] = useState(10);
   const [isTicketShow, setIsTicketShow] = useState(false);
   const [openCard, setOpenCard] = useState(false);
   const [cardN, setCardN] = useState(0);
@@ -53,15 +51,6 @@ function MyTickets() {
     setPage(0);
   };
 
-  const handleChangePageC = (event, newPage) => {
-    setPageC(newPage);
-  };
-
-  const handleChangeRowsPerPageC = (event) => {
-    setRowsPerPageC(+event.target.value);
-    setPageC(0);
-  };
-
   useEffect(() => {
     onAuthStateChanged(authentication, async (user) => {
       if (user) {
@@ -72,7 +61,7 @@ function MyTickets() {
     });
 
     const getData = async () => {
-      await getGamesList().then((data) => {
+      await getAllGamesList().then((data) => {
         setEventList(data);
       });
     };
@@ -125,7 +114,15 @@ function MyTickets() {
                 <TableRow hover key={r.ide}>
                   <TableCell align="left">{r.name}</TableCell>
                   <TableCell align="left">{r.startDate}</TableCell>
-                  <TableCell align="left">{r.state === 0 ? 'PENDIENTE' : 'FINALIZADO'}</TableCell>
+                  <TableCell align="left">
+                    {r.state === 0 ? (
+                      <span style={{ color: genConst.CONST_INFO_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_INC}</span>
+                    ) : r.state === 1 ? (
+                      <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_ACT}</span>
+                    ) : (
+                      <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_END}</span>
+                    )}
+                  </TableCell>
                   <TableCell align="center">
                     <ButtonGroup variant="contained">
                       <Button
@@ -165,73 +162,27 @@ function MyTickets() {
           </Typography>
           {cardList.length > 0 ? (
             <>
-              <TableContainer sx={{ maxHeight: '100%' }}>
-                <Table stickyHeader aria-label="sticky table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell key="id-name" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        # Cartilla
-                      </TableCell>
-                      <TableCell key="id-date" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        Fecha Compra
-                      </TableCell>
-                      <TableCell key="id-state" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        Estado
-                      </TableCell>
-                      <TableCell key="id-actions" align="center" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                        Acciones
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {cardList.slice(pageC * rowsPerPageC, pageC * rowsPerPageC + rowsPerPageC).map((r) => (
-                      <TableRow hover key={r.id}>
-                        <TableCell align="left">{r.idCard}</TableCell>
-                        <TableCell align="left">{r.createAt}</TableCell>
-                        <TableCell align="left">
-                          {r.state == bingoValues.STATE_AVAILABLE ? (
-                            <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>
-                              {bingoValues.STATE_DESC_AVAILABLE}
-                            </span>
-                          ) : (
-                            <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>
-                              {bingoValues.STATE_DESC_NOT_AVAILABLE}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell align="center">
-                          <ButtonGroup variant="contained">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                              onClick={() => {
-                                handleOpenCard();
-                                setCardN(r.num);
-                                setBN(r.b);
-                                setIN(r.i);
-                                setNN(r.n);
-                                setGN(r.g);
-                                setON(r.o);
-                              }}
-                            >
-                              <IconEye color="#FFF" />
-                            </Button>
-                          </ButtonGroup>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[10, 25, 50, 100]}
-                labelRowsPerPage={'Registros máximos'}
-                component="div"
-                count={cardList.length}
-                rowsPerPage={rowsPerPageC}
-                page={pageC}
-                onPageChange={handleChangePageC}
-                onRowsPerPageChange={handleChangeRowsPerPageC}
-              />
+              <Grid container style={{ marginTop: 20, marginBottom: 40, padding: 20 }}>
+                {cardList.map((r) => (
+                  <Grid item lg={1} md={1} sm={1} xs={2} key={r.id}>
+                    <Button
+                      variant="containded"
+                      style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF', height: 40 }}
+                      onClick={() => {
+                        handleOpenCard();
+                        setCardN(r.num);
+                        setBN(r.b);
+                        setIN(r.i);
+                        setNN(r.n);
+                        setGN(r.g);
+                        setON(r.o);
+                      }}
+                    >
+                      {r.order}
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
             </>
           ) : (
             <Grid container style={{ marginTop: 20 }}>
