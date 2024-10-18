@@ -46,6 +46,7 @@ import { fullDate, generateDate } from 'utils/validations';
 import { genConst } from 'store/constant';
 import { collUsers, collNotifications } from 'store/collections';
 import { createDocument, createLog } from 'config/firebaseEvents';
+import { generateId } from 'utils/idGenerator';
 
 const AuthRegister = ({ ...others }) => {
   let navigate = useNavigate();
@@ -81,6 +82,7 @@ const AuthRegister = ({ ...others }) => {
   }, []);
 
   const createUserAditionalData = (uid, email) => {
+    const uidLog = generateId(20);
     //Log
     const userLog = {
       userId: uid,
@@ -89,7 +91,7 @@ const AuthRegister = ({ ...others }) => {
       state: genConst.CONST_STATE_IN,
       message: 'Registro de nuevo usuario.'
     };
-    createLog(uid, userLog, collUsers);
+    createLog(uidLog, userLog, collUsers);
     //Notifications
     const notifications = {
       to: email,

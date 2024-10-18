@@ -36,6 +36,7 @@ const Payments = Loadable(lazy(() => import('views/dashboard/Admin/Payments/Paym
 // dashboard Settings
 const Share = Loadable(lazy(() => import('views/dashboard/Admin/Share/Share')));
 const Settings = Loadable(lazy(() => import('views/dashboard/Admin/Settings/Settings')));
+const Logs = Loadable(lazy(() => import('views/dashboard/Admin/Logs/Logs')));
 const Notifications = Loadable(lazy(() => import('views/dashboard/Admin/Notifications/Notifications')));
 //Game
 const Game = Loadable(lazy(() => import('views/dashboard/Admin/Game/Game')));
@@ -104,6 +105,7 @@ const App = () => {
               <Route element={<CardsUser />} path="cards-user" exact />
               <Route element={<Share />} path="share" exact />
               <Route element={<Settings />} path="settings" exact />
+              <Route element={<Logs />} path="logs" exact />
               <Route element={<Notifications />} path="notifications" exact />
               <Route element={<UserProfile />} path="user-profile" exact />
               <Route element={<UserSecurity />} path="user-security" exact />

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import * as React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Paper,
   Table,
@@ -9,47 +9,65 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  Button,
   AppBar,
   Box,
   Toolbar,
+  Typography,
+  Modal,
   Grid,
-  Container,
-  OutlinedInput
+  OutlinedInput,
+  ButtonGroup,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import { uiStyles } from './Logs.styles';
+import { JsonViewer } from '@textea/json-viewer';
+import { IconCircleX, IconReload, IconSearch, IconEyeTable, IconFile } from '@tabler/icons';
 
 //Notifications
 import 'react-toastify/dist/ReactToastify.css';
 
-//Firebase Events
-import { getDocuments } from 'config/firebaseEvents';
+//Collections
+import { titles, inputLabels } from './Logs.texts';
+
+//Utils
+import { getLogsData } from 'config/firebaseEvents';
+
+//types array
 import MessageDark from 'components/message/MessageDark';
+import { genConst } from 'store/constant';
 
 function searchingData(search) {
   return function (x) {
-    return x.details.toLowerCase().includes(search) || x.details.toUpperCase().includes(search) || !search;
+    return x.collection.toLowerCase().includes(search) || x.collection.toUpperCase().includes(search) || !search;
   };
 }
 
 export default function Logs() {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [openCreate, setOpenCreate] = useState(false);
+  const [title, setTitle] = useState(null);
+  const [object, setObject] = useState(null);
+  const [search, setSearch] = useState('');
+  const [listData, setListData] = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
 
-  const [search, setSearch] = React.useState('');
-  const [logList, setLogList] = React.useState([]);
-
-  React.useEffect(() => {
-    async function fetchData() {
-      const list = [];
-      const querySnapshot = await getDocuments('Logs');
-      querySnapshot.forEach((doc) => {
-        list.push(doc.data());
-      });
-      setLogList(list);
-    }
-    fetchData();
+  useEffect(() => {
+    getLogsData().then((data) => {
+      setListData(data);
+    });
   }, []);
 
-  const handleChangePage = (event, newPage) => {
+  const handleOpenCreate = () => {
+    setOpenCreate(true);
+  };
+  const handleCloseCreate = () => {
+    setOpenCreate(false);
+  };
+
+  const handleChangePage = (newPage) => {
     setPage(newPage);
   };
 
@@ -58,56 +76,105 @@ export default function Logs() {
     setPage(0);
   };
 
+  const reloadData = () => {
+    getLogsData().then((data) => {
+      setListData(data);
+    });
+  };
+
   return (
-    <div>
-      <AppBar position="static" style={{ borderRadius: 15, height: 80, backgroundColor: '#53338a' }}>
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            <h2 style={{ marginRight: 20, fontSize: 16 }}>Logs Generales</h2>
-            <Box sx={{ flexGrow: 0 }}>
-              {logList.length > 0 ? (
-                <OutlinedInput
-                  id="searchField"
-                  type="text"
-                  name="searchField"
-                  inputProps={{}}
-                  onChange={(ev) => setSearch(ev.target.value)}
-                  placeholder="Buscar por detalle"
-                  style={{ width: 280 }}
-                />
-              ) : (
-                <></>
-              )}
-            </Box>
-          </Toolbar>
-        </Container>
+    <Box sx={uiStyles.box1}>
+      <AppBar position="static" style={uiStyles.appbar}>
+        <Toolbar>
+          <IconButton color="inherit">
+            <IconFile color="#FFF" />
+          </IconButton>
+          <Tooltip title="Recargar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                reloadData();
+              }}
+            >
+              <IconReload color="#FFF" />
+            </IconButton>
+          </Tooltip>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+            Logs del Sistema
+          </Typography>
+          <Tooltip title="Buscar">
+            <IconButton
+              color="inherit"
+              onClick={() => {
+                setShowSearch(!showSearch);
+              }}
+            >
+              <IconSearch color="#FFF" />
+            </IconButton>
+          </Tooltip>
+        </Toolbar>
       </AppBar>
-      {logList.length > 0 ? (
-        <Paper sx={{ width: '100%', overflow: 'hidden', marginTop: 2 }}>
+      {showSearch && (
+        <Box sx={{ flexGrow: 0 }}>
+          {listData.length > 0 ? (
+            <OutlinedInput
+              id="searchField"
+              type="text"
+              name="searchField"
+              onChange={(ev) => setSearch(ev.target.value)}
+              placeholder={inputLabels.search}
+              style={{ width: '100%', marginTop: 10 }}
+            />
+          ) : (
+            <></>
+          )}
+        </Box>
+      )}
+      {listData.length > 0 ? (
+        <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 600 }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-log-details" align="left" style={{ minWidth: 220, fontWeight: 'bold' }}>
-                    Proceso
+                  <TableCell key="id-coll" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
+                    {'Colección'}
                   </TableCell>
-                  <TableCell key="id-log-date" align="left" style={{ minWidth: 200, fontWeight: 'bold' }}>
-                    Fecha Proceso
+                  <TableCell key="id-date" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
+                    {'Fecha'}
                   </TableCell>
-                  <TableCell key="id-log-obj" align="left" style={{ minWidth: 220, fontWeight: 'bold' }}>
-                    Objeto
+                  <TableCell key="id-id" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    {'LogId'}
+                  </TableCell>
+                  <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
+                    {titles.actions}
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {logList
+                {listData
                   .filter(searchingData(search))
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((r, id) => (
-                    <TableRow hover key={id}>
-                      <TableCell align="left">{r.details}</TableCell>
+                  .map((r) => (
+                    <TableRow hover key={r.id}>
+                      <TableCell align="left">{r.collection}</TableCell>
                       <TableCell align="left">{r.createAt}</TableCell>
-                      <TableCell align="left">{JSON.stringify(r.object)}</TableCell>
+                      <TableCell align="left">{r.id}</TableCell>
+                      <TableCell align="center">
+                        <ButtonGroup variant="contained">
+                          <Tooltip title="Ver Objeto">
+                            <Button
+                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
+                              onClick={() => {
+                                setObject(r.object);
+                                setTitle('Objeto Detalle');
+                                handleOpenCreate();
+                              }}
+                            >
+                              <IconEyeTable />
+                            </Button>
+                          </Tooltip>
+                        </ButtonGroup>
+                      </TableCell>
                     </TableRow>
                   ))}
               </TableBody>
@@ -115,9 +182,9 @@ export default function Logs() {
           </TableContainer>
           <TablePagination
             rowsPerPageOptions={[10, 25, 50, 100]}
-            labelRowsPerPage={'Registros máximos'}
+            labelRowsPerPage={titles.rowsPerPage}
             component="div"
-            count={logList.length}
+            count={listData.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -128,11 +195,40 @@ export default function Logs() {
         <Grid container style={{ marginTop: 20 }}>
           <Grid item xs={12}>
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <MessageDark message={'No existen registros aún!'} submessage="" />
+              <MessageDark message={titles.noRecordsYet} submessage="" />
             </Grid>
           </Grid>
         </Grid>
       )}
-    </div>
+
+      <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
+        <Box sx={uiStyles.modalStyles}>
+          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
+            {title}
+          </Typography>
+          <Grid container style={{ marginTop: 10 }}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <JsonViewer value={object} />
+            </Grid>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <center>
+                <ButtonGroup>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    startIcon={<IconCircleX />}
+                    size="large"
+                    style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                    onClick={handleCloseCreate}
+                  >
+                    {titles.buttonCancel}
+                  </Button>
+                </ButtonGroup>
+              </center>
+            </Grid>
+          </Grid>
+        </Box>
+      </Modal>
+    </Box>
   );
 }

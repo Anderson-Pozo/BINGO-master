@@ -20,7 +20,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 //Firebase
 import { authentication } from 'config/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getProfileUser, isSessionActive } from 'config/firebaseEvents';
+import { createLog, getProfileUser, isSessionActive } from 'config/firebaseEvents';
 // third party
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -33,6 +33,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { genConst } from 'store/constant';
+import { fullDate } from 'utils/validations';
+import { generateId } from 'utils/idGenerator';
+import { collUsers } from 'store/collections';
 
 const AuthLogin = ({ ...others }) => {
   let navigate = useNavigate();
@@ -69,7 +72,16 @@ const AuthLogin = ({ ...others }) => {
           signInWithEmailAndPassword(authentication, values.email, values.password)
             .then((userCredencials) => {
               const user = userCredencials.user;
-              //createLogRecordWithId(ide, { details: LogMsg.logclicre, createAt: fullDate(), object: obj });
+              const uidLog = generateId(20);
+              //Log
+              const userLog = {
+                userId: user.uid,
+                loginDate: fullDate(),
+                email: values.email,
+                state: genConst.CONST_STATE_IN,
+                message: 'Inicio de sesión.'
+              };
+              createLog(uidLog, userLog, collUsers);
               setTimeout(() => {
                 setOpen(false);
                 getProfileUser(user.uid).then((pro) => {
@@ -89,6 +101,16 @@ const AuthLogin = ({ ...others }) => {
                 toast.error('Upsss! Contraseña incorrecta.', { position: toast.POSITION.TOP_RIGHT });
               } else if (error.code === 'auth/user-disabled') {
                 toast.error('Upsss! Tu cuenta se encuentra inhabilitada!.', { position: toast.POSITION.TOP_RIGHT });
+                const uidLog = generateId(20);
+                //Log
+                const recordLog = {
+                  userId: 'NDUSR000',
+                  loginDate: fullDate(),
+                  email: values.email,
+                  state: genConst.CONST_STATE_IN,
+                  message: 'Cuenta Inhabilitada.'
+                };
+                createLog(uidLog, recordLog, collUsers);
               } else if (error.code === 'auth/invalid-login-credentials') {
                 toast.error('Upsss! Datos de inicio de sesión no válidos!.', { position: toast.POSITION.TOP_RIGHT });
               } else if (error.code === 'auth/internal-error') {

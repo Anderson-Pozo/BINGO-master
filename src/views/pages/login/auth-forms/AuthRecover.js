@@ -15,6 +15,11 @@ import 'react-toastify/dist/ReactToastify.css';
 
 // project imports
 import AnimateButton from 'components/extended/AnimateButton';
+import { generateId } from 'utils/idGenerator';
+import { fullDate } from 'utils/validations';
+import { genConst } from 'store/constant';
+import { createLog } from 'config/firebaseEvents';
+import { collUsers } from 'store/collections';
 
 const AuthRecover = ({ ...others }) => {
   const theme = useTheme();
@@ -37,6 +42,16 @@ const AuthRecover = ({ ...others }) => {
               toast.success('Un correo electrónico fue enviado con el link para recuperar su contraseña!.', {
                 position: toast.POSITION.TOP_RIGHT
               });
+              const uidLog = generateId(20);
+              //Log
+              const userLog = {
+                userId: 'NDUSR000',
+                loginDate: fullDate(),
+                email: values.email,
+                state: genConst.CONST_STATE_IN,
+                message: 'Recuperación de Contraseña.'
+              };
+              createLog(uidLog, userLog, collUsers);
               resetForm({ values: '' });
             })
             .catch((error) => {

@@ -320,6 +320,15 @@ export async function getParamsData() {
   });
   return list;
 }
+//Obtenemos lista de Logs
+export async function getLogsData() {
+  const list = [];
+  const querySnapshot = await getDocuments(collLog);
+  querySnapshot.forEach((doc) => {
+    list.push(doc.data());
+  });
+  return list;
+}
 //Obtenemos el nombre y apellido de Usuario por ID
 export async function getUserName(id) {
   let name = null;
