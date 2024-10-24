@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   Paper,
   Table,
@@ -24,25 +24,16 @@ import {
 import { uiStyles } from './Logs.styles';
 import { JsonViewer } from '@textea/json-viewer';
 import { IconCircleX, IconReload, IconSearch, IconEyeTable, IconFile } from '@tabler/icons';
-
-//Notifications
-import 'react-toastify/dist/ReactToastify.css';
-
-//Collections
 import { titles, inputLabels } from './Logs.texts';
-
-//Utils
 import { getLogsData } from 'config/firebaseEvents';
-
-//types array
 import MessageDark from 'components/message/MessageDark';
 import { genConst } from 'store/constant';
 
-function searchingData(search) {
-  return function (x) {
-    return x.collection.toLowerCase().includes(search) || x.collection.toUpperCase().includes(search) || !search;
-  };
-}
+// Optimized search function
+const searchingData = (search = '') => {
+  const normalizedSearch = search.trim().toLowerCase();
+  return (x) => x?.collection?.toLowerCase()?.includes(normalizedSearch);
+};
 
 export default function Logs() {
   const [page, setPage] = useState(0);
@@ -54,33 +45,25 @@ export default function Logs() {
   const [listData, setListData] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
 
+  // Load data once
   useEffect(() => {
-    getLogsData().then((data) => {
-      setListData(data);
-    });
+    getLogsData().then(setListData);
   }, []);
 
-  const handleOpenCreate = () => {
-    setOpenCreate(true);
-  };
-  const handleCloseCreate = () => {
-    setOpenCreate(false);
-  };
+  // Memoized search result
+  const filteredData = useMemo(() => listData.filter(searchingData(search)), [listData, search]);
 
-  const handleChangePage = (newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
+  // Handlers
+  const handleOpenCreate = useCallback(() => setOpenCreate(true), []);
+  const handleCloseCreate = useCallback(() => setOpenCreate(false), []);
+  const handleChangePage = useCallback((_, newPage) => setPage(newPage), []);
+  const handleChangeRowsPerPage = useCallback((event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
-  };
-
-  const reloadData = () => {
-    getLogsData().then((data) => {
-      setListData(data);
-    });
-  };
+  }, []);
+  const reloadData = useCallback(() => {
+    getLogsData().then(setListData);
+  }, []);
 
   return (
     <Box sx={uiStyles.box1}>
@@ -90,93 +73,80 @@ export default function Logs() {
             <IconFile color="#FFF" />
           </IconButton>
           <Tooltip title="Recargar">
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                reloadData();
-              }}
-            >
+            <IconButton color="inherit" onClick={reloadData}>
               <IconReload color="#FFF" />
             </IconButton>
           </Tooltip>
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
+          <Typography variant="h5" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
             Logs del Sistema
           </Typography>
           <Tooltip title="Buscar">
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                setShowSearch(!showSearch);
-              }}
-            >
+            <IconButton color="inherit" onClick={() => setShowSearch((prev) => !prev)}>
               <IconSearch color="#FFF" />
             </IconButton>
           </Tooltip>
         </Toolbar>
       </AppBar>
+
+      {/* Search Bar */}
       {showSearch && (
         <Box sx={{ flexGrow: 0 }}>
-          {listData.length > 0 ? (
+          {!!listData.length && (
             <OutlinedInput
               id="searchField"
               type="text"
               name="searchField"
+              value={search}
               onChange={(ev) => setSearch(ev.target.value)}
               placeholder={inputLabels.search}
-              style={{ width: '100%', marginTop: 10 }}
+              fullWidth
+              sx={{ mt: 2 }}
             />
-          ) : (
-            <></>
           )}
         </Box>
       )}
-      {listData.length > 0 ? (
+
+      {listData.length ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: 600 }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  <TableCell key="id-coll" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
-                    {'Colección'}
-                  </TableCell>
-                  <TableCell key="id-date" align="left" style={{ minWidth: 170, fontWeight: 'bold' }}>
-                    {'Fecha'}
-                  </TableCell>
-                  <TableCell key="id-id" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
-                    {'LogId'}
-                  </TableCell>
-                  <TableCell key="id-actions" align="center" style={{ minWidth: 75, fontWeight: 'bold' }}>
-                    {titles.actions}
-                  </TableCell>
+                  {['Colección', 'Fecha', 'LogId', titles.actions].map((header) => (
+                    <TableCell
+                      key={header}
+                      align={header === titles.actions ? 'center' : 'left'}
+                      sx={{ minWidth: 100, fontWeight: 'bold' }}
+                    >
+                      {header}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {listData
-                  .filter(searchingData(search))
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((r) => (
-                    <TableRow hover key={r.id}>
-                      <TableCell align="left">{r.collection}</TableCell>
-                      <TableCell align="left">{r.createAt}</TableCell>
-                      <TableCell align="left">{r.id}</TableCell>
-                      <TableCell align="center">
-                        <ButtonGroup variant="contained">
-                          <Tooltip title="Ver Objeto">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
-                              onClick={() => {
-                                setObject(r.object);
-                                setTitle('Objeto Detalle');
-                                handleOpenCreate();
-                              }}
-                            >
-                              <IconEyeTable />
-                            </Button>
-                          </Tooltip>
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+                  <TableRow hover key={row.id}>
+                    <TableCell align="left">{row.collection}</TableCell>
+                    <TableCell align="left">{row.createAt}</TableCell>
+                    <TableCell align="left">{row.id}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Tooltip title="Ver Objeto">
+                          <Button
+                            sx={{ bgcolor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
+                            onClick={() => {
+                              setObject(row.object);
+                              setTitle('Objeto Detalle');
+                              handleOpenCreate();
+                            }}
+                          >
+                            <IconEyeTable />
+                          </Button>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -192,39 +162,35 @@ export default function Logs() {
           />
         </Paper>
       ) : (
-        <Grid container style={{ marginTop: 20 }}>
+        <Grid container sx={{ mt: 2 }}>
           <Grid item xs={12}>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
-              <MessageDark message={titles.noRecordsYet} submessage="" />
-            </Grid>
+            <MessageDark message={titles.noRecordsYet} />
           </Grid>
         </Grid>
       )}
 
+      {/* Modal for Object Details */}
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
         <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
+          <Typography variant="h3" align="center">
             {title}
           </Typography>
-          <Grid container style={{ marginTop: 10 }}>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
+          <Grid container sx={{ mt: 2 }}>
+            <Grid item xs={12}>
               <JsonViewer value={object} />
             </Grid>
-            <Grid item lg={12} md={12} sm={12} xs={12}>
-              <center>
-                <ButtonGroup>
-                  <Button
-                    variant="contained"
-                    color="error"
-                    startIcon={<IconCircleX />}
-                    size="large"
-                    style={{ backgroundColor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
-                    onClick={handleCloseCreate}
-                  >
-                    {titles.buttonCancel}
-                  </Button>
-                </ButtonGroup>
-              </center>
+            <Grid item xs={12} sx={{ textAlign: 'center', mt: 2 }}>
+              <ButtonGroup>
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<IconCircleX />}
+                  sx={{ bgcolor: genConst.CONST_CANCEL_COLOR, color: '#FFF' }}
+                  onClick={handleCloseCreate}
+                >
+                  {titles.buttonCancel}
+                </Button>
+              </ButtonGroup>
             </Grid>
           </Grid>
         </Box>

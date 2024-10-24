@@ -5,7 +5,6 @@ import { PayPalButtons } from '@paypal/react-paypal-js';
 
 const PayPalButton = (props) => {
   let navigate = useNavigate();
-  console.log(props.object);
   return (
     <PayPalButtons
       createOrder={(data, actions) => {
@@ -14,7 +13,7 @@ const PayPalButton = (props) => {
             {
               description: props.invoice,
               amount: {
-                value: props.totalValue
+                value: props.totalValue + ''
               }
             }
           ]

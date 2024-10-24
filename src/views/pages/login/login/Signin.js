@@ -1,24 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-// material-ui
+// Material UI
 import { useTheme } from '@mui/material/styles';
-import { Divider, Grid, Stack, Typography, useMediaQuery, Button, Modal, Box } from '@mui/material';
-// project imports
+import { Divider, Grid, Typography, Button, Modal, Box, CircularProgress } from '@mui/material';
+// Project imports
 import AuthWrapper1 from '../AuthWrapper';
 import AuthCardWrapper from '../AuthCardWrapper';
 import AuthLogin from '../auth-forms/AuthLogin';
 import Logo from 'components/Logo-md';
-import AuthFooter from 'components/cards/AuthFooter';
-import CircularProgress from '@mui/material/CircularProgress';
-//Assets
+// Assets
 import bg01 from 'assets/images/bg/bg1.jpg';
 import google from 'assets/images/google.webp';
-//Firebase Google Provider
+// Firebase Google Provider
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { genConst } from 'store/constant';
 import { createDocument, isExistUser } from 'config/firebaseEvents';
 import { collUsers } from 'store/collections';
-//Notifications
+// Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fullDate } from 'utils/validations';
@@ -27,137 +25,118 @@ const provider = new GoogleAuthProvider();
 
 const Signin = () => {
   const theme = useTheme();
-  let navigate = useNavigate();
-  const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
   const auth = getAuth();
   const [openLoader, setOpenLoader] = useState(false);
 
-  const handleLoginGoogle = () => {
-    setOpenLoader(true);
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-        const user = result.user;
-        console.log(user);
-        console.log(token);
-        isExistUser(user.uid).then((res) => {
-          if (res) {
-            console.log(res, user.uid);
-          } else {
-            const userObject = {
-              avatar: user.photoURL,
-              createAt: fullDate(),
-              email: user.email,
-              fullName: user.displayName,
-              id: user.uid,
-              lastName: '',
-              name: user.displayName,
-              phone: null,
-              profile: genConst.CONST_PRO_DEF,
-              state: genConst.CONST_STATE_AC,
-              url: null,
-              provider: 'Google'
-            };
-            createDocument(collUsers, user.uid, userObject);
-            toast.success('Usuario registrado correctamente!.', { position: toast.POSITION.TOP_RIGHT });
-          }
-        });
-        setTimeout(() => {
-          setOpenLoader(false);
-          navigate('/app/dashboard');
-        }, 2000);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        const errorEmail = error.email;
-        const credential = GoogleAuthProvider.credentialFromError(error);
-        console.log(errorCode, errorMessage, errorEmail, credential);
-        toast.error('Ups, algo salio mal!!!', { position: toast.POSITION.TOP_RIGHT });
+  const handleLoginGoogle = async () => {
+    try {
+      setOpenLoader(true);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userExists = await isExistUser(user.uid);
+      if (!userExists) {
+        const userObject = {
+          avatar: user.photoURL,
+          createAt: fullDate(),
+          email: user.email,
+          fullName: user.displayName,
+          id: user.uid,
+          name: user.displayName,
+          profile: genConst.CONST_PRO_DEF,
+          state: genConst.CONST_STATE_AC,
+          provider: 'Google'
+        };
+        await createDocument(collUsers, user.uid, userObject);
+        toast.success('Usuario registrado correctamente!', { position: toast.POSITION.TOP_RIGHT });
+      }
+
+      setTimeout(() => {
         setOpenLoader(false);
-      });
+        navigate('/app/dashboard');
+      }, 2000);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Ups, algo salió mal!', { position: toast.POSITION.TOP_RIGHT });
+      setOpenLoader(false);
+    }
   };
 
   return (
-    <AuthWrapper1
-      style={{
-        backgroundImage: `url(${bg01})`,
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
-        margin: 0,
-        padding: 0
-      }}
-    >
+    <AuthWrapper1>
       <ToastContainer />
-      <Grid container direction="column">
-        <Grid item xs={12}>
-          <Grid container justifyContent="center" alignItems="center" sx={{ minHeight: 'calc(100vh - 57px)' }}>
-            <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
-              <AuthCardWrapper>
-                <Grid container spacing={2} alignItems="center" justifyContent="center">
-                  <Grid item>
-                    <Logo />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
-                      <Grid item>
-                        <Stack alignItems="center" justifyContent="center" spacing={1}>
-                          <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
-                            Hola, Bienvenido
-                          </Typography>
-                        </Stack>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <AuthLogin />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Divider />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <center>
-                      <Typography variant="subtitle1" sx={{ textDecoration: 'none' }}>
-                        o inicia sesión con:
-                      </Typography>
-                    </center>
-                    <Button
-                      disableElevation
-                      fullWidth
-                      size="large"
-                      type="submit"
-                      variant="outlined"
-                      startIcon={<img src={google} alt="brand google" width={22} />}
-                      style={{ color: '#00adef', height: 50, borderRadius: 12 }}
-                      onClick={handleLoginGoogle}
-                    >
-                      Inicia sesión con Google
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Divider />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography variant="h4" style={{ textAlign: 'center', marginBottom: 10 }}>
+      <Grid container direction="row" sx={{ minHeight: '100vh' }}>
+        {/* Login Section (Left Side) */}
+        <Grid
+          item
+          xs={12}
+          md={5}
+          container
+          alignItems="center"
+          justifyContent="center"
+          sx={{ backgroundColor: theme.palette.background.default, padding: 3 }}
+        >
+          <Grid item xs={12} sm={12} md={12}>
+            <AuthCardWrapper>
+              <Grid container spacing={2} alignItems="center" justifyContent="center">
+                <Grid item>
+                  <Logo />
+                </Grid>
+                <Grid item xs={12}>
+                  <AuthLogin />
+                </Grid>
+                <Grid item xs={12}>
+                  <Divider />
+                </Grid>
+                <Grid item xs={12}>
+                  <center>
+                    <Typography variant="subtitle1">o inicia sesión con:</Typography>
+                  </center>
+                  <Button
+                    disableElevation
+                    fullWidth
+                    size="large"
+                    variant="outlined"
+                    startIcon={<img src={google} alt="brand google" width={22} />}
+                    style={{ color: '#00adef', height: 50, borderRadius: 12 }}
+                    onClick={handleLoginGoogle}
+                  >
+                    Inicia sesión con Google
+                  </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <Divider />
+                </Grid>
+                <Grid item xs={12}>
+                  <center>
+                    <Typography variant="h4" textAlign="center" mb={1}>
                       Aún no tienes una cuenta?
                     </Typography>
-                    <Grid item container direction="column" alignItems="center" xs={12}>
-                      <Typography component={Link} to="/auth/signup" variant="subtitle1" sx={{ textDecoration: 'none' }}>
-                        Regístrate
-                      </Typography>
-                    </Grid>
-                  </Grid>
+                    <Typography component={Link} to="/auth/signup" variant="h5" sx={{ textDecoration: 'none' }} textAlign="center">
+                      Regístrate
+                    </Typography>
+                  </center>
                 </Grid>
-              </AuthCardWrapper>
-            </Grid>
+              </Grid>
+            </AuthCardWrapper>
           </Grid>
         </Grid>
-        <Grid item xs={12} sx={{ m: 3, mt: 1 }}>
-          <AuthFooter />
-        </Grid>
+
+        {/* Wallpaper Section (Right Side) */}
+        <Grid
+          item
+          xs={12}
+          md={7}
+          sx={{
+            backgroundImage: `url(${bg01})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover'
+          }}
+        ></Grid>
       </Grid>
+
       <Modal open={openLoader} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <center>
           <Box sx={styleLoader}>
@@ -177,10 +156,7 @@ const styleLoader = {
   width: 80,
   height: 80,
   bgcolor: 'transparent',
-  border: 'none',
-  borderRadius: 6,
-  boxShadow: 0,
-  p: 4
+  borderRadius: 6
 };
 
 export default Signin;

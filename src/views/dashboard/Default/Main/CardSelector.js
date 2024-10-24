@@ -5,19 +5,7 @@ import 'react-credit-cards-2/dist/es/styles-compiled.css';
 import validator from 'validator';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import {
-  Avatar,
-  Box,
-  ButtonBase,
-  Grid,
-  Modal,
-  Typography,
-  ButtonGroup,
-  Button,
-  OutlinedInput,
-  InputAdornment,
-  Tooltip
-} from '@mui/material';
+import { Avatar, Box, ButtonBase, Grid, Modal, Typography, Button, OutlinedInput, InputAdornment, Tooltip } from '@mui/material';
 import MessageDark from 'components/message/MessageDark';
 import CircularProgress from '@mui/material/CircularProgress';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
@@ -34,6 +22,9 @@ import { authentication } from 'config/firebase';
 import { fullDate } from 'utils/validations';
 import { collUserCards } from 'store/collections';
 import StateTickets from 'components/StateTickets';
+import BingoCard from 'components/bingo/BingoCard';
+import CustomModal from 'components/Modal';
+import ItemBingo from 'components/bingo/ItemBingo';
 
 const CardSelector = () => {
   //let navigate = useNavigate();
@@ -49,11 +40,7 @@ const CardSelector = () => {
   const [openLoader, setOpenLoader] = useState(false);
   const [cardN, setCardN] = useState(0);
   const [total, setTotal] = useState(0);
-  const [bN, setBN] = useState([]);
-  const [iN, setIN] = useState([]);
-  const [nN, setNN] = useState([]);
-  const [gN, setGN] = useState([]);
-  const [oN, setON] = useState([]);
+  const [bingoNumbers, setBingoNumbers] = useState({ bN: [], iN: [], nN: [], gN: [], oN: [] });
   const [selectedItems, setSelectedItems] = useState([]);
   ////CARD PAYMENT
   const [openPayment, setOpenPayment] = useState(false);
@@ -75,10 +62,6 @@ const CardSelector = () => {
       setCards(data);
     });
   }, [id]);
-
-  const handleCloseCard = () => {
-    setOpenCard(false);
-  };
 
   const handleSelect = (item) => {
     if (selectedItems.includes(item)) {
@@ -105,9 +88,9 @@ const CardSelector = () => {
         setCardName(value);
         break;
       case 'expiry':
-        var formattedExpiry = value.replace(/[^0-9]/g, ''); // Permitir solo números
+        var formattedExpiry = value.replace(/[^0-9]/g, '');
         if (formattedExpiry.length === 2 && expiry.length < 3) {
-          formattedExpiry += '/'; // Insertar la barra después de MM
+          formattedExpiry += '/';
         }
         setExpiry(formattedExpiry);
         break;
@@ -138,7 +121,6 @@ const CardSelector = () => {
       return;
     }
 
-    // Preparar los datos para enviar al backend
     const paymentData = {
       cardNumber,
       name,
@@ -182,15 +164,9 @@ const CardSelector = () => {
   const handleOpenPayment = () => {
     setOpenPayment(true);
   };
-  const handleClosePayment = () => {
-    setOpenPayment(false);
-  };
 
   const handleOpenPayPal = () => {
     setOpenPayPal(true);
-  };
-  const handleClosePayPal = () => {
-    setOpenPayPal(false);
   };
 
   return (
@@ -259,36 +235,14 @@ const CardSelector = () => {
                     <Grid container spacing={1}>
                       {selectedItems.map((item) => (
                         <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
-                          <Tooltip title="Clic para ver cartilla">
-                            <Avatar
-                              variant="rounded"
-                              color="inherit"
-                              sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                backgroundColor: '#00adef',
-                                width: 40,
-                                height: 40,
-                                color: '#FFF',
-                                '&[aria-controls="menu-list-grow"],&:hover': {
-                                  background: theme.palette.secondary.light,
-                                  color: '#FFF'
-                                }
-                              }}
-                              onClick={() => {
-                                setCardN(item.num);
-                                setBN(item.b);
-                                setIN(item.i);
-                                setNN(item.n);
-                                setGN(item.g);
-                                setON(item.o);
-                                setOpenCard(true);
-                              }}
-                            >
-                              <span style={{ color: '#FFF', fontSize: 15 }}>{item.num}</span>
-                            </Avatar>
-                          </Tooltip>
+                          <ItemBingo
+                            title="Clic para ver cartilla"
+                            item={item}
+                            setCardN={setCardN}
+                            setBingoNumbers={setBingoNumbers}
+                            setOpenCard={setOpenCard}
+                            theme={theme}
+                          />
                         </Grid>
                       ))}
                     </Grid>
@@ -339,212 +293,114 @@ const CardSelector = () => {
           </Grid>
         </Grid>
       )}
-      <Modal open={openCard} onClose={handleCloseCard} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
-        <Box sx={uiStyles.modalStyles}>
-          <Typography id="modal-modal-title" variant="h3" component="h2" sx={{ textAlign: 'center' }}>
-            Cartilla Número: 0000{cardN}
-          </Typography>
-          <Grid container style={{ marginTop: 20 }}>
-            <Grid item xs={12}>
-              <Grid container spacing={1}>
-                <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <div style={{ marginTop: 20 }}>
-                    <center>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 55, width: 55, borderRadius: 0 }}>
-                          B
-                        </Button>
-                        {bN.map((item, key) => (
-                          <Button key={'b' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                            {item}
-                          </Button>
-                        ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                          I
-                        </Button>
-                        {iN.map((item, key) => (
-                          <Button key={'i' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                            {item}
-                          </Button>
-                        ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                          N
-                        </Button>
-                        {nN.map((item, key) =>
-                          item === 'FREE' ? (
-                            <Button key={'n' + key} variant="contained" style={{ height: 55, width: 55, color: '#FFF', borderRadius: 0 }}>
-                              FREE
-                            </Button>
-                          ) : (
-                            <Button key={'n' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                              {item}
-                            </Button>
-                          )
-                        )}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                          G
-                        </Button>
-                        {gN.map((item, key) => (
-                          <Button key={'g' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                            {item}
-                          </Button>
-                        ))}
-                      </ButtonGroup>
-                      <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                        <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                          O
-                        </Button>
-                        {oN.map((item, key) => (
-                          <Button key={'o' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                            {item}
-                          </Button>
-                        ))}
-                      </ButtonGroup>
-                    </center>
-                  </div>
-                </Grid>
-                <Grid item lg={12} md={12} sm={12} xs={12} sx={{ mt: 3 }}>
-                  <center>
-                    <ButtonGroup>
-                      <Button
-                        variant="contained"
-                        style={{ color: '#FFF', height: 40 }}
-                        onClick={() => {
-                          setOpenCard(false);
-                        }}
-                      >
-                        Cerrar
-                      </Button>
-                    </ButtonGroup>
-                  </center>
-                </Grid>
-              </Grid>
-            </Grid>
+      <CustomModal open={openCard} handleClose={() => setOpenCard(false)} title={'Cartilla Número: ' + cardN} width={400}>
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <BingoCard bN={bingoNumbers.bN} iN={bingoNumbers.iN} nN={bingoNumbers.nN} gN={bingoNumbers.gN} oN={bingoNumbers.oN} />
           </Grid>
-        </Box>
-      </Modal>
-      <Modal
-        open={openPayment}
-        onClose={handleClosePayment}
-        aria-labelledby="parent-modal-title"
-        aria-describedby="parent-modal-description"
-      >
-        <Box sx={uiStyles.modalPayment}>
-          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
-            Pagar <b>$ </b> {total}
-          </Typography>
-          <div style={{ marginTop: 20 }}>
-            <center>
-              <div id="PaymentForm">
-                <Cards number={cardNumber} name={name} expiry={expiry} cvc={cvc} focused={focus} />
-                <form id="card-form" onSubmit={handleSubmit}>
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    {/* Número de Tarjeta */}
-                    <Grid item xs={12}>
-                      <OutlinedInput
-                        name="number"
-                        value={cardNumber}
-                        onChange={handleInputChange}
-                        onFocus={handleInputFocus}
-                        placeholder="Número de tarjeta"
-                        inputProps={{ maxLength: 16 }}
-                        startAdornment={<InputAdornment position="start">💳</InputAdornment>}
-                        fullWidth
-                      />
-                    </Grid>
-
-                    {/* Nombre en la Tarjeta */}
-                    <Grid item xs={12}>
-                      <OutlinedInput
-                        name="cardName"
-                        value={cardName}
-                        onChange={handleInputChange}
-                        onFocus={handleInputFocus}
-                        placeholder="Nombre en la tarjeta"
-                        fullWidth
-                      />
-                    </Grid>
-
-                    {/* Fecha de Expiración */}
-                    <Grid item xs={6}>
-                      <OutlinedInput
-                        name="expiry"
-                        value={expiry}
-                        onChange={handleInputChange}
-                        onFocus={handleInputFocus}
-                        placeholder="MM/AA"
-                        inputProps={{ maxLength: 5 }}
-                        fullWidth
-                      />
-                    </Grid>
-
-                    {/* CVC */}
-                    <Grid item xs={6}>
-                      <OutlinedInput
-                        name="cvc"
-                        value={cvc}
-                        onChange={handleInputChange}
-                        onFocus={handleInputFocus}
-                        placeholder="CVC"
-                        type="password"
-                        inputProps={{ maxLength: 3 }}
-                        fullWidth
-                      />
-                    </Grid>
-
-                    {/* Botón de Pago */}
-                    <Grid item xs={12}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth
-                        style={{
-                          backgroundColor: '#009ee3',
-                          height: 40,
-                          borderRadius: 5,
-                          padding: 12,
-                          color: '#FFF',
-                          marginTop: 0
-                        }}
-                      >
-                        Pagar
-                      </Button>
-                    </Grid>
+        </Grid>
+      </CustomModal>
+      <CustomModal open={openPayment} handleClose={() => setOpenPayment(false)} title={'Pagar $ ' + total} width={400}>
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item lg={12} md={12} sm={12} xs={12}>
+            <div id="PaymentForm">
+              <Cards number={cardNumber} name={name} expiry={expiry} cvc={cvc} focused={focus} />
+              <form id="card-form" onSubmit={handleSubmit}>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {/* Número de Tarjeta */}
+                  <Grid item xs={12}>
+                    <OutlinedInput
+                      name="number"
+                      value={cardNumber}
+                      onChange={handleInputChange}
+                      onFocus={handleInputFocus}
+                      placeholder="Número de tarjeta"
+                      inputProps={{ maxLength: 16 }}
+                      startAdornment={<InputAdornment position="start">💳</InputAdornment>}
+                      fullWidth
+                    />
                   </Grid>
-                </form>
-              </div>
-            </center>
-          </div>
-        </Box>
-      </Modal>
-      <Modal open={openPayPal} onClose={handleClosePayPal} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
-        <Box sx={uiStyles.modalPayment}>
-          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
-            Pagar <b>$ </b> {total}
-          </Typography>
-          <div style={{ marginTop: 20 }}>
-            <center>
-              <PayPalScriptProvider
-                options={{
-                  'client-id': 'AaPgorgNdJSFjdNLhd-TYYEjHyILNwarVBEM3PAtDFHaq92n0JEYhAHyxcFprWJ28NF3TqEp65Y5p4wO'
-                }}
-              >
-                <center>
-                  <div style={{ width: '100%' }}>
-                    <PayPalButton invoice={name + ' / ' + date} totalValue={total} />
-                  </div>
-                </center>
-              </PayPalScriptProvider>
-            </center>
-          </div>
-        </Box>
-      </Modal>
+
+                  {/* Nombre en la Tarjeta */}
+                  <Grid item xs={12}>
+                    <OutlinedInput
+                      name="cardName"
+                      value={cardName}
+                      onChange={handleInputChange}
+                      onFocus={handleInputFocus}
+                      placeholder="Nombre en la tarjeta"
+                      fullWidth
+                    />
+                  </Grid>
+
+                  {/* Fecha de Expiración */}
+                  <Grid item xs={6}>
+                    <OutlinedInput
+                      name="expiry"
+                      value={expiry}
+                      onChange={handleInputChange}
+                      onFocus={handleInputFocus}
+                      placeholder="MM/AA"
+                      inputProps={{ maxLength: 5 }}
+                      fullWidth
+                    />
+                  </Grid>
+
+                  {/* CVC */}
+                  <Grid item xs={6}>
+                    <OutlinedInput
+                      name="cvc"
+                      value={cvc}
+                      onChange={handleInputChange}
+                      onFocus={handleInputFocus}
+                      placeholder="CVC"
+                      type="password"
+                      inputProps={{ maxLength: 3 }}
+                      fullWidth
+                    />
+                  </Grid>
+
+                  {/* Botón de Pago */}
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      fullWidth
+                      style={{
+                        backgroundColor: '#009ee3',
+                        height: 40,
+                        borderRadius: 5,
+                        padding: 12,
+                        color: '#FFF',
+                        marginTop: 0
+                      }}
+                    >
+                      Pagar
+                    </Button>
+                  </Grid>
+                </Grid>
+              </form>
+            </div>
+          </Grid>
+        </Grid>
+      </CustomModal>
+      <CustomModal open={openPayPal} handleClose={() => setOpenPayPal(false)} title={'Pagar $ ' + total} width={400}>
+        <div style={{ marginTop: 20 }}>
+          <center>
+            <PayPalScriptProvider
+              options={{
+                'client-id': 'AaPgorgNdJSFjdNLhd-TYYEjHyILNwarVBEM3PAtDFHaq92n0JEYhAHyxcFprWJ28NF3TqEp65Y5p4wO'
+              }}
+            >
+              <center>
+                <div style={{ width: '100%' }}>
+                  <PayPalButton invoice={name + ' / ' + date} totalValue={total} />
+                </div>
+              </center>
+            </PayPalScriptProvider>
+          </center>
+        </div>
+      </CustomModal>
       <Modal open={openLoader} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <center>
           <Box sx={uiStyles.loader}>

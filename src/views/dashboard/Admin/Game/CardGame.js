@@ -223,8 +223,8 @@ export default function CardGame() {
                     {gameList
                       .filter(searchingGameData(searchEvent))
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((r) => (
-                        <TableRow hover key={r.id}>
+                      .map((r, index) => (
+                        <TableRow hover key={index}>
                           <TableCell align="left">{r.ide}</TableCell>
                           <TableCell align="left">{r.name}</TableCell>
                           <TableCell align="left">{r.startDate}</TableCell>

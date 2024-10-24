@@ -7,7 +7,7 @@ const config = {
   outlinedFilled: true,
   theme: 'light',
   price: 20,
-  i18n: 'en' // 'en' - English, 'fr' - French, 'ro' - Romanian, 'zh' - Chinese
+  i18n: 'en'
 };
 
 export default config;
