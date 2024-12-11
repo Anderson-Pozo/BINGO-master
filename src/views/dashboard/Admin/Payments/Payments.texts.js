@@ -17,7 +17,7 @@ export const titles = {
   menuCreate: 'Agregar Pago',
   tableCell1: 'Id',
   tableCell2: 'Estado',
-  tableCell3: 'Cartilla',
+  tableCell3: 'Referencia',
   tableCell4: 'Total',
   tableCell5: 'Fecha',
   tableCell6: 'Otro',

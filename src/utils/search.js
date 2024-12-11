@@ -21,10 +21,11 @@ export function searchingBusinessData(search) {
 export function searchingPaymentsData(search) {
   return function (x) {
     return (
-      x.details.toLowerCase().includes(search) ||
-      x.details.toUpperCase().includes(search) ||
-      x.card.toLowerCase().includes(search) ||
-      x.card.toUpperCase().includes(search) ||
+      x.reference.toLowerCase().includes(search) ||
+      x.status.toLowerCase().includes(search) ||
+      // x.details.toUpperCase().includes(search) ||
+      // x.card.toLowerCase().includes(search) ||
+      // x.card.toUpperCase().includes(search) ||
       !search
     );
   };

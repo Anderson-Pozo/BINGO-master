@@ -277,7 +277,7 @@ export default function Payments() {
                     <TableRow hover key={r.id}>
                       <TableCell align="left">{r.id}</TableCell>
                       <TableCell align="left">{r.status}</TableCell>
-                      <TableCell align="left">{r.card}</TableCell>
+                      <TableCell align="left">{r.reference}</TableCell>
                       <TableCell align="left">${r.total}</TableCell>
                       <TableCell align="left">{r.createAt}</TableCell>
                       <TableCell align="center">
