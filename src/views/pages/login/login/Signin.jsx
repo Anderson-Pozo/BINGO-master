@@ -14,7 +14,7 @@ import google from 'assets/images/google.webp';
 // Firebase Google Provider
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { genConst } from 'store/constant';
-import { createDocument, isExistUser } from 'config/firebaseEvents';
+import { createDocument, getProfileUser, isExistUser } from 'config/firebaseEvents';
 import { collUsers } from 'store/collections';
 // Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -54,7 +54,14 @@ const Signin = () => {
 
       setTimeout(() => {
         setOpenLoader(false);
-        navigate('/app/dashboard');
+        getProfileUser(user.uid).then((pro) => {
+          if (pro == genConst.CONST_PRO_ADM) {
+            navigate('/main/dashboard');
+          } else {
+            navigate('/app/dashboard');
+          }
+        });
+        // navigate('/app/dashboard');
       }, 2000);
     } catch (error) {
       console.error('Login error:', error);
