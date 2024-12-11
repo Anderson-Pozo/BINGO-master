@@ -30,7 +30,7 @@ const Dashboard = () => {
     countGames().then((count) => {
       setTotalGames(count);
     });
-    getTotalPaidBenefit().then((total) => {
+    getTotalPaidBenefit({ statusCode: 3 }).then((total) => {
       setTotalIncomes(Number.parseFloat(total).toFixed(2));
     });
   }, []);
