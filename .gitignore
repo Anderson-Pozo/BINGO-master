@@ -132,4 +132,5 @@ src/assets/images/creah/.DS_Store
 .firebaserc
 firebase.json
 firebase-debug.log
+.firebase
 src/.DS_Store
