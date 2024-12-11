@@ -116,3 +116,18 @@ export const genConst = {
   CONST_STA_ON: 1,
   CONST_STA_OFF: 2
 };
+
+export const PAYPHONE_CONFIG = {
+  SERVER_URL: 'https://pay.payphonetodoesposible.com/api/button/V2/Confirm',
+  TOKEN: import.meta.env.VITE_PAYPHONE_TOKEN,
+  STORE_ID: import.meta.env.VITE_STORE_ID
+};
+
+export const FIREBASE_CONFIG = {
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDERID,
+  appId: import.meta.env.VITE_FIREBASE_APPID
+};

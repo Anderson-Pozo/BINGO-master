@@ -270,6 +270,20 @@ export const getPaymentsList = async () => {
   });
   return list;
 };
+
+export const getPaymentByTransaction = async (transactionId, clientTransactionId) => {
+  const q = query(
+    collection(db, collPayments),
+    where('transactionId', '==', transactionId),
+    where('clientTransactionId', '==', clientTransactionId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const firstDoc = querySnapshot.docs[0];
+
+  return firstDoc ? firstDoc.data() : null;
+};
+
 //Obtenemos la lista de Usuarios por Partida
 export const getGameUsers = async (id) => {
   const list = [];
@@ -379,15 +393,22 @@ export const countGames = async () => {
   return count;
 };
 //Total beneficio
-export async function getTotalPaidBenefit() {
+export async function getTotalPaidBenefit(filter = {}) {
   let total = 0;
-  const q = query(collection(db, collPayments));
+
+  let q = collection(db, collPayments);
+
+  if (filter.statusCode) {
+    q = query(q, where('statusCode', '==', filter.statusCode));
+  }
+
   const querySnapshot = await getDocs(q);
   if (querySnapshot.size > 0) {
     querySnapshot.forEach((doc) => {
       total = Number.parseFloat(total) + Number.parseFloat(doc.data().total);
     });
   }
+
   return total;
 }
 //Obtenemos cantidad de Usuarios Administradores Registrados
