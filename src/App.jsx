@@ -63,6 +63,7 @@ const ShareDefault = Loadable(lazy(() => import('views/dashboard/Default/Share/S
 const NotificationsDefault = Loadable(lazy(() => import('views/dashboard/Default/Notifications/Notifications')));
 const Success = Loadable(lazy(() => import('views/dashboard/Default/Response/Success')));
 const Failure = Loadable(lazy(() => import('views/dashboard/Default/Response/Failure')));
+const PaymentResponse = Loadable(lazy(() => import('views/dashboard/Default/Payment/PaymentResponse')));
 
 const App = () => {
   const customization = useSelector((state) => state.customization);
@@ -123,6 +124,7 @@ const App = () => {
               <Route element={<UserSecurityDefault />} path="user-security" exact />
               <Route element={<Success />} path="success" exact />
               <Route element={<Failure />} path="failure" exact />
+              <Route element={<PaymentResponse />} path="payment-response" exact />
             </Route>
           )}
         </Routes>
