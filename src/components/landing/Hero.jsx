@@ -12,7 +12,7 @@ export default function Hero({ checked }) {
     <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})} collapsedSize={50}>
       <div style={uiStyles.container}>
         <h3 style={uiStyles.title}>
-          PLAY BINGO
+          BingoBingo
           <br />
           <span style={uiStyles.colorBlueText}> ONLINE</span>
         </h3>

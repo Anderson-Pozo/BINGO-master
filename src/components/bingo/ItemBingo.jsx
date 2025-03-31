@@ -37,11 +37,11 @@ ItemBingo.propTypes = {
   title: PropTypes.string.isRequired,
   item: PropTypes.shape({
     num: PropTypes.string.isRequired,
-    b: PropTypes.arrayOf(PropTypes.number).isRequired,
-    i: PropTypes.arrayOf(PropTypes.number).isRequired,
-    n: PropTypes.arrayOf(PropTypes.number).isRequired,
-    g: PropTypes.arrayOf(PropTypes.number).isRequired,
-    o: PropTypes.arrayOf(PropTypes.number).isRequired
+    b: PropTypes.array,
+    i: PropTypes.array,
+    n: PropTypes.array,
+    g: PropTypes.array,
+    o: PropTypes.array
   }).isRequired,
   setCardN: PropTypes.func.isRequired,
   setBingoNumbers: PropTypes.func.isRequired,
