@@ -10,6 +10,7 @@ import themes from 'themes';
 import Loadable from 'components/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
 import MainLayout from 'layout/MainLayout';
+import AdminBingoLayout from 'layout/AdminBingoLayout';
 import HomeLayout from 'layout/HomeLayout';
 import DefaultLayout from 'layout/DefaultLayout';
 import { genConst } from 'store/constant';
@@ -32,6 +33,7 @@ const UserSecurity = Loadable(lazy(() => import('views/dashboard/Admin/Profile/U
 // dashboard Users
 const AdminUsers = Loadable(lazy(() => import('views/dashboard/Admin/AdminUsers/AdminUsers')));
 const Users = Loadable(lazy(() => import('views/dashboard/Admin/Users/Users')));
+const UsersCards = Loadable(lazy(() => import('views/dashboard/Admin/Users/UsersCards')));
 const Payments = Loadable(lazy(() => import('views/dashboard/Admin/Payments/Payments')));
 // dashboard Settings
 const Share = Loadable(lazy(() => import('views/dashboard/Admin/Share/Share')));
@@ -39,11 +41,12 @@ const Settings = Loadable(lazy(() => import('views/dashboard/Admin/Settings/Sett
 const Logs = Loadable(lazy(() => import('views/dashboard/Admin/Logs/Logs')));
 const Notifications = Loadable(lazy(() => import('views/dashboard/Admin/Notifications/Notifications')));
 //Game
-const Game = Loadable(lazy(() => import('views/dashboard/Admin/Game/Game')));
+const Game = Loadable(lazy(() => import('views/dashboard/Admin/Game/board/Game')));
 const NewGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/NewGame')));
 const GameUsers = Loadable(lazy(() => import('views/dashboard/Admin/Game/GameUsers')));
 const CardGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardGame')));
-const CardsUser = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardsUser')));
+const CardsByGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardsByGame')));
+const CardsUser = Loadable(lazy(() => import('views/dashboard/Admin/Game/AssignCards/CardsUser')));
 //DEFAULT SECTION ====================================================
 // default Login
 const AuthSignin = Loadable(lazy(() => import('views/pages/login/login/Signin')));
@@ -98,11 +101,13 @@ const App = () => {
               <Route element={<DashboardAdmin />} path="dashboard" exact />
               <Route element={<AdminUsers />} path="admin-users" exact />
               <Route element={<Users />} path="users" exact />
+              <Route element={<UsersCards />} path="users-cards/:userId" />
               <Route element={<Payments />} path="payments" exact />
               <Route element={<Game />} path="game" exact />
               <Route element={<NewGame />} path="new-game" exact />
               <Route element={<GameUsers />} path="game-users" exact />
               <Route element={<CardGame />} path="card-game" exact />
+              <Route element={<CardsByGame />} path="cards-game/:gameId" />
               <Route element={<CardsUser />} path="cards-user" exact />
               <Route element={<Share />} path="share" exact />
               <Route element={<Settings />} path="settings" exact />
@@ -110,6 +115,11 @@ const App = () => {
               <Route element={<Notifications />} path="notifications" exact />
               <Route element={<UserProfile />} path="user-profile" exact />
               <Route element={<UserSecurity />} path="user-security" exact />
+            </Route>
+          ) : profile == genConst.CONST_PRO_ADM_BING ? (
+            <Route element={<AdminBingoLayout />} path="/main" exact>
+              <Route element={<DashboardAdmin />} path="dashboard" exact />
+              <Route element={<CardsUser />} path="cards-user" exact />
             </Route>
           ) : (
             <Route element={<DefaultLayout />} path="/app" exact>

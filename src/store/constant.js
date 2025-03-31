@@ -40,13 +40,15 @@ export const bingoValues = {
 };
 
 export const genConst = {
-  CONST_PRO_ADM: 1001,
-  CONST_PRO_DEF: 2002,
-  CONST_PRO_VIS: 3003,
+  CONST_PRO_ADM: 1001, // Administrador
+  CONST_PRO_DEF: 2002, // Usuario
+  CONST_PRO_VIS: 3003, // Visitante
+  CONST_PRO_ADM_BING: 4004, // Administrador Bingo
   CONST_ADM_NOT: 'Administrador del Sistema',
   CONST_PRO_ADM_TXT: 'Administrador',
   CONST_PRO_STU_TXT: 'Usuario',
   CONST_PRO_VIS_TXT: 'Visitante',
+  CONST_PRO_ADM_BING_TXT: 'Administrador Bingo',
   CONST_STA_ACT: 1,
   CONST_STA_INACT: 0,
   CONST_STATE_IN: 0,

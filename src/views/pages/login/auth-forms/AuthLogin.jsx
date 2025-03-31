@@ -85,7 +85,7 @@ const AuthLogin = ({ ...others }) => {
               setTimeout(() => {
                 setOpen(false);
                 getProfileUser(user.uid).then((pro) => {
-                  if (pro == genConst.CONST_PRO_ADM) {
+                  if (pro == genConst.CONST_PRO_ADM || pro == genConst.CONST_PRO_ADM_BING) {
                     navigate('/main/dashboard');
                   } else {
                     navigate('/app/dashboard');
