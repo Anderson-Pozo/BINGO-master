@@ -90,18 +90,21 @@ const saveUserCards = (cards, userId, userName) => {
 
 // Guardar detalles de pago
 const savePaymentDetails = (storedTransaction, transactionId, clientTransactionId, statusCode) => {
-  const { userId, userName, reference, totalValue } = storedTransaction.invoiceData;
+  const { userId, userName, reference, totalValue, cards, eventId } = storedTransaction.invoiceData;
+  const cardsNumbers = cards.map((item) => item.num).join(', ');
 
   const payment = {
     id: generateId(10),
     createAt: fullDate(),
     userId,
     userName,
-    reference,
+    details: reference,
+    card: cardsNumbers,
     total: totalValue,
     transactionId,
     clientTransactionId,
     statusCode,
+    eventId,
     status: statusCode === 3 ? 'Aprobado' : 'Cancelado',
     provider: 'PayPhone'
   };

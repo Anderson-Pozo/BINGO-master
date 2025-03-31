@@ -1,9 +1,23 @@
 //Firebase
 import { db, authentication } from 'config/firebase';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { collection, setDoc, doc, updateDoc, deleteDoc, getDocs, addDoc, where, query } from 'firebase/firestore';
+import {
+  collection,
+  setDoc,
+  doc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  addDoc,
+  where,
+  query,
+  orderBy,
+  limit,
+  startAfter
+} from 'firebase/firestore';
 import {
   collAdminUsers,
+  collBoards,
   collCards,
   collGameInscription,
   collGames,
@@ -21,6 +35,7 @@ import { genConst } from 'store/constant';
 import { labels } from 'store/labels';
 import { generateId } from 'utils/idGenerator';
 import { fullDate, generateDate } from 'utils/validations';
+import { checkBingoWin } from 'utils/verifyBingoWinner';
 
 //Encontrar Sesión activa
 export function isSessionActive(navigate) {
@@ -212,6 +227,180 @@ export const getGameCardsByEvent = async (id) => {
   });
   return list;
 };
+
+// OBTENER EVENTO POR ID
+export const getGameById = async (id) => {
+  const q = query(collection(db, collGames), where('ide', '==', id));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) return null;
+  return querySnapshot.docs[0].data();
+};
+
+// BORRAR TODAS LAS CARTILLAS DE UN EVENTO
+
+export const deleteAllCardsByEvent = async (eventId) => {
+  const q = query(collection(db, collCards), where('event', '==', eventId));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    deleteDoc(doc.ref);
+  });
+};
+
+export const getGameCardsByEventPaginated = async (eventId, page = 0, rowsPerPage = 50, stateFilter = null, orderFilter = null) => {
+  try {
+    // Build the base query with applicable filters
+    let baseQuery;
+
+    // Apply both filters if provided
+    if (stateFilter !== null && orderFilter !== null) {
+      // When filtering by both state and order
+      baseQuery = query(
+        collection(db, collCards),
+        where('event', '==', eventId),
+        where('state', '==', stateFilter),
+        where('order', '==', orderFilter)
+      );
+    } else if (stateFilter !== null) {
+      // When filtering by state only
+      baseQuery = query(collection(db, collCards), where('event', '==', eventId), where('state', '==', stateFilter));
+    } else if (orderFilter !== null) {
+      // When filtering by order only
+      baseQuery = query(collection(db, collCards), where('event', '==', eventId), where('order', '==', orderFilter));
+    } else {
+      // No filters
+      baseQuery = query(collection(db, collCards), where('event', '==', eventId));
+    }
+
+    // Get total count for pagination
+    const countSnapshot = await getDocs(baseQuery);
+    const totalCount = countSnapshot.size;
+
+    // If there's an order filter, we don't need pagination or ordering as it's expected to return only one item
+    if (orderFilter !== null) {
+      const snapshot = await getDocs(baseQuery);
+      const cards = snapshot.docs.map((doc) => doc.data());
+
+      return {
+        cards,
+        totalCount
+      };
+    }
+
+    // Build query with ordering for paginated results
+    let cardQuery;
+
+    // Handle different query structures based on filters
+    if (stateFilter !== null) {
+      // With state filter
+      if (page > 0) {
+        // Get the last visible document from previous pages
+        const previousPageQuery = query(
+          collection(db, collCards),
+          where('event', '==', eventId),
+          where('state', '==', stateFilter),
+          orderBy('order', 'asc'),
+          limit(page * rowsPerPage)
+        );
+
+        const lastVisibleDoc = await getDocs(previousPageQuery);
+
+        if (lastVisibleDoc.docs.length > 0) {
+          const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
+          cardQuery = query(
+            collection(db, collCards),
+            where('event', '==', eventId),
+            where('state', '==', stateFilter),
+            orderBy('order', 'asc'),
+            startAfter(lastDoc),
+            limit(rowsPerPage)
+          );
+        } else {
+          // No documents in previous pages
+          return {
+            cards: [],
+            totalCount
+          };
+        }
+      } else {
+        // First page with state filter
+        cardQuery = query(
+          collection(db, collCards),
+          where('event', '==', eventId),
+          where('state', '==', stateFilter),
+          orderBy('order', 'asc'),
+          limit(rowsPerPage)
+        );
+      }
+    } else {
+      // No state filter (just event filter)
+      if (page > 0) {
+        const lastVisibleDoc = await getDocs(
+          query(collection(db, collCards), where('event', '==', eventId), orderBy('order', 'asc'), limit(page * rowsPerPage))
+        );
+
+        if (lastVisibleDoc.docs.length > 0) {
+          const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
+          cardQuery = query(
+            collection(db, collCards),
+            where('event', '==', eventId),
+            orderBy('order', 'asc'),
+            startAfter(lastDoc),
+            limit(rowsPerPage)
+          );
+        } else {
+          // No documents in previous pages
+          return {
+            cards: [],
+            totalCount
+          };
+        }
+      } else {
+        // First page without state filter
+        cardQuery = query(collection(db, collCards), where('event', '==', eventId), orderBy('order', 'asc'), limit(rowsPerPage));
+      }
+    }
+
+    const snapshot = await getDocs(cardQuery);
+    const cards = snapshot.docs.map((doc) => doc.data());
+
+    return {
+      cards,
+      totalCount
+    };
+  } catch (error) {
+    console.error('Error getting paginated cards:', error);
+    return {
+      cards: [],
+      totalCount: 0
+    };
+  }
+};
+
+export async function checkForBingoWinner(eventId, drawnNumbers) {
+  // const gameRef = doc(db, 'games', gameId);
+  // const userCardsSnap = await getDocs(collection(db, 'games', gameId, 'usercards'));
+  if (drawnNumbers.length < 24) return null;
+  // console.log({ eventId, drawnNumbers });
+  const userCardsQuery = query(collection(db, collUserCards), where('eventId', '==', eventId));
+
+  const userCardsSnap = await getDocs(userCardsQuery);
+
+  for (const doc of userCardsSnap.docs) {
+    const cardData = doc.data();
+    // console.log({ cardData });
+    // Si esta cartilla tiene todos los números marcados, es ganadora
+    if (checkBingoWin({ cardNumbers: cardData.bingoNumbers, drawnNumbers })) {
+      // await updateDoc(gameRef, {
+      //   winner: { userId: cardData.userId, cardId: doc.id }
+      // });
+      console.log(`🎉 Ganador encontrado: ${cardData.userId}`);
+      return cardData;
+    }
+  }
+
+  return null;
+}
+
 export async function getMail() {
   const list = [];
   const querySnapshot = await getDocuments(collMail);
@@ -459,4 +648,262 @@ export const getUserDataObject = () => {
       reject
     );
   });
+};
+
+export const getUsersListPaginated = async (page = 0, rowsPerPage = 10, searchTerm = '') => {
+  try {
+    // Query base para usuarios con perfil normal
+    let userQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF));
+
+    // Si hay un término de búsqueda, intentamos buscar por fullName o email
+    if (searchTerm) {
+      // En Firestore no podemos hacer búsquedas de texto parcial directamente
+      // Usamos una estrategia para buscar por prefijo, comenzando con el término de búsqueda
+      const searchLowerCase = searchTerm.toLowerCase();
+
+      // Creamos un rango para la búsqueda (desde el término hasta el término + la última letra del alfabeto 'z')
+      const end = searchLowerCase + '\uf8ff';
+
+      // Primero intentamos buscar por fullName (podríamos necesitar índices compuestos)
+      userQuery = query(
+        collection(db, collUsers),
+        where('profile', '==', genConst.CONST_PRO_DEF),
+        where('fullName', '>=', searchLowerCase),
+        where('fullName', '<=', end),
+        orderBy('fullName')
+      );
+    } else {
+      // Si no hay búsqueda, ordenamos por fullName
+      userQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF), orderBy('fullName'));
+    }
+
+    // Contamos el total aproximado para la paginación
+    const countSnapshot = await getDocs(userQuery);
+    const totalCount = countSnapshot.size;
+
+    // Para la paginación del lado del servidor
+    let paginatedQuery;
+
+    if (page > 0) {
+      // Si no es la primera página, necesitamos el último documento de la página anterior
+      const lastVisibleDoc = await getDocs(query(userQuery, limit(page * rowsPerPage)));
+
+      if (lastVisibleDoc.docs.length > 0) {
+        const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
+        paginatedQuery = query(userQuery, startAfter(lastDoc), limit(rowsPerPage));
+      } else {
+        // Si no hay documentos anteriores, simplemente devolvemos una lista vacía
+        return {
+          users: [],
+          totalCount
+        };
+      }
+    } else {
+      // Primera página
+      paginatedQuery = query(userQuery, limit(rowsPerPage));
+    }
+
+    const snapshot = await getDocs(paginatedQuery);
+    const users = snapshot.docs.map((doc) => doc.data());
+
+    // Si usamos búsqueda y no hay resultados con la búsqueda por fullName, intentamos con email
+    if (searchTerm && users.length === 0) {
+      const searchLowerCase = searchTerm.toLowerCase();
+      const end = searchLowerCase + '\uf8ff';
+
+      const emailQuery = query(
+        collection(db, collUsers),
+        where('profile', '==', genConst.CONST_PRO_DEF),
+        where('email', '>=', searchLowerCase),
+        where('email', '<=', end),
+        orderBy('email'),
+        limit(rowsPerPage)
+      );
+
+      const emailSnapshot = await getDocs(emailQuery);
+      const emailCount = emailSnapshot.size;
+
+      return {
+        users: emailSnapshot.docs.map((doc) => doc.data()),
+        totalCount: emailCount
+      };
+    }
+
+    return {
+      users,
+      totalCount
+    };
+  } catch (error) {
+    console.error('Error getting paginated users:', error);
+    // Si hay un error, intentemos con un enfoque alternativo más simple
+    try {
+      const simpleQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF), limit(rowsPerPage));
+
+      const snapshot = await getDocs(simpleQuery);
+      return {
+        users: snapshot.docs.map((doc) => doc.data()),
+        totalCount: snapshot.size
+      };
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError);
+      return {
+        users: [],
+        totalCount: 0
+      };
+    }
+  }
+};
+
+export const getPaymentsListPaginated = async (page = 0, rowsPerPage = 10, searchTerm = '') => {
+  try {
+    // Query base para pagos
+    let paymentsQuery;
+
+    // Si hay un término de búsqueda, filtramos por details
+    if (searchTerm && searchTerm.trim() !== '') {
+      const searchLowerCase = searchTerm.toLowerCase();
+      const end = searchLowerCase + '\uf8ff';
+
+      // Búsqueda por details (requiere índice compuesto)
+      paymentsQuery = query(
+        collection(db, collPayments),
+        where('details', '>=', searchLowerCase),
+        where('details', '<=', end),
+        orderBy('details')
+      );
+    } else {
+      // Sin búsqueda, ordenamos por fecha de creación (más recientes primero)
+      paymentsQuery = query(collection(db, collPayments), orderBy('createAt', 'desc'));
+    }
+
+    // Obtenemos el total para la paginación
+    const countSnapshot = await getDocs(paymentsQuery);
+    const totalCount = countSnapshot.size;
+
+    // Aplicamos paginación
+    let paginatedQuery;
+
+    if (page > 0) {
+      // Si no es la primera página, necesitamos el último documento de la página anterior
+      const lastVisibleDoc = await getDocs(query(paymentsQuery, limit(page * rowsPerPage)));
+
+      if (lastVisibleDoc.docs.length > 0) {
+        const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
+        paginatedQuery = query(paymentsQuery, startAfter(lastDoc), limit(rowsPerPage));
+      } else {
+        return {
+          payments: [],
+          totalCount
+        };
+      }
+    } else {
+      // Primera página
+      paginatedQuery = query(paymentsQuery, limit(rowsPerPage));
+    }
+
+    const snapshot = await getDocs(paginatedQuery);
+    const payments = snapshot.docs.map((doc) => doc.data());
+
+    return {
+      payments,
+      totalCount
+    };
+  } catch (error) {
+    console.error('Error getting paginated payments:', error);
+    // Enfoque alternativo en caso de error
+    try {
+      const simpleQuery = query(collection(db, collPayments), orderBy('createAt', 'desc'), limit(rowsPerPage));
+
+      const snapshot = await getDocs(simpleQuery);
+      return {
+        payments: snapshot.docs.map((doc) => doc.data()),
+        totalCount: snapshot.size
+      };
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError);
+      return {
+        payments: [],
+        totalCount: 0
+      };
+    }
+  }
+};
+
+// Verificar disponibilidad de una cartilla
+export const checkCardAvailability = async (cardId) => {
+  try {
+    const q = query(collection(db, collCards), where('id', '==', cardId));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return { available: false, message: 'La cartilla no existe' };
+    }
+
+    const cardData = querySnapshot.docs[0].data();
+
+    // Verificar si la cartilla está disponible (state == 1)
+    if (cardData.state !== 1) {
+      return {
+        available: false,
+        message: 'Esta cartilla ya ha sido tomada por otro usuario',
+        card: cardData
+      };
+    }
+
+    return { available: true, card: cardData };
+  } catch (error) {
+    console.error('Error checking card availability:', error);
+    return {
+      available: false,
+      message: 'Error al verificar disponibilidad de la cartilla',
+      error
+    };
+  }
+};
+
+// Obtener cartillas de usuario paginadas
+export const getUserCardsPaginated = async (userId, page = 0, rowsPerPage = 300) => {
+  try {
+    // Query base para cartillas de usuario
+    let cardsQuery = query(collection(db, collUserCards), where('userId', '==', userId), orderBy('order', 'asc'));
+
+    // Obtenemos el total para la paginación
+    const countSnapshot = await getDocs(cardsQuery);
+    const totalCount = countSnapshot.size;
+
+    // Aplicamos paginación
+    let paginatedQuery;
+
+    if (page > 0) {
+      // Si no es la primera página, necesitamos el último documento de la página anterior
+      const lastVisibleDoc = await getDocs(query(cardsQuery, limit(page * rowsPerPage)));
+
+      if (lastVisibleDoc.docs.length > 0) {
+        const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
+        paginatedQuery = query(cardsQuery, startAfter(lastDoc), limit(rowsPerPage));
+      } else {
+        return {
+          cards: [],
+          totalCount
+        };
+      }
+    } else {
+      // Primera página
+      paginatedQuery = query(cardsQuery, limit(rowsPerPage));
+    }
+
+    const snapshot = await getDocs(paginatedQuery);
+    const cards = snapshot.docs.map((doc) => doc.data());
+
+    return {
+      cards,
+      totalCount
+    };
+  } catch (error) {
+    console.error('Error getting paginated user cards:', error);
+    return {
+      cards: [],
+      totalCount: 0
+    };
+  }
 };
