@@ -15,6 +15,8 @@ export const titles = {
   labelCreate: 'Partida creada',
   labelUpdate: 'Partida actualizada',
   labelDelete: 'Partida eliminada',
+  labelFinish: 'Finalizar Partida',
+  labelShowWinner: 'Mostar Ganador',
   generalError: 'Ups algo salio mal: ',
   generalAction: 'Acciones',
   menuCreate: 'Agregar Partida',

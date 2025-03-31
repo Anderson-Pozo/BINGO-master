@@ -45,12 +45,15 @@ export const inputLabels = {
   labelName: 'Nombre',
   lastName: 'lastName',
   labelLastName: 'Apellido',
-  phone: 'Teléfono',
+  labelDni: 'Cédula',
+  labelPhone: 'Teléfono',
+  dni: 'dni',
+  phone: 'phone',
   email: 'email',
-  labelEmail: 'E-mail',
+  labelEmail: 'Email',
   profile: 'profile',
   labelProfile: 'Perfil',
-  state: 'State',
+  state: 'state',
   labelState: 'Estado',
   placeHolderSearch: 'Buscar por Nombre, Apellido o Correo electrónico'
 };
