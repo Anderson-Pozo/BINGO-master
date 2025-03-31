@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { getGameCardsByUserEvent } from 'config/firebaseEvents';
 import { onAuthStateChanged } from 'firebase/auth';
 import { authentication } from 'config/firebase';
-import ReactPlayer from 'react-player/lazy';
+import ReactPlayer from 'react-player';
 //Notifications
 //import { ToastContainer, toast } from 'react-toastify';
 //import 'react-toastify/dist/ReactToastify.css';

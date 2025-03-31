@@ -46,7 +46,10 @@ export const BoardActions = (props) => {
       createDocument(collBoards, ide, object);
       toast.success(titles.successSave);
       setOpenLoader(false);
-      // resetState();
+
+      // Clear localStorage when the game is saved
+      localStorage.removeItem('bingoNumbers');
+      localStorage.removeItem('resultBingo');
     } catch (error) {
       toast.error(titles.errorSave);
       setOpenLoader(false);

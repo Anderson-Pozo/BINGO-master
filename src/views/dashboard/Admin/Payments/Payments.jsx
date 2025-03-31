@@ -21,13 +21,15 @@ import {
   FormControl,
   ButtonGroup,
   IconButton,
-  Tooltip
+  Tooltip,
+  Select,
+  MenuItem
 } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import MessageDark from 'components/message/MessageDark';
 import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconSearch, IconPlus, IconHomeDollar } from '@tabler/icons';
 //Firebase Events
-import { getPaymentsList, getTotalPaidBenefit, updateDocument } from 'config/firebaseEvents';
+import { createDocument, getPaymentsListPaginated, getTotalPaidBenefit, updateDocument } from 'config/firebaseEvents';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -38,7 +40,6 @@ import { uiStyles } from './Payments.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { searchingPaymentsData } from 'utils/search';
 
 export default function Payments() {
   const [page, setPage] = useState(0);
@@ -63,15 +64,52 @@ export default function Payments() {
   const [paymentsList, setPaymentsList] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [totalIncomes, setTotalIncomes] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
-  useEffect(() => {
-    getPaymentsList().then((data) => {
-      setPaymentsList(data);
-    });
-    getTotalPaidBenefit().then((total) => {
+  const fetchPayments = async () => {
+    setLoading(true);
+    try {
+      const { payments: fetchedPayments, totalCount: count } = await getPaymentsListPaginated(page, rowsPerPage, search);
+      setPaymentsList(fetchedPayments);
+      setTotalCount(count);
+
+      // Actualizar el total de ingresos
+      const total = await getTotalPaidBenefit();
       setTotalIncomes(Number.parseFloat(total).toFixed(2));
-    });
-  }, []);
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+      toast.error('Error al cargar los pagos', { position: toast.POSITION.TOP_RIGHT });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Usar useEffect para manejar cambios en la paginación
+  useEffect(() => {
+    fetchPayments();
+  }, [page, rowsPerPage]);
+
+  // Usar useEffect separado para manejar la búsqueda con debounce
+  useEffect(() => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    const timeoutId = setTimeout(() => {
+      setPage(0); // Resetear a la primera página cuando cambia la búsqueda
+      fetchPayments();
+    }, 500);
+
+    setSearchTimeout(timeoutId);
+
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [search]);
 
   const handleOpenCreate = () => {
     setOpenCreate(true);
@@ -97,12 +135,12 @@ export default function Payments() {
   };
 
   const reloadData = () => {
-    getPaymentsList().then((data) => {
-      setPaymentsList(data);
-    });
-    getTotalPaidBenefit().then((total) => {
-      setTotalIncomes(Number.parseFloat(total).toFixed(2));
-    });
+    setPage(0);
+    fetchPayments();
+  };
+
+  const handleSearchChange = (ev) => {
+    setSearch(ev.target.value);
   };
 
   const handleCreate = () => {
@@ -115,19 +153,27 @@ export default function Payments() {
         card: card,
         details: details,
         status: status,
-        total: total,
+        total: +total,
+        createAt: fullDate(),
+        // reference: details,
         paypalOrderId: paypalOrderId,
-        updateAt: fullDate()
+        clientTransactionId: null,
+        transactionId: null
       };
       setOpenLoader(true);
-      updateDocument(collPayments, idd, object);
-      setTimeout(() => {
-        setOpenLoader(false);
-        setOpenCreate(false);
-        reloadData();
-        toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
-        cleanData();
-      }, 2000);
+      createDocument(collPayments, idd, object)
+        .then(() => {
+          setOpenLoader(false);
+          setOpenCreate(false);
+          reloadData();
+          toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
+          cleanData();
+        })
+        .catch((error) => {
+          console.error('Error creating payment:', error);
+          setOpenLoader(false);
+          toast.error('Error al crear el pago', { position: toast.POSITION.TOP_RIGHT });
+        });
     }
   };
 
@@ -144,14 +190,19 @@ export default function Payments() {
         updateAt: fullDate()
       };
       setOpenLoader(true);
-      updateDocument(collPayments, id, object);
-      setTimeout(() => {
-        setOpenLoader(false);
-        setOpenCreate(false);
-        reloadData();
-        toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
-        cleanData();
-      }, 2000);
+      updateDocument(collPayments, id, object)
+        .then(() => {
+          setOpenLoader(false);
+          setOpenCreate(false);
+          reloadData();
+          toast.success(titles.successUpdate, { position: toast.POSITION.TOP_RIGHT });
+          cleanData();
+        })
+        .catch((error) => {
+          console.error('Error updating payment:', error);
+          setOpenLoader(false);
+          toast.error('Error al actualizar el pago', { position: toast.POSITION.TOP_RIGHT });
+        });
     }
   };
 
@@ -161,14 +212,19 @@ export default function Payments() {
       state: genConst.CONST_STA_INACT,
       deleteAt: fullDate()
     };
-    updateDocument(collPayments, id, object);
-    setTimeout(() => {
-      setOpenLoader(false);
-      setOpenDelete(false);
-      reloadData();
-      toast.success(titles.successDelete, { position: toast.POSITION.TOP_RIGHT });
-      cleanData();
-    }, 2000);
+    updateDocument(collPayments, id, object)
+      .then(() => {
+        setOpenLoader(false);
+        setOpenDelete(false);
+        reloadData();
+        toast.success(titles.successDelete, { position: toast.POSITION.TOP_RIGHT });
+        cleanData();
+      })
+      .catch((error) => {
+        console.error('Error deleting payment:', error);
+        setOpenLoader(false);
+        toast.error('Error al eliminar el pago', { position: toast.POSITION.TOP_RIGHT });
+      });
   };
 
   const cleanData = () => {
@@ -203,17 +259,12 @@ export default function Payments() {
             </IconButton>
           </Tooltip>
           <Tooltip title="Recargar">
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                reloadData();
-              }}
-            >
+            <IconButton color="inherit" onClick={reloadData}>
               <IconReload color="#FFF" />
             </IconButton>
           </Tooltip>
           <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
-            {titles.title} - ${totalIncomes}
+            {titles.title} - ${totalIncomes || '0.00'}
           </Typography>
           <Tooltip title="Buscar">
             <IconButton
@@ -229,21 +280,28 @@ export default function Payments() {
       </AppBar>
       {showSearch && (
         <Box sx={{ flexGrow: 0 }}>
-          {paymentsList.length > 0 ? (
-            <OutlinedInput
-              id={inputLabels.search}
-              type="text"
-              name={inputLabels.search}
-              onChange={(ev) => setSearch(ev.target.value)}
-              placeholder={inputLabels.placeHolderSearch}
-              style={{ width: '100%', marginTop: 10 }}
-            />
-          ) : (
-            <></>
-          )}
+          <OutlinedInput
+            id={inputLabels.search}
+            type="text"
+            name={inputLabels.search}
+            value={search}
+            onChange={handleSearchChange}
+            placeholder={inputLabels.placeHolderSearch}
+            style={{ width: '100%', marginTop: 10 }}
+            endAdornment={<IconSearch size={20} color="gray" />}
+          />
         </Box>
       )}
-      {paymentsList.length > 0 ? (
+
+      {loading ? (
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <MessageDark message={titles.loading} submessage="" />
+            </Grid>
+          </Grid>
+        </Grid>
+      ) : paymentsList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: '100%' }}>
             <Table stickyHeader aria-label="sticky table">
@@ -251,6 +309,9 @@ export default function Payments() {
                 <TableRow>
                   <TableCell key="id-id" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell1}
+                  </TableCell>
+                  <TableCell key="id-method" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
+                    {titles.tableCell7}
                   </TableCell>
                   <TableCell key="id-status" align="left" style={{ minWidth: 100, fontWeight: 'bold' }}>
                     {titles.tableCell2}
@@ -270,59 +331,57 @@ export default function Payments() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paymentsList
-                  .filter(searchingPaymentsData(search))
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((r) => (
-                    <TableRow hover key={r.id}>
-                      <TableCell align="left">{r.id}</TableCell>
-                      <TableCell align="left">{r.status}</TableCell>
-                      <TableCell align="left">{r.reference}</TableCell>
-                      <TableCell align="left">${r.total}</TableCell>
-                      <TableCell align="left">{r.createAt}</TableCell>
-                      <TableCell align="center">
-                        <ButtonGroup variant="contained">
-                          <Tooltip title="Editar">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                              onClick={() => {
-                                setId(r.id);
-                                setTitle(titles.titleUpdate);
-                                setCard(r.card);
-                                setDetails(r.details);
-                                setStatus(r.status);
-                                setTotal(r.total);
-                                setPaypalOrderId(r.paypalOrderId);
-                                setCreateAt(r.createAt);
-                                setUpdateAt(r.updateAt);
-                                handleOpenCreate();
-                                setIsEdit(true);
-                              }}
-                            >
-                              <IconEdit color="#FFF" />
-                            </Button>
-                          </Tooltip>
-                          <Tooltip title="Eliminar">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                              onClick={() => {
-                                setTitle(titles.titleDelete);
-                                setId(r.id);
-                                setCard(r.card);
-                                setDetails(r.details);
-                                setStatus(r.status);
-                                setTotal(r.total);
-                                setPaypalOrderId(r.paypalOrderId);
-                                handleOpenDelete();
-                              }}
-                            >
-                              <IconTrash color="#FFF" />
-                            </Button>
-                          </Tooltip>
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                {paymentsList.map((r) => (
+                  <TableRow hover key={r.id}>
+                    <TableCell align="left">{r.id}</TableCell>
+                    <TableCell align="left">{r.provider}</TableCell>
+                    <TableCell align="left">{r.status}</TableCell>
+                    <TableCell align="left">{r.card}</TableCell>
+                    <TableCell align="left">${r.total}</TableCell>
+                    <TableCell align="left">{r.createAt}</TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Tooltip title="Editar">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                            onClick={() => {
+                              setId(r.id);
+                              setTitle(titles.titleUpdate);
+                              setCard(r.card);
+                              setDetails(r.details);
+                              setStatus(r.status);
+                              setTotal(r.total);
+                              setPaypalOrderId(r.paypalOrderId);
+                              setCreateAt(r.createAt);
+                              setUpdateAt(r.updateAt);
+                              handleOpenCreate();
+                              setIsEdit(true);
+                            }}
+                          >
+                            <IconEdit color="#FFF" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                            onClick={() => {
+                              setTitle(titles.titleDelete);
+                              setId(r.id);
+                              setCard(r.card);
+                              setDetails(r.details);
+                              setStatus(r.status);
+                              setTotal(r.total);
+                              setPaypalOrderId(r.paypalOrderId);
+                              handleOpenDelete();
+                            }}
+                          >
+                            <IconTrash color="#FFF" />
+                          </Button>
+                        </Tooltip>
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -330,7 +389,7 @@ export default function Payments() {
             rowsPerPageOptions={[10, 25, 50, 100]}
             labelRowsPerPage={titles.maxRecords}
             component="div"
-            count={paymentsList.length}
+            count={totalCount}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -341,13 +400,15 @@ export default function Payments() {
         <Grid container style={{ marginTop: 20 }}>
           <Grid item xs={12}>
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <MessageDark message={titles.loading} submessage="" />
+              <MessageDark message={'No se encontraron pagos' + (search ? ' con ese criterio de búsqueda' : '')} submessage="" />
             </Grid>
           </Grid>
         </Grid>
       )}
 
+      {/* Modal forms - unchanged */}
       <Modal open={openCreate} onClose={handleCloseCreate} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
+        {/* ...existing modal content... */}
         <Box sx={uiStyles.modalStyles}>
           <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
             {title}
@@ -387,17 +448,18 @@ export default function Payments() {
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
                   <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
-                    <InputLabel htmlFor={inputLabels.status}>
-                      <span></span> {inputLabels.labelStatus}
-                    </InputLabel>
-                    <OutlinedInput
+                    <InputLabel id={`${inputLabels.status}-label`}>{inputLabels.labelStatus}</InputLabel>
+                    <Select
+                      labelId={`${inputLabels.status}-label`}
                       id={inputLabels.status}
-                      type="text"
                       name={inputLabels.status}
                       value={status || ''}
-                      inputProps={{}}
                       onChange={(ev) => setStatus(ev.target.value)}
-                    />
+                    >
+                      <MenuItem value="Aprobado">Aprobado</MenuItem>
+                      <MenuItem value="Cancelado">Cancelado</MenuItem>
+                      <MenuItem value="Pendiente">Pendiente</MenuItem>
+                    </Select>
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
@@ -407,16 +469,16 @@ export default function Payments() {
                     </InputLabel>
                     <OutlinedInput
                       id={inputLabels.total}
-                      type="text"
+                      type="number"
                       name={inputLabels.total}
                       value={total || ''}
                       inputProps={{}}
-                      onChange={(ev) => setTotal(ev.target.value)}
+                      onChange={(ev) => setTotal(+ev.target.value)}
                     />
                   </FormControl>
                 </Grid>
                 <Grid item lg={6} md={6} sm={6} xs={6}>
-                  <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+                  {/* <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
                     <InputLabel htmlFor={inputLabels.paypal}>
                       <span></span> {inputLabels.labelPaypal}
                     </InputLabel>
@@ -428,7 +490,7 @@ export default function Payments() {
                       inputProps={{}}
                       onChange={(ev) => setPaypalOrderId(ev.target.value)}
                     />
-                  </FormControl>
+                  </FormControl> */}
                 </Grid>
                 {isEdit ? (
                   <>
@@ -528,6 +590,7 @@ export default function Payments() {
           </Grid>
         </Box>
       </Modal>
+
       <Modal open={openLoader} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
         <center>
           <Box sx={uiStyles.modalStylesLoader}>

@@ -29,9 +29,9 @@ import {
 import CircularProgress from '@mui/material/CircularProgress';
 import User1 from 'assets/images/profile/profile-picture-6.jpg';
 import MessageDark from 'components/message/MessageDark';
-import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconUserCircle, IconSearch } from '@tabler/icons';
+import { IconTrash, IconEdit, IconCircleX, IconPencil, IconReload, IconUserCircle, IconSearch, IconFileAnalytics } from '@tabler/icons';
 //Firebase Events
-import { createDocument, getUsersList, updateDocument } from 'config/firebaseEvents';
+import { createDocument, getUsersListPaginated, updateDocument } from 'config/firebaseEvents';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,9 +42,10 @@ import { uiStyles } from './Users.styles';
 //Utils
 import { fullDate } from 'utils/validations';
 import { generateId } from 'utils/idGenerator';
-import { searchingData } from 'utils/search';
+import { useNavigate } from 'react-router';
 
 export default function Users() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
@@ -67,12 +68,26 @@ export default function Users() {
   const [openLoader, setOpenLoader] = useState(false);
   const [usersList, setUsersList] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getUsersList().then((data) => {
-      setUsersList(data);
-    });
-  }, []);
+    loadUsers();
+  }, [page, rowsPerPage, search]);
+
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const result = await getUsersListPaginated(page, rowsPerPage, search);
+      setUsersList(result.users);
+      setTotalUsers(result.totalCount);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      toast.error('Error al cargar usuarios', { position: toast.POSITION.TOP_RIGHT });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleOpenCreate = () => {
     setOpenCreate(true);
@@ -98,9 +113,13 @@ export default function Users() {
   };
 
   const reloadData = () => {
-    getUsersList().then((data) => {
-      setUsersList(data);
-    });
+    setPage(0);
+    loadUsers();
+  };
+
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(0); // Reset to first page when searching
   };
 
   const handleEditUser = () => {
@@ -110,6 +129,7 @@ export default function Users() {
       const object = {
         name: name,
         lastName: lastName,
+        fullName: (name + ' ' + lastName).toLowerCase(), // Add fullName for search
         state: state,
         phone: phone,
         profile: profile,
@@ -165,6 +185,10 @@ export default function Users() {
     setState('');
   };
 
+  const handleGameClick = (userId) => {
+    navigate(`/main/users-cards/${userId}`);
+  };
+
   return (
     <Box sx={uiStyles.box}>
       <ToastContainer />
@@ -200,21 +224,25 @@ export default function Users() {
       </AppBar>
       {showSearch && (
         <Box sx={{ flexGrow: 0 }}>
-          {usersList.length > 0 ? (
-            <OutlinedInput
-              id={inputLabels.search}
-              type="text"
-              name={inputLabels.search}
-              onChange={(ev) => setSearch(ev.target.value)}
-              placeholder={inputLabels.placeHolderSearch}
-              style={{ width: '100%', marginTop: 10 }}
-            />
-          ) : (
-            <></>
-          )}
+          <OutlinedInput
+            id={inputLabels.search}
+            type="text"
+            name={inputLabels.search}
+            onChange={(ev) => handleSearch(ev.target.value)}
+            placeholder={inputLabels.placeHolderSearch}
+            style={{ width: '100%', marginTop: 10 }}
+          />
         </Box>
       )}
-      {usersList.length > 0 ? (
+      {isLoading ? (
+        <Grid container style={{ marginTop: 20 }}>
+          <Grid item xs={12}>
+            <Grid item lg={12} md={12} sm={12} xs={12}>
+              <MessageDark message={titles.loading} submessage="" />
+            </Grid>
+          </Grid>
+        </Grid>
+      ) : usersList.length > 0 ? (
         <Paper sx={uiStyles.paper}>
           <TableContainer sx={{ maxHeight: '100%' }}>
             <Table stickyHeader aria-label="sticky table">
@@ -244,68 +272,70 @@ export default function Users() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {usersList
-                  .filter(searchingData(search))
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((r) => (
-                    <TableRow hover key={r.id}>
-                      <TableCell align="left">
-                        <ButtonGroup>
-                          <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                          <span style={{ margin: 6 }}>{r.name + ' ' + r.lastName}</span>
-                        </ButtonGroup>
-                      </TableCell>
-                      <TableCell align="left">{r.email}</TableCell>
-                      <TableCell align="left">{r.phone}</TableCell>
-                      <TableCell align="left">
-                        {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
-                      </TableCell>
-                      <TableCell align="left">{r.provider}</TableCell>
-                      <TableCell align="left">
-                        {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
-                      </TableCell>
-                      <TableCell align="center">
-                        <ButtonGroup variant="contained">
-                          <Tooltip title="Editar">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
-                              onClick={() => {
-                                setId(r.id);
-                                setTitle(titles.titleUpdate);
-                                setName(r.name);
-                                setLastName(r.lastName);
-                                setEMail(r.email);
-                                setPhone(r.phone);
-                                setProfile(r.profile);
-                                setState(r.state);
-                                setCreateAt(r.createAt);
-                                setUpdateAt(r.updateAt);
-                                handleOpenCreate();
-                                setIsEdit(true);
-                              }}
-                            >
-                              <IconEdit color="#FFF" />
-                            </Button>
-                          </Tooltip>
-                          <Tooltip title="Eliminar">
-                            <Button
-                              style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
-                              onClick={() => {
-                                setTitle(titles.titleDelete);
-                                setId(r.id);
-                                setName(r.name);
-                                setLastName(r.lastName);
-                                setEMail(r.email);
-                                handleOpenDelete();
-                              }}
-                            >
-                              <IconTrash color="#FFF" />
-                            </Button>
-                          </Tooltip>
-                        </ButtonGroup>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                {usersList.map((r) => (
+                  <TableRow hover key={r.id}>
+                    <TableCell align="left">
+                      <ButtonGroup>
+                        <Avatar src={r.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
+                        <span style={{ margin: 6 }}>{r.name + ' ' + r.lastName}</span>
+                      </ButtonGroup>
+                    </TableCell>
+                    <TableCell align="left">{r.email}</TableCell>
+                    <TableCell align="left">{r.phone}</TableCell>
+                    <TableCell align="left">
+                      {r.profile === genConst.CONST_PRO_ADM ? genConst.CONST_PRO_ADM_TXT : genConst.CONST_PRO_STU_TXT}
+                    </TableCell>
+                    <TableCell align="left">{r.provider}</TableCell>
+                    <TableCell align="left">
+                      {r.state === genConst.CONST_STA_ACT ? genConst.CONST_STA_ACT_TXT : genConst.CONST_STA_INACT_TXT}
+                    </TableCell>
+                    <TableCell align="center">
+                      <ButtonGroup variant="contained">
+                        <Tooltip title="Editar">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_UPDATE_COLOR }}
+                            onClick={() => {
+                              setId(r.id);
+                              setTitle(titles.titleUpdate);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              setPhone(r.phone);
+                              setProfile(r.profile);
+                              setState(r.state);
+                              setCreateAt(r.createAt);
+                              setUpdateAt(r.updateAt);
+                              handleOpenCreate();
+                              setIsEdit(true);
+                            }}
+                          >
+                            <IconEdit color="#FFF" />
+                          </Button>
+                        </Tooltip>
+                        <Tooltip title="Ver Cartillas">
+                          <Button style={{ backgroundColor: genConst.CONST_CREATE_COLOR }} onClick={() => handleGameClick(r.id)}>
+                            <IconFileAnalytics color="#FFF" />
+                          </Button>
+                        </Tooltip>
+                        {/* <Tooltip title="Eliminar">
+                          <Button
+                            style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
+                            onClick={() => {
+                              setTitle(titles.titleDelete);
+                              setId(r.id);
+                              setName(r.name);
+                              setLastName(r.lastName);
+                              setEMail(r.email);
+                              handleOpenDelete();
+                            }}
+                          >
+                            <IconTrash color="#FFF" />
+                          </Button>
+                        </Tooltip> */}
+                      </ButtonGroup>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
@@ -313,7 +343,7 @@ export default function Users() {
             rowsPerPageOptions={[10, 25, 50, 100]}
             labelRowsPerPage={titles.maxRecords}
             component="div"
-            count={usersList.length}
+            count={totalUsers}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -324,7 +354,7 @@ export default function Users() {
         <Grid container style={{ marginTop: 20 }}>
           <Grid item xs={12}>
             <Grid item lg={12} md={12} sm={12} xs={12}>
-              <MessageDark message={titles.loading} submessage="" />
+              <MessageDark message={search ? 'No se encontraron usuarios con ese criterio' : titles.loading} submessage="" />
             </Grid>
           </Grid>
         </Grid>
@@ -410,6 +440,7 @@ export default function Users() {
                     >
                       <MenuItem value={genConst.CONST_PRO_ADM}>{genConst.CONST_PRO_ADM_TXT}</MenuItem>
                       <MenuItem value={genConst.CONST_PRO_DEF}>{genConst.CONST_PRO_STU_TXT}</MenuItem>
+                      <MenuItem value={genConst.CONST_PRO_ADM_BING}>{genConst.CONST_PRO_ADM_BING_TXT}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

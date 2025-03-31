@@ -293,7 +293,7 @@ export default function NewGame() {
                               <IconEdit color="#FFF" />
                             </Button>
                           </Tooltip>
-                          <Tooltip title="Eliminar">
+                          {/* <Tooltip title="Eliminar">
                             <Button
                               style={{ backgroundColor: genConst.CONST_DELETE_COLOR }}
                               onClick={() => {
@@ -306,7 +306,7 @@ export default function NewGame() {
                             >
                               <IconTrash color="#FFF" />
                             </Button>
-                          </Tooltip>
+                          </Tooltip> */}
                         </ButtonGroup>
                       </TableCell>
                     </TableRow>

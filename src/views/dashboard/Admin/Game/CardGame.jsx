@@ -29,27 +29,23 @@ import { titles } from './Game.texts';
 import { bingoValues, genConst } from 'store/constant';
 import { searchingCard, searchingGameData } from 'utils/search';
 import { generateUniqueBingoCards } from 'utils/generateUniqueBingoCards';
+import { ModalCard } from 'components/cards/ModalCard';
+import { useNavigate } from 'react-router';
 
 export default function CardGame() {
   const theme = useTheme();
-  const [bN, setBN] = useState([]);
-  const [iN, setIN] = useState([]);
-  const [nN, setNN] = useState([]);
-  const [gN, setGN] = useState([]);
-  const [oN, setON] = useState([]);
+  const navigate = useNavigate();
   const [event, setEvent] = useState('');
   const [eventName, setEventName] = useState('');
   const [eventPrice, setEventPrice] = useState(0);
   const [cards, setCards] = useState([]);
   const [cardNumber, setCardNumber] = useState(0);
-  const [cardN, setCardN] = useState(0);
   const [openLoader, setOpenLoader] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [pageC, setPageC] = useState(0);
   const [rowsPerPageC, setRowsPerPageC] = useState(10);
   const [search, setSearch] = useState('');
-  const [openCard, setOpenCard] = useState(false);
   const [openCreateCard, setOpenCreateCard] = useState(false);
   const [quantity, setQuantity] = useState(0);
   const [gameList, setGameList] = useState([]);
@@ -75,22 +71,21 @@ export default function CardGame() {
     setPageC(0);
   };
 
-  const handleOpenCard = () => {
-    setOpenCard(true);
-  };
-  const handleCloseCard = () => {
-    setOpenCard(false);
-  };
-
   const handleOpenCreateCard = () => {
     setOpenCreateCard(true);
   };
+
   const handleCloseCreateCard = () => {
     setOpenCreateCard(false);
   };
 
+  const handleGameClick = (gameId) => {
+    navigate(`/main/cards-game/${gameId}`);
+  };
+
   useEffect(() => {
     getAllGamesList().then((data) => {
+      // console.log({ data });
       setGameList(data);
     });
   }, []);
@@ -134,25 +129,12 @@ export default function CardGame() {
 
   return (
     <Box sx={uiStyles.box}>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <AppBar position="static" style={uiStyles.appbar}>
         <Toolbar>
-          {isEvent ? (
-            <IconButton color="inherit" onClick={() => setIsEvent(false)}>
-              <IconArrowLeft color="#FFF" />
-            </IconButton>
-          ) : (
-            <IconCalendar color="#FFF" />
-          )}
-          {isEvent ? (
-            <IconButton color="inherit" onClick={() => handleOpenCreateCard()}>
-              <IconPlus color="#FFF" />
-            </IconButton>
-          ) : (
-            <></>
-          )}
+          <IconCalendar color="#FFF" />
           <Typography variant="h5" component="div" sx={{ flexGrow: 1, color: '#FFF' }} align="center">
-            Generar Cartillas
+            Eventos de Bingo
           </Typography>
           <IconButton
             color="inherit"
@@ -223,15 +205,15 @@ export default function CardGame() {
                     {gameList
                       .filter(searchingGameData(searchEvent))
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                      .map((r, index) => (
+                      .map((eventGame, index) => (
                         <TableRow hover key={index}>
-                          <TableCell align="left">{r.ide}</TableCell>
-                          <TableCell align="left">{r.name}</TableCell>
-                          <TableCell align="left">{r.startDate}</TableCell>
+                          <TableCell align="left">{eventGame.ide}</TableCell>
+                          <TableCell align="left">{eventGame.name}</TableCell>
+                          <TableCell align="left">{eventGame.startDate}</TableCell>
                           <TableCell align="left">
-                            {r.state === 0 ? (
+                            {eventGame.state === 0 ? (
                               <span style={{ color: genConst.CONST_INFO_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_INC}</span>
-                            ) : r.state === 1 ? (
+                            ) : eventGame.state === 1 ? (
                               <span style={{ color: genConst.CONST_SUCCESS_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_ACT}</span>
                             ) : (
                               <span style={{ color: genConst.CONST_ERROR_COLOR, fontWeight: 'bold' }}>{bingoValues.STATE_EV_END}</span>
@@ -241,22 +223,23 @@ export default function CardGame() {
                             <ButtonGroup variant="contained">
                               <Button
                                 style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
-                                onClick={() => {
-                                  setEvent(r.ide);
-                                  setEventName(r.name);
-                                  setIsEvent(true);
-                                  setEventPrice(r.price);
-                                  setOpenLoader(true);
-                                  getGameCardsByEvent(r.ide).then((data) => {
-                                    setCards(data);
-                                    countCardsByEvent(r.ide).then((count) => {
-                                      setCardNumber(count);
-                                    });
-                                  });
-                                  setTimeout(() => {
-                                    setOpenLoader(false);
-                                  }, 1000);
-                                }}
+                                onClick={() => handleGameClick(eventGame.ide)}
+                                // onClick={() => {
+                                //   setEvent(r.ide);
+                                //   setEventName(r.name);
+                                //   setIsEvent(true);
+                                //   setEventPrice(r.price);
+                                //   setOpenLoader(true);
+                                //   getGameCardsByEvent(r.ide).then((data) => {
+                                //     setCards(data);
+                                //     countCardsByEvent(r.ide).then((count) => {
+                                //       setCardNumber(count);
+                                //     });
+                                //   });
+                                //   setTimeout(() => {
+                                //     setOpenLoader(false);
+                                //   }, 1000);
+                                // }}
                               >
                                 <IconCheck color="#FFF" />
                               </Button>
@@ -289,7 +272,7 @@ export default function CardGame() {
           )}
         </>
       )}
-      {isEvent ? (
+      {isEvent && (
         <div style={{ marginTop: 10 }}>
           {cards.length > 0 ? (
             <Paper sx={uiStyles.paper}>
@@ -343,20 +326,7 @@ export default function CardGame() {
                           <TableCell align="left">{r.createAt}</TableCell>
                           <TableCell align="center">
                             <ButtonGroup variant="contained">
-                              <Button
-                                style={{ backgroundColor: genConst.CONST_UPDATE_COLOR, color: '#FFF' }}
-                                onClick={() => {
-                                  handleOpenCard();
-                                  setCardN(r.num);
-                                  setBN(r.b);
-                                  setIN(r.i);
-                                  setNN(r.n);
-                                  setGN(r.g);
-                                  setON(r.o);
-                                }}
-                              >
-                                <IconEye />
-                              </Button>
+                              <ModalCard bingoCard={r} />
                               <Button
                                 style={{ backgroundColor: genConst.CONST_DELETE_COLOR, color: '#FFF' }}
                                 onClick={() => {
@@ -393,98 +363,7 @@ export default function CardGame() {
             </Grid>
           )}
         </div>
-      ) : (
-        <></>
       )}
-
-      <Modal open={openCard} onClose={handleCloseCard} aria-labelledby="parent-modal-title" aria-describedby="parent-modal-description">
-        <Box sx={uiStyles.modalStylesDelete}>
-          <Typography id="modal-modal-title" variant="h3" component="h3" align="center">
-            Cartilla: 0000{cardN}
-          </Typography>
-          <div style={{ marginTop: 20 }}>
-            <center>
-              <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', fontWeight: 'bold', height: 55, width: 55, borderRadius: 0 }}>
-                  B
-                </Button>
-                {bN.map((item, key) => (
-                  <Button key={'b' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                    {item}
-                  </Button>
-                ))}
-              </ButtonGroup>
-              <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                  I
-                </Button>
-                {iN.map((item, key) => (
-                  <Button key={'i' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                    {item}
-                  </Button>
-                ))}
-              </ButtonGroup>
-              <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                  N
-                </Button>
-                {nN.map((item, key) =>
-                  item === 'FREE' ? (
-                    <Button key={'n' + key} variant="contained" style={{ height: 55, width: 55, color: '#FFF', borderRadius: 0 }}>
-                      FREE
-                    </Button>
-                  ) : (
-                    <Button key={'n' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                      {item}
-                    </Button>
-                  )
-                )}
-              </ButtonGroup>
-              <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                  G
-                </Button>
-                {gN.map((item, key) => (
-                  <Button key={'g' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                    {item}
-                  </Button>
-                ))}
-              </ButtonGroup>
-              <ButtonGroup aria-label="Basic button group" orientation="vertical">
-                <Button variant="contained" style={{ color: '#FFF', height: 55, width: 55, borderRadius: 0 }}>
-                  O
-                </Button>
-                {oN.map((item, key) => (
-                  <Button key={'o' + key} variant="outlined" style={{ height: 55, width: 55, borderRadius: 0 }}>
-                    {item}
-                  </Button>
-                ))}
-              </ButtonGroup>
-            </center>
-          </div>
-          <Grid container style={{ marginTop: 20 }}>
-            <Grid item xs={12}>
-              <Grid container spacing={1}>
-                <Grid item lg={12} md={12} sm={12} xs={12}>
-                  <center>
-                    <ButtonGroup>
-                      <Button
-                        variant="contained"
-                        startIcon={<IconCircleX />}
-                        size="large"
-                        style={{ backgroundColor: genConst.CONST_CREATE_COLOR, color: '#FFF' }}
-                        onClick={handleCloseCard}
-                      >
-                        {titles.buttonClose}
-                      </Button>
-                    </ButtonGroup>
-                  </center>
-                </Grid>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Box>
-      </Modal>
 
       <Modal
         open={openCreateCard}

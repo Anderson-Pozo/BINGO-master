@@ -63,7 +63,7 @@ export default function GameUsers() {
     });
     getGameNameById(idGame).then((data) => {
       setGameName(data[0].name);
-      console.log(data);
+      // console.log(data);
     });
     getUsersList().then((data) => {
       setUserList(data);
@@ -99,7 +99,7 @@ export default function GameUsers() {
     });
     getGameNameById(idGame).then((data) => {
       setGameName(data[0].name);
-      console.log(data);
+      // console.log(data);
     });
     getUsersList().then((data) => {
       setUserList(data);
@@ -118,7 +118,7 @@ export default function GameUsers() {
     };
     setOpenLoader(true);
     createDocument(collGameInscription, ide, object);
-    console.log(object);
+    // console.log(object);
     setTimeout(() => {
       setOpenLoader(false);
       setOpenCreate(false);

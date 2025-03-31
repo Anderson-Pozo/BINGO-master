@@ -14,6 +14,8 @@ import { ConfirmFinish } from './ConfirmFinish';
 import { SelectEventGame } from './SelectEventGame';
 import { BoardGame } from './BoardGame';
 import { BoardActions } from './BoardActions';
+import { ShowAllWinners } from './ShowAllWinners';
+import { IconTrophy } from '@tabler/icons';
 
 export default function Game() {
   const [openLoader, setOpenLoader] = useState(false);
@@ -34,6 +36,77 @@ export default function Game() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [checkingWinner, setCheckingWinner] = useState(false);
+  const [showAllWinners, setShowAllWinners] = useState(false);
+
+  // Load game state from localStorage on component mount
+  useEffect(() => {
+    const savedGame = localStorage.getItem('selectedGame');
+    if (savedGame) {
+      setSelectedGame(savedGame);
+      setShowGameBoard(true);
+    }
+
+    const savedBingoNumbers = localStorage.getItem('bingoNumbers');
+    if (savedBingoNumbers) {
+      const parsedNumbers = JSON.parse(savedBingoNumbers);
+      setBingoNumbers(parsedNumbers);
+      setCont(parsedNumbers.length);
+
+      if (parsedNumbers.length > 0) {
+        // Restore last number
+        const lastNum = parsedNumbers[parsedNumbers.length - 1];
+        setNumber(lastNum);
+
+        // Set letter based on last number
+        if (lastNum <= bingoValues.B_END) {
+          setLetter(titles.b);
+        } else if (lastNum >= bingoValues.I_START && lastNum <= bingoValues.I_END) {
+          setLetter(titles.i);
+        } else if (lastNum >= bingoValues.N_START && lastNum <= bingoValues.N_END) {
+          setLetter(titles.n);
+        } else if (lastNum >= bingoValues.G_START && lastNum <= bingoValues.G_END) {
+          setLetter(titles.g);
+        } else if (lastNum >= bingoValues.O_START && lastNum <= bingoValues.O_END) {
+          setLetter(titles.o);
+        }
+
+        // If there's a previous number, restore it too
+        if (parsedNumbers.length > 1) {
+          const prevNum = parsedNumbers[parsedNumbers.length - 2];
+          setPrevNumber(prevNum);
+
+          if (prevNum <= bingoValues.B_END) {
+            setPrevLetter(titles.b);
+          } else if (prevNum >= bingoValues.I_START && prevNum <= bingoValues.I_END) {
+            setPrevLetter(titles.i);
+          } else if (prevNum >= bingoValues.N_START && prevNum <= bingoValues.N_END) {
+            setPrevLetter(titles.n);
+          } else if (prevNum >= bingoValues.G_START && prevNum <= bingoValues.G_END) {
+            setPrevLetter(titles.g);
+          } else if (prevNum >= bingoValues.O_START && prevNum <= bingoValues.O_END) {
+            setPrevLetter(titles.o);
+          }
+        }
+      }
+
+      const savedResultBingo = localStorage.getItem('resultBingo');
+      if (savedResultBingo) {
+        setResultBingo(savedResultBingo);
+      }
+    }
+  }, []);
+
+  // Save game state to localStorage when it changes
+  useEffect(() => {
+    if (selectedGame) {
+      localStorage.setItem('selectedGame', selectedGame);
+    }
+
+    if (bingoNumbers.length > 0) {
+      localStorage.setItem('bingoNumbers', JSON.stringify(bingoNumbers));
+      localStorage.setItem('resultBingo', resultBingo);
+    }
+  }, [selectedGame, bingoNumbers, resultBingo]);
 
   const handleNextBall = () => {
     randomNumber(bingoValues.INIT, bingoValues.LIMIT);
@@ -84,6 +157,9 @@ export default function Game() {
   };
 
   const handleReset = () => {
+    // Clear localStorage before reloading
+    localStorage.removeItem('bingoNumbers');
+    localStorage.removeItem('resultBingo');
     window.location.reload();
   };
 
@@ -112,6 +188,22 @@ export default function Game() {
       checkWinner();
     }
   }, [bingoNumbers, selectedGame]);
+
+  // Mark all drawn numbers on the board when component mounts or changes
+  useEffect(() => {
+    if (bingoNumbers.length > 0 && showGameBoard) {
+      // Small timeout to ensure board is rendered
+      setTimeout(() => {
+        bingoNumbers.forEach((num) => {
+          const element = document.getElementById('btn' + num);
+          if (element) {
+            element.style.background = '#26c4fb';
+            element.style.color = '#FFF';
+          }
+        });
+      }, 100);
+    }
+  }, [bingoNumbers, showGameBoard]);
 
   const currentGame = games.find((game) => game.ide === selectedGame);
 
@@ -153,6 +245,14 @@ export default function Game() {
             <Button variant="contained" style={uiStyles.btnMain} onClick={handleReset} disabled={checkingWinner}>
               {titles.restart}
             </Button>
+            <Button
+              variant="contained"
+              style={{ ...uiStyles.btnMain, backgroundColor: '#f5b942' }}
+              onClick={() => setShowAllWinners(true)}
+              startIcon={<IconTrophy />}
+            >
+              Ver Ganadores
+            </Button>
           </ButtonGroup>
         </center>
 
@@ -168,6 +268,7 @@ export default function Game() {
           bingoNumbers={bingoNumbers}
           selectedGame={selectedGame}
         />
+        <ShowAllWinners open={showAllWinners} handleClose={() => setShowAllWinners(false)} eventId={selectedGame} />
         <ShowWinner showWinner={showWinner} handleCloseWinner={handleCloseWinner} winner={winner} />
         <ConfirmFinish showConfirmFinish={showConfirmFinish} setShowConfirmFinish={setShowConfirmFinish} />
         <Modal open={openLoader} aria-labelledby="modal-loader" aria-describedby="modal-loader">

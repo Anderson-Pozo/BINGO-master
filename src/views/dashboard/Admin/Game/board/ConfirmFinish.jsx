@@ -3,7 +3,10 @@ import { Box, Button, ButtonGroup, Modal, Typography } from '@mui/material';
 
 export const ConfirmFinish = ({ showConfirmFinish, setShowConfirmFinish }) => {
   const confirmFinishGame = () => {
+    // Clear all game progress data from localStorage
     localStorage.removeItem('selectedGame');
+    localStorage.removeItem('bingoNumbers');
+    localStorage.removeItem('resultBingo');
     window.location.reload();
   };
 
