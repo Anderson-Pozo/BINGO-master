@@ -8,8 +8,21 @@ import CustomModal from 'components/Modal';
 
 const PayPhoneButton = (props) => {
   const [openPayphone, setOpenPayphone] = React.useState(false);
-  const { totalValue, invoiceData, disabled = false } = props;
+  const { totalValue, invoiceData, disabled = false, onPaymentAttempt } = props;
   const formattedTotalValue = Number(totalValue.toFixed(2));
+
+  const handleClick = () => {
+    let canProceed = !disabled;
+
+    if (onPaymentAttempt) {
+      canProceed = onPaymentAttempt() && !disabled;
+    }
+
+    // Solo abrir el modal si la validación pasa
+    if (canProceed) {
+      setOpenPayphone(true);
+    }
+  };
 
   return (
     <>
@@ -37,7 +50,7 @@ const PayPhoneButton = (props) => {
           gap: '10px',
           cursor: disabled ? 'not-allowed' : 'pointer'
         }}
-        onClick={() => setOpenPayphone(true)}
+        onClick={handleClick}
       >
         <img
           src={PayPhoneIcon}
@@ -78,7 +91,8 @@ const PayPhoneButton = (props) => {
 PayPhoneButton.propTypes = {
   totalValue: PropTypes.number,
   invoiceData: PropTypes.object,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  onPaymentAttempt: PropTypes.func
 };
 
 export default PayPhoneButton;

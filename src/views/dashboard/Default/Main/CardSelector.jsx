@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Avatar, Box, ButtonBase, Grid, Modal, Typography, Pagination, Stack } from '@mui/material';
+import { Avatar, Box, ButtonBase, Grid, Modal, Typography, Pagination, Stack, Link } from '@mui/material';
 import MessageDark from 'components/message/MessageDark';
 import CircularProgress from '@mui/material/CircularProgress';
-import { getGameCardsByEvent, getGameCardsByEventPaginated, checkCardAvailability } from 'config/firebaseEvents';
+import { getGameCardsByEvent, getGameCardsByEventPaginated, checkCardAvailability, clearCardsPaginationCache } from 'config/firebaseEvents';
 import { uiStyles } from './styles';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
@@ -17,6 +17,7 @@ import BingoCard from 'components/bingo/BingoCard';
 import CustomModal from 'components/Modal';
 import ItemBingo from 'components/bingo/ItemBingo';
 import PayPhoneButton from './PayphoneButton';
+import TermsModal from './TermsModal';
 
 const CardSelector = () => {
   //let navigate = useNavigate();
@@ -34,6 +35,8 @@ const CardSelector = () => {
   const [cardN, setCardN] = useState(0);
   const [bingoNumbers, setBingoNumbers] = useState({ bN: [], iN: [], nN: [], gN: [], oN: [] });
   const [selectedItems, setSelectedItems] = useState([]);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [openTermsModal, setOpenTermsModal] = useState(false);
 
   // Pagination states
   const [page, setPage] = useState(0);
@@ -43,13 +46,22 @@ const CardSelector = () => {
   const rowsPerPage = 48;
 
   useEffect(() => {
+    // Verificar si los términos ya fueron aceptados anteriormente
+    const storedTermsAccepted = localStorage.getItem('termsAccepted');
+    if (storedTermsAccepted === 'true') {
+      setTermsAccepted(true);
+    }
+
     onAuthStateChanged(authentication, (user) => {
       if (user) {
         setUserId(user.uid);
         setUserName(user.displayName);
       }
     });
+  }, []);
 
+  // Efecto separado para cargar las cartillas
+  useEffect(() => {
     const fetchCards = async () => {
       if (!id) return;
 
@@ -110,7 +122,55 @@ const CardSelector = () => {
     return selectedItems.some((item) => item.id === cardId);
   };
 
-  const totalToPay = selectedItems.reduce((total, item) => total + Number(item.price), 0);
+  // Handle terms acceptance
+  const handleAcceptTerms = () => {
+    setTermsAccepted(true);
+    localStorage.setItem('termsAccepted', 'true'); // Persistir la aceptación
+  };
+
+  // Check if payment is allowed
+  const isPaymentAllowed = () => {
+    return selectedItems.length >= 5 && termsAccepted;
+  };
+
+  // Handle payment attempt
+  const handlePaymentAttempt = () => {
+    if (selectedItems.length < 5) {
+      toast.warning('Debes seleccionar al menos 5 cartillas para proceder');
+      return false; // Bloquear el pago
+    }
+
+    if (!termsAccepted) {
+      setOpenTermsModal(true);
+      return false; // Bloquear el pago
+    }
+
+    return true; // Permitir el pago
+  };
+
+  // Función para refrescar las cartillas después de una compra exitosa
+  const refreshCards = async () => {
+    // Limpiar el cache para forzar una recarga de datos
+    clearCardsPaginationCache(id);
+
+    // Recargar la página actual
+    setLoading(true);
+    try {
+      const { cards: fetchedCards, totalCount } = await getGameCardsByEventPaginated(id, page, rowsPerPage);
+      setCards(fetchedCards);
+      setTotalPages(Math.ceil(totalCount / rowsPerPage));
+      setSelectedItems([]); // Limpiar selección
+    } catch (error) {
+      console.error('Error refreshing cards:', error);
+      toast.error('Error al actualizar las cartillas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const taxes = selectedItems.length * 0.05 + selectedItems.length * 0.15; // 5% + 15% IVA
+
+  const totalToPay = selectedItems.reduce((total, item) => total + Number(item.price), 0) + taxes; // 5% + 15% IVA
   const selectedTickets = selectedItems.map((item) => item.num).join('-');
   const invoiceData = {
     userId: userId,
@@ -184,7 +244,10 @@ const CardSelector = () => {
                 </Box>
               </Grid>
               {totalPages > 1 && (
-                <Grid item xs={12} sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                <Grid item xs={12} sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ mb: 1, color: '#fff' }}>
+                    Página {page + 1} de {totalPages}
+                  </Typography>
                   <Stack spacing={2}>
                     <Pagination
                       count={totalPages}
@@ -204,6 +267,67 @@ const CardSelector = () => {
                     <Typography id="modal-modal-title" variant="h5" component="h4" sx={{ textAlign: 'center', mt: 1, mb: 1 }}>
                       Resumen de cartillas seleccionadas
                     </Typography>
+                    {selectedItems.length > 0 && selectedItems.length < 5 && (
+                      <Typography
+                        variant="body2"
+                        component="p"
+                        sx={{
+                          textAlign: 'center',
+                          mb: 2,
+                          color: '#ff6e00',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Seleccionar 5 cartillas mínimo para proceder con el pago
+                      </Typography>
+                    )}
+                    {selectedItems.length >= 5 && !termsAccepted && (
+                      <Typography
+                        variant="body2"
+                        component="p"
+                        sx={{
+                          textAlign: 'center',
+                          mb: 2,
+                          color: '#ff6e00',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Debes aceptar los términos y condiciones para proceder con el pago
+                      </Typography>
+                    )}
+                    {termsAccepted && selectedItems.length >= 5 && (
+                      <Typography
+                        variant="body2"
+                        component="p"
+                        sx={{
+                          textAlign: 'center',
+                          mb: 2,
+                          color: '#4caf50',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        ✓ Términos y condiciones aceptados
+                      </Typography>
+                    )}
+
+                    {/* Enlace para ver términos y condiciones */}
+                    <Box sx={{ textAlign: 'center', mb: 2 }}>
+                      <Link
+                        component="button"
+                        variant="body2"
+                        onClick={() => setOpenTermsModal(true)}
+                        sx={{
+                          color: '#1976d2',
+                          textDecoration: 'underline',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            color: '#115293'
+                          }
+                        }}
+                      >
+                        {termsAccepted ? 'Ver términos y condiciones' : 'Leer términos y condiciones'}
+                      </Link>
+                    </Box>
                     <Grid container spacing={1}>
                       {selectedItems.map((item) => (
                         <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>
@@ -219,7 +343,13 @@ const CardSelector = () => {
                       ))}
                     </Grid>
                     <center>
-                      <PayPhoneButton totalValue={totalToPay} invoiceData={invoiceData} disabled={selectedItems.length === 0} />
+                      <PayPhoneButton
+                        totalValue={totalToPay}
+                        invoiceData={invoiceData}
+                        disabled={!isPaymentAllowed()}
+                        onPaymentAttempt={handlePaymentAttempt}
+                        onPaymentSuccess={refreshCards}
+                      />
                     </center>
                   </Box>
                 </div>
@@ -250,6 +380,8 @@ const CardSelector = () => {
           </Box>
         </center>
       </Modal>
+
+      <TermsModal open={openTermsModal} onClose={() => setOpenTermsModal(false)} onAccept={handleAcceptTerms} />
     </div>
   );
 };
