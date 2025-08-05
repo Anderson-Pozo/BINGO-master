@@ -8,11 +8,12 @@ import { db } from 'config/firebase';
 
 export default function StatsCardGame() {
   const { gameId } = useParams();
+  const UNAVAILABLE_STATE = 0; // Estado para cartillas vendidas
+  const AVAILABLE_STATE = 1; // Estado para cartillas disponibles
 
   const [totalCards, setTotalCards] = useState(0);
   const [soldCards, setSoldCards] = useState(0);
   const [availableCards, setAvailableCards] = useState(0);
-  const [reservedCards, setReservedCards] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function StatsCardGame() {
         setLoading(true);
         // Filtrar cartillas por el gameId específico
         const cardsRef = collection(db, 'Cards');
-        const gameCardsQuery = query(cardsRef, where('gameId', '==', gameId));
+        const gameCardsQuery = query(cardsRef, where('event', '==', gameId));
 
         // Total de cartillas para este juego
         const totalSnap = await getCountFromServer(gameCardsQuery);
@@ -31,22 +32,16 @@ export default function StatsCardGame() {
         setTotalCards(total);
 
         // Cartillas vendidas (state === 1)
-        const soldQuery = query(cardsRef, where('eventId', '==', gameId), where('state', '==', 1));
+        const soldQuery = query(cardsRef, where('event', '==', gameId), where('state', '==', UNAVAILABLE_STATE));
         const soldSnap = await getCountFromServer(soldQuery);
         const sold = soldSnap.data().count;
         setSoldCards(sold);
 
         // Cartillas disponibles (state === 0)
-        const availableQuery = query(cardsRef, where('eventId', '==', gameId), where('state', '==', 0));
+        const availableQuery = query(cardsRef, where('event', '==', gameId), where('state', '==', AVAILABLE_STATE));
         const availableSnap = await getCountFromServer(availableQuery);
         const available = availableSnap.data().count;
         setAvailableCards(available);
-
-        // Cartillas reservadas (state === 2)
-        const reservedQuery = query(cardsRef, where('eventId', '==', gameId), where('state', '==', 2));
-        const reservedSnap = await getCountFromServer(reservedQuery);
-        const reserved = reservedSnap.data().count;
-        setReservedCards(reserved);
       } catch (error) {
         console.error('Error al obtener los conteos:', error);
       } finally {
@@ -78,13 +73,6 @@ export default function StatsCardGame() {
       icon: <IconChartBar size={32} />,
       color: '#FF9800',
       bgColor: '#FFF3E0'
-    },
-    {
-      title: 'Cartillas Reservadas',
-      value: reservedCards,
-      icon: <IconUsers size={32} />,
-      color: '#9C27B0',
-      bgColor: '#F3E5F5'
     }
   ];
 
@@ -203,7 +191,7 @@ export default function StatsCardGame() {
                       Cartillas Restantes
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#FF9800' }}>
-                      {(availableCards + reservedCards).toLocaleString()}
+                      {availableCards.toLocaleString()}
                     </Typography>
                   </Box>
                 </Grid>

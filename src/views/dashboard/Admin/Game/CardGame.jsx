@@ -23,7 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 //Notifications
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { IconArrowLeft, IconCalendar, IconCards, IconCheck, IconCircleX, IconEye, IconPlus, IconSearch, IconTrash } from '@tabler/icons';
+import { IconCalendar, IconCards, IconCheck, IconHomeStats, IconSearch, IconTrash } from '@tabler/icons';
 import MessageDark from 'components/message/MessageDark';
 import { titles } from './Game.texts';
 import { bingoValues, genConst } from 'store/constant';
@@ -81,6 +81,10 @@ export default function CardGame() {
 
   const handleGameClick = (gameId) => {
     navigate(`/main/cards-game/${gameId}`);
+  };
+
+  const handleCardStatClick = (gameId) => {
+    navigate(`/main/cards-stats/${gameId}`);
   };
 
   useEffect(() => {
@@ -224,24 +228,14 @@ export default function CardGame() {
                               <Button
                                 style={{ backgroundColor: genConst.CONST_CREATE_COLOR }}
                                 onClick={() => handleGameClick(eventGame.ide)}
-                                // onClick={() => {
-                                //   setEvent(r.ide);
-                                //   setEventName(r.name);
-                                //   setIsEvent(true);
-                                //   setEventPrice(r.price);
-                                //   setOpenLoader(true);
-                                //   getGameCardsByEvent(r.ide).then((data) => {
-                                //     setCards(data);
-                                //     countCardsByEvent(r.ide).then((count) => {
-                                //       setCardNumber(count);
-                                //     });
-                                //   });
-                                //   setTimeout(() => {
-                                //     setOpenLoader(false);
-                                //   }, 1000);
-                                // }}
                               >
                                 <IconCheck color="#FFF" />
+                              </Button>
+                              <Button
+                                style={{ backgroundColor: genConst.CONST_VIEW_COLOR }}
+                                onClick={() => handleCardStatClick(eventGame.ide)}
+                              >
+                                <IconHomeStats color="#FFF" />
                               </Button>
                             </ButtonGroup>
                           </TableCell>

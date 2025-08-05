@@ -46,6 +46,7 @@ const NewGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/NewGame')
 const GameUsers = Loadable(lazy(() => import('views/dashboard/Admin/Game/GameUsers')));
 const CardGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardGame')));
 const CardsByGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/CardsByGame')));
+const StatsCardGame = Loadable(lazy(() => import('views/dashboard/Admin/Game/StatsCardGame')));
 const CardsUser = Loadable(lazy(() => import('views/dashboard/Admin/Game/AssignCards/CardsUser')));
 //DEFAULT SECTION ====================================================
 // default Login
@@ -108,6 +109,7 @@ const App = () => {
               <Route element={<GameUsers />} path="game-users" exact />
               <Route element={<CardGame />} path="card-game" exact />
               <Route element={<CardsByGame />} path="cards-game/:gameId" />
+              <Route element={<StatsCardGame />} path="cards-stats/:gameId" />
               <Route element={<CardsUser />} path="cards-user" exact />
               <Route element={<Share />} path="share" exact />
               <Route element={<Settings />} path="settings" exact />
