@@ -328,6 +328,31 @@ const CardSelector = () => {
                         {termsAccepted ? 'Ver términos y condiciones' : 'Leer términos y condiciones'}
                       </Link>
                     </Box>
+
+                    {/* Botón de aceptación rápida de términos */}
+                    {!termsAccepted && (
+                      <Box sx={{ textAlign: 'center', mb: 2 }}>
+                        <ButtonBase
+                          onClick={handleAcceptTerms}
+                          sx={{
+                            backgroundColor: '#1976d2',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: 1,
+                            fontSize: '0.875rem',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s ease-in-out',
+                            '&:hover': {
+                              backgroundColor: '#115293',
+                              transform: 'translateY(-1px)',
+                              boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+                            }
+                          }}
+                        >
+                          Acepto términos y condiciones
+                        </ButtonBase>
+                      </Box>
+                    )}
                     <Grid container spacing={1}>
                       {selectedItems.map((item) => (
                         <Grid key={item.id} item lg={0.5} md={0.5} sm={1} xs={1}>

@@ -246,39 +246,88 @@ export const deleteAllCardsByEvent = async (eventId) => {
   });
 };
 
+// Cache para almacenar el conteo total y evitar consultas repetidas
+const eventCardCountCache = new Map();
+const paginationCursors = new Map(); // Cache para cursores de paginación
+
 export const getGameCardsByEventPaginated = async (eventId, page = 0, rowsPerPage = 50, stateFilter = null, orderFilter = null) => {
   try {
-    // Build the base query with applicable filters
-    let baseQuery;
-
-    // Apply both filters if provided
-    if (stateFilter !== null && orderFilter !== null) {
-      // When filtering by both state and order
-      baseQuery = query(
+    // Si hay un filtro de order específico, es una búsqueda directa
+    if (orderFilter !== null) {
+      const directQuery = query(
         collection(db, collCards),
         where('event', '==', eventId),
-        where('state', '==', stateFilter),
-        where('order', '==', orderFilter)
+        where('order', '==', orderFilter),
+        ...(stateFilter !== null ? [where('state', '==', stateFilter)] : [])
       );
-    } else if (stateFilter !== null) {
-      // When filtering by state only
-      baseQuery = query(collection(db, collCards), where('event', '==', eventId), where('state', '==', stateFilter));
-    } else if (orderFilter !== null) {
-      // When filtering by order only
-      baseQuery = query(collection(db, collCards), where('event', '==', eventId), where('order', '==', orderFilter));
-    } else {
-      // No filters
-      baseQuery = query(collection(db, collCards), where('event', '==', eventId));
+
+      const snapshot = await getDocs(directQuery);
+      const cards = snapshot.docs.map((doc) => doc.data());
+
+      return {
+        cards,
+        totalCount: cards.length
+      };
     }
 
-    // Get total count for pagination
-    const countSnapshot = await getDocs(baseQuery);
-    const totalCount = countSnapshot.size;
+    // Construir la consulta base optimizada
+    const baseFilters = [
+      where('event', '==', eventId),
+      ...(stateFilter !== null ? [where('state', '==', stateFilter)] : []),
+      orderBy('order', 'asc')
+    ];
 
-    // If there's an order filter, we don't need pagination or ordering as it's expected to return only one item
-    if (orderFilter !== null) {
-      const snapshot = await getDocs(baseQuery);
-      const cards = snapshot.docs.map((doc) => doc.data());
+    const cacheKey = `${eventId}-${stateFilter}`;
+    const cursorKey = `${cacheKey}-cursors`;
+
+    // Para la primera página
+    if (page === 0) {
+      // Limpiar cursores al empezar desde la primera página
+      paginationCursors.delete(cursorKey);
+
+      // Obtener la primera página con un documento extra para verificar si hay más páginas
+      const firstPageQuery = query(collection(db, collCards), ...baseFilters, limit(rowsPerPage + 1));
+
+      const snapshot = await getDocs(firstPageQuery);
+      const allDocs = snapshot.docs;
+
+      // Separar los documentos de la página actual y verificar si hay más
+      const hasMore = allDocs.length > rowsPerPage;
+      const pageCards = hasMore ? allDocs.slice(0, rowsPerPage) : allDocs;
+      const cards = pageCards.map((doc) => doc.data());
+
+      // Guardar cursor para la siguiente página si hay más datos
+      if (hasMore && pageCards.length > 0) {
+        const cursors = paginationCursors.get(cursorKey) || [];
+        cursors[0] = pageCards[pageCards.length - 1]; // Cursor para página 1
+        paginationCursors.set(cursorKey, cursors);
+      }
+
+      // Para el conteo total, usar una estrategia más eficiente
+      let totalCount;
+
+      if (eventCardCountCache.has(cacheKey)) {
+        totalCount = eventCardCountCache.get(cacheKey);
+      } else if (hasMore) {
+        // Solo hacer consulta de conteo si hay más páginas y realmente necesitamos el número exacto
+        const countQuery = query(
+          collection(db, collCards),
+          where('event', '==', eventId),
+          ...(stateFilter !== null ? [where('state', '==', stateFilter)] : [])
+        );
+
+        const countSnapshot = await getDocs(countQuery);
+        totalCount = countSnapshot.size;
+
+        // Cachear por 5 minutos
+        eventCardCountCache.set(cacheKey, totalCount);
+        setTimeout(() => {
+          eventCardCountCache.delete(cacheKey);
+        }, 5 * 60 * 1000);
+      } else {
+        // No hay más páginas, el total es exactamente lo que obtuvimos
+        totalCount = cards.length;
+      }
 
       return {
         cards,
@@ -286,82 +335,61 @@ export const getGameCardsByEventPaginated = async (eventId, page = 0, rowsPerPag
       };
     }
 
-    // Build query with ordering for paginated results
-    let cardQuery;
+    // Para páginas posteriores, usar cursor-based pagination
+    const cursors = paginationCursors.get(cursorKey) || [];
+    const previousPageCursor = cursors[page - 1];
 
-    // Handle different query structures based on filters
-    if (stateFilter !== null) {
-      // With state filter
-      if (page > 0) {
-        // Get the last visible document from previous pages
-        const previousPageQuery = query(
-          collection(db, collCards),
-          where('event', '==', eventId),
-          where('state', '==', stateFilter),
-          orderBy('order', 'asc'),
-          limit(page * rowsPerPage)
-        );
+    let paginatedQuery;
 
-        const lastVisibleDoc = await getDocs(previousPageQuery);
-
-        if (lastVisibleDoc.docs.length > 0) {
-          const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
-          cardQuery = query(
-            collection(db, collCards),
-            where('event', '==', eventId),
-            where('state', '==', stateFilter),
-            orderBy('order', 'asc'),
-            startAfter(lastDoc),
-            limit(rowsPerPage)
-          );
-        } else {
-          // No documents in previous pages
-          return {
-            cards: [],
-            totalCount
-          };
-        }
-      } else {
-        // First page with state filter
-        cardQuery = query(
-          collection(db, collCards),
-          where('event', '==', eventId),
-          where('state', '==', stateFilter),
-          orderBy('order', 'asc'),
-          limit(rowsPerPage)
-        );
-      }
+    if (previousPageCursor) {
+      // Usar el cursor guardado
+      paginatedQuery = query(
+        collection(db, collCards),
+        ...baseFilters,
+        startAfter(previousPageCursor),
+        limit(rowsPerPage + 1) // +1 para verificar si hay página siguiente
+      );
     } else {
-      // No state filter (just event filter)
-      if (page > 0) {
-        const lastVisibleDoc = await getDocs(
-          query(collection(db, collCards), where('event', '==', eventId), orderBy('order', 'asc'), limit(page * rowsPerPage))
-        );
+      // Si no tenemos cursor, calculamos desde el inicio (fallback menos eficiente)
+      console.warn(`No cursor available for page ${page}, using less efficient method`);
 
-        if (lastVisibleDoc.docs.length > 0) {
-          const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
-          cardQuery = query(
-            collection(db, collCards),
-            where('event', '==', eventId),
-            orderBy('order', 'asc'),
-            startAfter(lastDoc),
-            limit(rowsPerPage)
-          );
-        } else {
-          // No documents in previous pages
-          return {
-            cards: [],
-            totalCount
-          };
-        }
-      } else {
-        // First page without state filter
-        cardQuery = query(collection(db, collCards), where('event', '==', eventId), orderBy('order', 'asc'), limit(rowsPerPage));
+      // Obtener documentos hasta la página solicitada
+      const skipQuery = query(collection(db, collCards), ...baseFilters, limit(page * rowsPerPage));
+
+      const skipSnapshot = await getDocs(skipQuery);
+
+      if (skipSnapshot.docs.length === 0 || skipSnapshot.docs.length < page * rowsPerPage) {
+        return {
+          cards: [],
+          totalCount: eventCardCountCache.get(cacheKey) || 0
+        };
       }
+
+      const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+      paginatedQuery = query(collection(db, collCards), ...baseFilters, startAfter(lastDoc), limit(rowsPerPage + 1));
     }
 
-    const snapshot = await getDocs(cardQuery);
-    const cards = snapshot.docs.map((doc) => doc.data());
+    const snapshot = await getDocs(paginatedQuery);
+    const allDocs = snapshot.docs;
+
+    const hasMore = allDocs.length > rowsPerPage;
+    const pageCards = hasMore ? allDocs.slice(0, rowsPerPage) : allDocs;
+    const cards = pageCards.map((doc) => doc.data());
+
+    // Guardar cursor para la siguiente página si hay más datos
+    if (hasMore && pageCards.length > 0) {
+      const cursors = paginationCursors.get(cursorKey) || [];
+      cursors[page] = pageCards[pageCards.length - 1]; // Cursor para página siguiente
+      paginationCursors.set(cursorKey, cursors);
+    }
+
+    // Usar el conteo en caché si está disponible
+    let totalCount = eventCardCountCache.get(cacheKey);
+
+    if (!totalCount) {
+      // Si no está en caché, usar una estimación conservadora
+      totalCount = (page + 1) * rowsPerPage + (hasMore ? rowsPerPage : 0);
+    }
 
     return {
       cards,
@@ -652,82 +680,115 @@ export const getUserDataObject = () => {
 
 export const getUsersListPaginated = async (page = 0, rowsPerPage = 10, searchTerm = '') => {
   try {
-    // Query base para usuarios con perfil normal
-    let userQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF));
+    // Si hay un término de búsqueda, usamos búsqueda en cliente
+    if (searchTerm && searchTerm.trim() !== '') {
+      // Obtener todos los usuarios con perfil normal
+      const allUsersQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF));
+      const allUsersSnapshot = await getDocs(allUsersQuery);
 
-    // Si hay un término de búsqueda, intentamos buscar por fullName o email
-    if (searchTerm) {
-      // En Firestore no podemos hacer búsquedas de texto parcial directamente
-      // Usamos una estrategia para buscar por prefijo, comenzando con el término de búsqueda
-      const searchLowerCase = searchTerm.toLowerCase();
+      // Filtrar en el cliente para búsqueda más flexible
+      const searchLowerCase = searchTerm.toLowerCase().trim();
+      const filteredUsers = [];
 
-      // Creamos un rango para la búsqueda (desde el término hasta el término + la última letra del alfabeto 'z')
-      const end = searchLowerCase + '\uf8ff';
+      allUsersSnapshot.forEach((doc) => {
+        const userData = doc.data();
 
-      // Primero intentamos buscar por fullName (podríamos necesitar índices compuestos)
-      userQuery = query(
-        collection(db, collUsers),
-        where('profile', '==', genConst.CONST_PRO_DEF),
-        where('fullName', '>=', searchLowerCase),
-        where('fullName', '<=', end),
-        orderBy('fullName')
-      );
-    } else {
-      // Si no hay búsqueda, ordenamos por fullName
-      userQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF), orderBy('fullName'));
+        // Crear el fullName si no existe, usando name y lastName
+        const fullName =
+          userData.fullName || (userData.name && userData.lastName ? `${userData.name} ${userData.lastName}` : '') || userData.name || '';
+
+        const email = userData.email || '';
+        const name = userData.name || '';
+        const lastName = userData.lastName || '';
+
+        // Búsqueda flexible: buscar en fullName, name, lastName y email
+        const searchIn = [
+          fullName.toLowerCase(),
+          email.toLowerCase(),
+          name.toLowerCase(),
+          lastName.toLowerCase(),
+          `${name} ${lastName}`.toLowerCase() // combinación name + lastName
+        ];
+
+        // Verificar si alguno de los campos contiene el término de búsqueda
+        const matches = searchIn.some(
+          (field) => field.includes(searchLowerCase) || searchLowerCase.split(' ').every((term) => field.includes(term))
+        );
+
+        if (matches) {
+          // Asegurar que el objeto tenga fullName para el componente
+          filteredUsers.push({
+            ...userData,
+            fullName: fullName || `${name} ${lastName}`.trim()
+          });
+        }
+      });
+
+      // Ordenar por fullName
+      filteredUsers.sort((a, b) => {
+        const nameA = a.fullName || `${a.name || ''} ${a.lastName || ''}`.trim();
+        const nameB = b.fullName || `${b.name || ''} ${b.lastName || ''}`.trim();
+        return nameA.localeCompare(nameB);
+      });
+
+      // Aplicar paginación manualmente
+      const totalCount = filteredUsers.length;
+      const startIndex = page * rowsPerPage;
+      const endIndex = startIndex + rowsPerPage;
+      const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+      return {
+        users: paginatedUsers,
+        totalCount
+      };
     }
 
-    // Contamos el total aproximado para la paginación
-    const countSnapshot = await getDocs(userQuery);
+    // Sin búsqueda: usar paginación de servidor normal
+    const baseQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF));
+
+    // Contar total de usuarios para paginación
+    const countSnapshot = await getDocs(baseQuery);
     const totalCount = countSnapshot.size;
 
-    // Para la paginación del lado del servidor
+    // Query para la página actual
     let paginatedQuery;
 
-    if (page > 0) {
-      // Si no es la primera página, necesitamos el último documento de la página anterior
-      const lastVisibleDoc = await getDocs(query(userQuery, limit(page * rowsPerPage)));
-
-      if (lastVisibleDoc.docs.length > 0) {
-        const lastDoc = lastVisibleDoc.docs[lastVisibleDoc.docs.length - 1];
-        paginatedQuery = query(userQuery, startAfter(lastDoc), limit(rowsPerPage));
-      } else {
-        // Si no hay documentos anteriores, simplemente devolvemos una lista vacía
-        return {
-          users: [],
-          totalCount
-        };
-      }
-    } else {
+    if (page === 0) {
       // Primera página
-      paginatedQuery = query(userQuery, limit(rowsPerPage));
+      paginatedQuery = query(baseQuery, limit(rowsPerPage));
+    } else {
+      // Páginas siguientes: obtener todos hasta la página actual y tomar los últimos
+      const skipCount = page * rowsPerPage;
+      const allDocsQuery = query(baseQuery, limit(skipCount + rowsPerPage));
+      const allDocsSnapshot = await getDocs(allDocsQuery);
+
+      const allDocs = allDocsSnapshot.docs;
+      const pageUsers = allDocs.slice(skipCount).map((doc) => {
+        const userData = doc.data();
+        // Asegurar que cada usuario tenga fullName
+        return {
+          ...userData,
+          fullName:
+            userData.fullName || (userData.name && userData.lastName ? `${userData.name} ${userData.lastName}` : '') || userData.name || ''
+        };
+      });
+
+      return {
+        users: pageUsers,
+        totalCount
+      };
     }
 
     const snapshot = await getDocs(paginatedQuery);
-    const users = snapshot.docs.map((doc) => doc.data());
-
-    // Si usamos búsqueda y no hay resultados con la búsqueda por fullName, intentamos con email
-    if (searchTerm && users.length === 0) {
-      const searchLowerCase = searchTerm.toLowerCase();
-      const end = searchLowerCase + '\uf8ff';
-
-      const emailQuery = query(
-        collection(db, collUsers),
-        where('profile', '==', genConst.CONST_PRO_DEF),
-        where('email', '>=', searchLowerCase),
-        where('email', '<=', end),
-        orderBy('email'),
-        limit(rowsPerPage)
-      );
-
-      const emailSnapshot = await getDocs(emailQuery);
-      const emailCount = emailSnapshot.size;
-
+    const users = snapshot.docs.map((doc) => {
+      const userData = doc.data();
+      // Asegurar que cada usuario tenga fullName
       return {
-        users: emailSnapshot.docs.map((doc) => doc.data()),
-        totalCount: emailCount
+        ...userData,
+        fullName:
+          userData.fullName || (userData.name && userData.lastName ? `${userData.name} ${userData.lastName}` : '') || userData.name || ''
       };
-    }
+    });
 
     return {
       users,
@@ -735,14 +796,24 @@ export const getUsersListPaginated = async (page = 0, rowsPerPage = 10, searchTe
     };
   } catch (error) {
     console.error('Error getting paginated users:', error);
-    // Si hay un error, intentemos con un enfoque alternativo más simple
-    try {
-      const simpleQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF), limit(rowsPerPage));
 
-      const snapshot = await getDocs(simpleQuery);
+    // Fallback: obtener usuarios de forma simple
+    try {
+      const fallbackQuery = query(collection(db, collUsers), where('profile', '==', genConst.CONST_PRO_DEF), limit(rowsPerPage));
+
+      const fallbackSnapshot = await getDocs(fallbackQuery);
+      const fallbackUsers = fallbackSnapshot.docs.map((doc) => {
+        const userData = doc.data();
+        return {
+          ...userData,
+          fullName:
+            userData.fullName || (userData.name && userData.lastName ? `${userData.name} ${userData.lastName}` : '') || userData.name || ''
+        };
+      });
+
       return {
-        users: snapshot.docs.map((doc) => doc.data()),
-        totalCount: snapshot.size
+        users: fallbackUsers,
+        totalCount: fallbackUsers.length
       };
     } catch (fallbackError) {
       console.error('Fallback error:', fallbackError);
@@ -905,5 +976,20 @@ export const getUserCardsPaginated = async (userId, page = 0, rowsPerPage = 300)
       cards: [],
       totalCount: 0
     };
+  }
+};
+
+// Función para limpiar caches (útil cuando se agregan/eliminan cartillas)
+export const clearCardsPaginationCache = (eventId = null, stateFilter = null) => {
+  if (eventId) {
+    const cacheKey = `${eventId}-${stateFilter}`;
+    const cursorKey = `${cacheKey}-cursors`;
+
+    eventCardCountCache.delete(cacheKey);
+    paginationCursors.delete(cursorKey);
+  } else {
+    // Limpiar todo el cache
+    eventCardCountCache.clear();
+    paginationCursors.clear();
   }
 };

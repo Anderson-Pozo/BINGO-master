@@ -25,8 +25,17 @@ const processTransaction = async (transactionId, clientTransactionId, storedTran
     );
 
     if (result.statusCode === 3) {
-      const { cards, userId, userName } = storedTransaction.invoiceData;
+      const { cards, userId, userName, totalValue } = storedTransaction.invoiceData;
       saveUserCards(cards, userId, userName);
+
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Purchase', {
+          value: isFinite(totalValue) ? totalValue : 0,
+          currency: 'USD',
+          content_type: 'bingo_cards',
+          transaction_id: String(transactionId)
+        });
+      }
     }
 
     // console.log('Resultado de la transacción:', result);

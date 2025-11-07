@@ -38,6 +38,8 @@ export const UsersStepTable = ({ user, setUser }) => {
     setLoading(true);
     try {
       const { users: fetchedUsers, totalCount } = await getUsersListPaginated(page, rowsPerPage, search);
+      console.log('fetchedUsers', { fetchedUsers, totalCount });
+
       setUsers(fetchedUsers);
       setTotalUsers(totalCount);
     } catch (error) {
@@ -104,7 +106,7 @@ export const UsersStepTable = ({ user, setUser }) => {
           type="text"
           name={'search'}
           onChange={handleSearchChange}
-          placeholder={'Buscar por nombre o apellido'}
+          placeholder={'Buscar por nombre, apellido o email'}
           sx={{ flex: 1 }}
           value={search}
         />
@@ -138,7 +140,12 @@ export const UsersStepTable = ({ user, setUser }) => {
                     <TableCell align="left">
                       <ButtonGroup>
                         <Avatar src={userRecord.avatar || User1} color="inherit" style={{ width: 32, height: 32 }} />
-                        <span style={{ margin: 6 }}>{userRecord.fullName}</span>
+                        <span style={{ margin: 6 }}>
+                          {userRecord.fullName ||
+                            `${userRecord.name || ''} ${userRecord.lastName || ''}`.trim() ||
+                            userRecord.email ||
+                            'Usuario sin nombre'}
+                        </span>
                       </ButtonGroup>
                     </TableCell>
                     <TableCell align="left">{userRecord.email}</TableCell>

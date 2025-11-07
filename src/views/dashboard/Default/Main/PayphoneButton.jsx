@@ -21,6 +21,12 @@ const PayPhoneButton = (props) => {
     // Solo abrir el modal si la validación pasa
     if (canProceed) {
       setOpenPayphone(true);
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'InitiateCheckout', {
+          value: isFinite(totalValue) ? totalValue : 0,
+          currency: 'USD'
+        });
+      }
     }
   };
 

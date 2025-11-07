@@ -23,8 +23,8 @@ const UsersCards = () => {
   const [showPdfGenerator, setShowPdfGenerator] = useState(false);
 
   const mockEvent = {
-    name: 'Bingo Colegio Tulcán',
-    startDate: new Date(2025, 3, 29).toLocaleDateString(),
+    name: 'Nissan 1200 Restaurada',
+    startDate: new Date(2025, 7, 16).toLocaleDateString(),
     id: 'test-event-id'
   };
 

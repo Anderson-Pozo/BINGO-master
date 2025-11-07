@@ -240,7 +240,16 @@ export const BingoCardsPdf = ({ bingoCards, event, user }) => {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <h2 style={{ fontSize: '18px', margin: '0 0 5px 0' }}>{event?.name || 'Evento de Bingo'}</h2>
-              <p style={{ fontSize: '14px', margin: '0' }}>Fecha: {event?.startDate || 'No especificada'}</p>
+              <p style={{ fontSize: '14px', margin: '0' }}>
+                Fecha:{' '}
+                {event?.startDate
+                  ? new Date(event.startDate).toLocaleDateString('es-ES', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    })
+                  : 'No especificada'}
+              </p>
             </div>
             <div style={{ textAlign: 'right' }}>
               <p style={{ fontSize: '14px', margin: '0 0 5px 0' }}>Usuario: {user?.fullName || 'No especificado'}</p>
